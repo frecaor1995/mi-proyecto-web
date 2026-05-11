@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Fly Electric LLC – Servicios eléctricos residenciales y comerciales en Houston, TX. Licenciados, asegurados y disponibles 24/7.">
-<title>Fly Electric LLC — Servicios Eléctricos Residenciales y Comerciales</title>
+<meta name="description" content="Fly Electric LLC – Servicios eléctricos residenciales y comerciales en Houston, TX.">
+<title>Fly Electric LLC — Electrical Services</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
@@ -20,9 +20,7 @@
   --sh:0 4px 20px rgba(0,0,0,.35);--sh-md:0 8px 40px rgba(0,0,0,.45);
   --sh-lg:0 20px 60px rgba(0,0,0,.55);
   --glow-y:0 0 28px rgba(255,225,66,.25);--glow-y-lg:0 0 50px rgba(255,225,66,.35);
-  --tr:.22s ease;
-  --font:'DM Sans',system-ui,sans-serif;
-  --display:'Bebas Neue',Impact,sans-serif;
+  --tr:.22s ease;--font:'DM Sans',system-ui,sans-serif;--display:'Bebas Neue',Impact,sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -32,81 +30,66 @@ a{text-decoration:none;color:inherit}
 button{cursor:pointer;border:none;background:none;font-family:var(--font)}
 ul{list-style:none}
 input,select,textarea{font-family:var(--font)}
-
-/* Grain overlay */
 body::after{content:'';position:fixed;inset:0;opacity:.025;pointer-events:none;z-index:9998;
 background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-
 .container{max-width:1200px;margin:0 auto;padding:0 24px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-
-/* Animations */
 .fu{opacity:0;transform:translateY(24px);transition:opacity .65s cubic-bezier(.22,.61,.36,1),transform .65s cubic-bezier(.22,.61,.36,1)}
 .fu.vis{opacity:1;transform:translateY(0)}
 .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}
-
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:9px;padding:14px 28px;border-radius:var(--r);font-size:.92rem;font-weight:600;letter-spacing:.01em;transition:all var(--tr);position:relative;overflow:hidden}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:14px 28px;border-radius:var(--r);font-size:.92rem;font-weight:600;letter-spacing:.01em;transition:all var(--tr)}
 .btn-primary{background:var(--yellow);color:#07090F;box-shadow:var(--glow-y)}
 .btn-primary:hover{background:#FFF066;box-shadow:var(--glow-y-lg);transform:translateY(-2px)}
 .btn-outline{background:transparent;color:var(--yellow);border:1.5px solid rgba(255,225,66,.5)}
 .btn-outline:hover{background:var(--yellow-d);border-color:var(--yellow);transform:translateY(-2px)}
 .btn-lg{padding:16px 34px;font-size:.97rem}
-
-/* Section labels */
 .label{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--yellow);background:var(--yellow-dd);border:1px solid rgba(255,225,66,.18);padding:5px 14px;border-radius:100px;margin-bottom:14px}
 .sec-title{font-family:var(--display);font-size:clamp(2.2rem,5vw,3.4rem);font-weight:400;line-height:1.05;letter-spacing:.02em;margin-bottom:16px;color:var(--text)}
 .sec-sub{font-size:.97rem;color:var(--muted-light);max-width:560px;line-height:1.7}
 .sec-hd{margin-bottom:52px}
 .sec-hd.center{text-align:center}.sec-hd.center .sec-sub{margin:0 auto}
-
-/* Divider line */
 .div-line{width:48px;height:2px;background:var(--yellow);margin-bottom:20px;border-radius:2px}
 .center .div-line{margin:0 auto 20px}
 
-/* ── BANNER ── */
+/* BANNER */
 #banner{background:var(--yellow);color:#07090F;text-align:center;padding:10px 24px;font-size:.82rem;font-weight:700;letter-spacing:.01em;position:relative;z-index:1001}
 #banner a{color:var(--bg);text-decoration:underline;text-underline-offset:2px}
-#banner i{margin-right:5px}
 
-/* ── HEADER ── */
+/* HEADER */
 #hdr{position:sticky;top:0;z-index:1000;background:rgba(7,9,15,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:box-shadow var(--tr)}
 #hdr.sc{box-shadow:0 4px 32px rgba(0,0,0,.5)}
 .hdr-in{display:flex;align-items:center;justify-content:space-between;height:66px}
-
 .logo{display:flex;align-items:center;gap:11px}
 .logo-ico{width:36px;height:36px;background:var(--yellow);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#07090F;font-size:1rem;box-shadow:var(--glow-y)}
 .logo-tx{display:flex;flex-direction:column;line-height:1}
 .logo-tx span:first-child{font-family:var(--display);font-size:1.1rem;letter-spacing:.06em;color:var(--text)}
 .logo-tx span:last-child{font-size:.58rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
-
 nav.nav a{padding:8px 13px;border-radius:6px;font-size:.86rem;font-weight:500;color:var(--muted-light);transition:all var(--tr)}
 nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
-
 .ph-badge{display:flex;align-items:center;gap:8px;font-size:.83rem;font-weight:600;color:var(--text)}
 .ph-badge .tag24{background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.04em}
+.hdr-r{display:flex;align-items:center;gap:12px}
 
-.hdr-r{display:flex;align-items:center;gap:14px}
+/* Language toggle */
+.lang-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;border:1.5px solid var(--border-v);border-radius:100px;font-size:.75rem;font-weight:700;letter-spacing:.1em;color:var(--muted-light);transition:all var(--tr)}
+.lang-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+
 .burger{display:none;flex-direction:column;gap:5px;padding:8px}
 .burger span{display:block;width:22px;height:1.5px;background:var(--text);border-radius:2px;transition:all var(--tr)}
 .burger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
 .burger.open span:nth-child(2){opacity:0}
 .burger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
-
 .mob-menu{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(11,14,22,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:16px 24px 24px;box-shadow:var(--sh-md)}
 .mob-menu.open{display:block}
 .mob-menu a{display:block;padding:11px 0;font-weight:500;border-bottom:1px solid var(--border);color:var(--muted-light)}
 .mob-menu .mcta{margin-top:16px;width:100%;justify-content:center}
 .mob-ph{margin-top:12px;text-align:center;font-weight:600;color:var(--yellow);font-size:.9rem}
 
-/* ── HERO ── */
+/* HERO */
 #hero{background:var(--bg);padding:80px 0 70px;overflow:hidden;position:relative}
 #hero::before{content:'';position:absolute;top:-120px;right:-80px;width:600px;height:600px;background:radial-gradient(circle,rgba(255,225,66,.07) 0%,transparent 70%);pointer-events:none}
 #hero::after{content:'';position:absolute;bottom:-60px;left:-40px;width:400px;height:400px;background:radial-gradient(circle,rgba(56,200,255,.04) 0%,transparent 70%);pointer-events:none}
-
-/* Grid lines decoration */
 .hero-grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
-
 .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;z-index:1}
 .hero-chip{display:inline-flex;align-items:center;gap:7px;background:var(--yellow-dd);color:var(--yellow);border:1px solid rgba(255,225,66,.2);padding:6px 14px;border-radius:100px;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
 .hero-title{font-family:var(--display);font-size:clamp(2.8rem,7vw,5rem);font-weight:400;line-height:1.0;letter-spacing:.03em;margin-bottom:20px;color:var(--text)}
@@ -119,22 +102,18 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 .stats{display:flex;gap:32px;flex-wrap:wrap;padding-top:32px;border-top:1px solid var(--border)}
 .stat .n{font-family:var(--display);font-size:2rem;letter-spacing:.04em;color:var(--yellow);line-height:1;text-shadow:0 0 20px rgba(255,225,66,.3)}
 .stat .l{font-size:.73rem;color:var(--muted);font-weight:500;margin-top:4px}
-
-/* Hero visual */
 .hero-vis{position:relative}
 .hero-img-w{position:relative;border-radius:var(--r-lg);overflow:hidden;box-shadow:0 0 0 1px var(--border),var(--sh-lg)}
 .hero-img-w img{width:100%;height:420px;object-fit:cover;background:linear-gradient(135deg,#0a1525,#0d2040);filter:brightness(.9) saturate(.85)}
 .hero-img-w::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,225,66,.08) 0%,transparent 60%);pointer-events:none}
-
 .hfloat{position:absolute;bottom:20px;left:-22px;background:rgba(11,14,22,.95);border:1px solid var(--border-v);border-radius:var(--r);padding:14px 18px;box-shadow:var(--sh-md);display:flex;align-items:center;gap:11px;backdrop-filter:blur(12px)}
 .hfloat-ico{width:38px;height:38px;background:var(--yellow-d);border:1px solid rgba(255,225,66,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--yellow);font-size:.95rem}
 .hfloat-tx strong{display:block;font-size:.86rem;font-weight:700;color:var(--text)}
 .hfloat-tx span{font-size:.72rem;color:var(--muted)}
-
 .htop{position:absolute;top:20px;right:-22px;background:var(--yellow);color:#07090F;border-radius:var(--r);padding:12px 16px;font-size:.78rem;font-weight:700;box-shadow:var(--glow-y);text-align:center}
 .htop strong{display:block;font-family:var(--display);font-size:1.6rem;line-height:1}
 
-/* ── SERVICES ── */
+/* SERVICES */
 #services{padding:80px 0;background:var(--bg2)}
 .tabs{display:flex;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--border);padding:5px;border-radius:var(--r);width:fit-content;margin-bottom:40px}
 .tab{padding:11px 26px;border-radius:6px;font-size:.88rem;font-weight:600;color:var(--muted-light);transition:all var(--tr);display:flex;align-items:center;gap:7px}
@@ -142,7 +121,6 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 .tab:hover:not(.on){color:var(--text);background:rgba(255,255,255,.05)}
 .tp{display:none}.tp.on{display:block}
 .srv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-
 .sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px;transition:all var(--tr);position:relative;overflow:hidden}
 .sc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);opacity:0;transition:opacity var(--tr),box-shadow var(--tr)}
 .sc:hover{transform:translateY(-3px);border-color:rgba(255,225,66,.15);background:#16202E}
@@ -154,7 +132,7 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 .srv-note{text-align:center;margin-top:32px;color:var(--muted);font-size:.86rem}
 .srv-note i{color:var(--yellow);margin-right:5px}
 
-/* ── WHY US ── */
+/* WHY US */
 #why{padding:80px 0;background:var(--yellow);position:relative;overflow:hidden}
 #why::before{content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:rgba(0,0,0,.06);border-radius:50%;pointer-events:none}
 #why .sec-title{color:#07090F}
@@ -162,15 +140,14 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 #why .label{color:#07090F;background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.15)}
 #why .div-line{background:#07090F;opacity:.3}
 .why-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
-
-.wc{background:rgba(7,9,15,.08);border:1px solid rgba(0,0,0,.12);border-radius:var(--r-lg);padding:32px 24px;text-align:center;transition:all var(--tr);backdrop-filter:blur(4px)}
+.wc{background:rgba(7,9,15,.08);border:1px solid rgba(0,0,0,.12);border-radius:var(--r-lg);padding:32px 24px;text-align:center;transition:all var(--tr)}
 .wc:hover{background:rgba(7,9,15,.15);transform:translateY(-3px)}
 .wc-ico{width:60px;height:60px;background:rgba(7,9,15,.1);border:1px solid rgba(0,0,0,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#07090F;font-size:1.3rem;margin:0 auto 18px}
 .wc-n{font-family:var(--display);font-size:2.8rem;letter-spacing:.03em;color:#07090F;line-height:1;margin-bottom:8px}
 .wc h3{font-size:.9rem;font-weight:700;margin-bottom:6px;color:#07090F}
 .wc p{font-size:.82rem;color:rgba(7,9,15,.6);line-height:1.6}
 
-/* ── GALLERY ── */
+/* GALLERY */
 #gallery{padding:80px 0;background:var(--bg)}
 .fbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:36px}
 .fb{padding:7px 18px;border-radius:100px;font-size:.83rem;font-weight:600;color:var(--muted-light);border:1.5px solid var(--border-v);transition:all var(--tr)}
@@ -185,15 +162,13 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 .gov-tx span{font-size:.73rem;color:var(--muted-light)}
 .gov-tx i{color:var(--yellow);margin-right:3px}
 .gtag{position:absolute;top:10px;left:10px;background:var(--yellow);color:#07090F;font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:100px;letter-spacing:.04em}
-
-/* Lightbox */
 .lb{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}
 .lb.open{opacity:1;pointer-events:all}
-.lb img{max-width:90vw;max-height:85vh;border-radius:8px;box-shadow:0 0 60px rgba(0,0,0,.8)}
+.lb img{max-width:90vw;max-height:85vh;border-radius:8px}
 .lb-cl{position:absolute;top:18px;right:22px;color:var(--text);background:rgba(255,255,255,.1);border:1px solid var(--border-v);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all var(--tr)}
 .lb-cl:hover{background:var(--yellow);color:#07090F}
 
-/* ── PROCESS ── */
+/* PROCESS */
 #process{padding:80px 0;background:var(--bg2)}
 .proc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative}
 .proc-grid::before{content:'';position:absolute;top:34px;left:12%;right:12%;height:1px;background:linear-gradient(to right,transparent,var(--yellow),transparent);opacity:.4}
@@ -202,7 +177,7 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 .ps h3{font-size:.95rem;font-weight:700;margin-bottom:8px;color:var(--text)}
 .ps p{font-size:.83rem;color:var(--muted-light);line-height:1.65}
 
-/* ── TESTIMONIALS ── */
+/* TESTIMONIALS */
 #testi{padding:80px 0;background:var(--bg)}
 .car-wrap{overflow:hidden}
 .car-track{display:flex;gap:20px;transition:transform .42s cubic-bezier(.25,.46,.45,.94)}
@@ -217,21 +192,19 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 .ctag{display:inline-block;font-size:.66rem;font-weight:700;padding:2px 9px;border-radius:100px;margin-top:4px}
 .ctag.res{background:rgba(56,200,255,.1);color:var(--cyan);border:1px solid rgba(56,200,255,.2)}
 .ctag.com{background:rgba(255,225,66,.1);color:var(--yellow);border:1px solid rgba(255,225,66,.2)}
-
 .car-ctrl{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:32px}
 .cbtn{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--border-v);display:flex;align-items:center;justify-content:center;color:var(--muted-light);transition:all var(--tr)}
 .cbtn:hover{border-color:var(--yellow);color:var(--yellow);box-shadow:var(--glow-y)}
 .cdots{display:flex;gap:7px}
 .cdot{width:7px;height:7px;border-radius:50%;background:var(--border-v);transition:all var(--tr);cursor:pointer;border:none}
-.cdot.on{width:22px;border-radius:4px;background:var(--yellow);box-shadow:0 0 8px rgba(255,225,66,.4)}
+.cdot.on{width:22px;border-radius:4px;background:var(--yellow)}
 
-/* ── CONTACT ── */
+/* CONTACT */
 #contact{padding:80px 0;background:var(--bg2)}
 .con-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:start}
 .rbadge{display:inline-flex;align-items:center;gap:7px;background:rgba(34,209,122,.1);color:var(--green);border:1px solid rgba(34,209,122,.2);padding:7px 15px;border-radius:100px;font-size:.8rem;font-weight:600;margin:16px 0 28px}
 .rbadge::before{content:'●';font-size:.5rem;animation:blink 1.5s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
 .cd{display:flex;align-items:center;gap:13px;margin-bottom:18px}
 .cd-ico{width:46px;height:46px;min-width:46px;background:var(--yellow-d);border:1px solid rgba(255,225,66,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--yellow)}
 .cd strong{display:block;font-size:.78rem;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}
@@ -240,8 +213,6 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 .soc-row{display:flex;gap:10px;margin-top:28px}
 .sbtn{width:40px;height:40px;border-radius:8px;border:1.5px solid var(--border-v);display:flex;align-items:center;justify-content:center;color:var(--muted-light);font-size:.95rem;transition:all var(--tr)}
 .sbtn:hover{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-d);box-shadow:var(--glow-y)}
-
-/* Form */
 .qform{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:36px;box-shadow:var(--sh-md)}
 .qform h3{font-family:var(--display);font-size:1.6rem;letter-spacing:.04em;margin-bottom:24px;color:var(--text)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -260,12 +231,18 @@ nav.nav a:hover{color:var(--yellow);background:var(--yellow-dd)}
 .ro input{accent-color:var(--yellow);width:15px;height:15px}
 textarea.fc{resize:vertical;min-height:96px}
 .bsub{width:100%;justify-content:center;padding:15px;font-size:.95rem;margin-top:8px;font-weight:700}
+
+/* Form note about Formspree */
+.form-note{font-size:.74rem;color:var(--muted);margin-top:10px;text-align:center;display:none}
+.form-note.show{display:block}
+.form-note a{color:var(--yellow)}
+
 .fok{display:none;text-align:center;padding:40px 16px}
 .fok i{font-size:2.8rem;color:var(--green);margin-bottom:14px}
 .fok h3{font-family:var(--display);font-size:2rem;letter-spacing:.04em;margin-bottom:8px;color:var(--text)}
 .fok p{color:var(--muted-light);font-size:.9rem}
 
-/* ── FOOTER ── */
+/* FOOTER */
 #footer{background:#040609;color:rgba(255,255,255,.45);padding:60px 0 0;border-top:1px solid var(--border)}
 .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.3fr;gap:44px;margin-bottom:44px}
 .flogo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
@@ -286,13 +263,13 @@ textarea.fc{resize:vertical;min-height:96px}
 .fsoc a:hover{background:var(--yellow);color:#07090F;border-color:var(--yellow)}
 
 /* WhatsApp float */
-.wa{position:fixed;bottom:26px;right:26px;z-index:998;width:54px;height:54px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 6px 22px rgba(37,211,102,.4);transition:all var(--tr);animation:wapulse 2.4s infinite}
+.wa{position:fixed;bottom:26px;right:26px;z-index:998;width:54px;height:54px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 6px 22px rgba(37,211,102,.4);transition:all var(--tr);animation:wapulse 2.4s infinite;text-decoration:none}
 .wa:hover{transform:scale(1.1)}
 @keyframes wapulse{0%,100%{box-shadow:0 6px 22px rgba(37,211,102,.4)}50%{box-shadow:0 6px 32px rgba(37,211,102,.65)}}
 .wa-tip{position:absolute;right:66px;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--border-v);color:var(--text);padding:5px 12px;border-radius:7px;font-size:.78rem;font-weight:500;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity var(--tr)}
 .wa:hover .wa-tip{opacity:1}
 
-/* ── RESPONSIVE ── */
+/* RESPONSIVE */
 @media(max-width:1024px){.why-grid{grid-template-columns:repeat(2,1fr)}.foot-grid{grid-template-columns:1fr 1fr;gap:28px}}
 @media(max-width:900px){
   .hero-grid{grid-template-columns:1fr}.hero-vis{display:none}
@@ -325,48 +302,53 @@ textarea.fc{resize:vertical;min-height:96px}
 <body>
 
 <!-- BANNER -->
-<div id="banner" role="alert" aria-label="Información de emergencias">
-  <i class="fas fa-bolt" aria-hidden="true"></i>
-  Emergencias eléctricas 24/7 — Llámanos ahora:
-  <a href="tel:5551234567">(555) 123-4567</a>
-  &nbsp;·&nbsp; Respuesta garantizada en menos de 1 hora
+<div id="banner" role="alert">
+  <i class="fas fa-bolt"></i>
+  <span data-i18n="banner.text">Emergencias eléctricas 24/7 — Llámanos ahora:</span>
+  <a href="tel:+15713796040">(571) 379-6040</a>
+  &nbsp;·&nbsp;
+  <span data-i18n="banner.sub">Respuesta en menos de 1 hora</span>
 </div>
 
 <!-- HEADER -->
 <header id="hdr">
   <div class="container">
     <div class="hdr-in">
-      <a href="#" class="logo" aria-label="Fly Electric LLC – Inicio">
+      <a href="#" class="logo" aria-label="Fly Electric LLC">
         <div class="logo-ico" aria-hidden="true"><i class="fas fa-bolt"></i></div>
         <div class="logo-tx"><span>FLY ELECTRIC</span><span>LLC</span></div>
       </a>
-      <nav class="nav" aria-label="Navegación principal">
-        <a href="#hero">Inicio</a>
-        <a href="#services">Servicios</a>
-        <a href="#gallery">Proyectos</a>
-        <a href="#testi">Testimonios</a>
-        <a href="#contact">Contacto</a>
+      <nav class="nav" aria-label="Nav">
+        <a href="#hero" data-i18n="nav.home">Inicio</a>
+        <a href="#services" data-i18n="nav.services">Servicios</a>
+        <a href="#gallery" data-i18n="nav.projects">Proyectos</a>
+        <a href="#testi" data-i18n="nav.testi">Testimonios</a>
+        <a href="#contact" data-i18n="nav.contact">Contacto</a>
       </nav>
       <div class="hdr-r">
-        <div class="ph-badge" aria-label="Teléfono 24/7">
-          <i class="fas fa-phone-alt" style="color:var(--yellow)" aria-hidden="true"></i>
-          <span>(555) 123-4567</span>
+        <div class="ph-badge">
+          <i class="fas fa-phone-alt" style="color:var(--yellow)"></i>
+          <span>(571) 379-6040</span>
           <span class="tag24">24/7</span>
         </div>
-        <a href="#contact" class="btn btn-primary" aria-label="Cotización gratis">Cotización Gratis</a>
-        <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false">
+        <button class="lang-btn" id="lang-btn" aria-label="Switch language">
+          <i class="fas fa-globe" style="font-size:.7rem"></i>
+          <span id="lang-cur">EN</span>
+        </button>
+        <a href="#contact" class="btn btn-primary" data-i18n="nav.cta">Cotización Gratis</a>
+        <button class="burger" id="burger" aria-label="Menu" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
       </div>
     </div>
     <div class="mob-menu" id="mob-menu">
-      <a href="#hero" onclick="closeMob()">Inicio</a>
-      <a href="#services" onclick="closeMob()">Servicios</a>
-      <a href="#gallery" onclick="closeMob()">Proyectos</a>
-      <a href="#testi" onclick="closeMob()">Testimonios</a>
-      <a href="#contact" onclick="closeMob()">Contacto</a>
-      <a href="#contact" class="btn btn-primary mcta" onclick="closeMob()">Cotización Gratis</a>
-      <p class="mob-ph"><i class="fas fa-phone-alt"></i> (555) 123-4567</p>
+      <a href="#hero" onclick="closeMob()" data-i18n="nav.home">Inicio</a>
+      <a href="#services" onclick="closeMob()" data-i18n="nav.services">Servicios</a>
+      <a href="#gallery" onclick="closeMob()" data-i18n="nav.projects">Proyectos</a>
+      <a href="#testi" onclick="closeMob()" data-i18n="nav.testi">Testimonios</a>
+      <a href="#contact" onclick="closeMob()" data-i18n="nav.contact">Contacto</a>
+      <a href="#contact" class="btn btn-primary mcta" onclick="closeMob()" data-i18n="nav.cta">Cotización Gratis</a>
+      <p class="mob-ph"><i class="fas fa-phone-alt"></i> (571) 379-6040</p>
     </div>
   </div>
 </header>
@@ -379,41 +361,48 @@ textarea.fc{resize:vertical;min-height:96px}
   <div class="container">
     <div class="hero-grid">
       <div>
-        <div class="hero-chip fu"><i class="fas fa-bolt" aria-hidden="true"></i> Servicios Eléctricos Profesionales</div>
-        <h1 class="hero-title fu d1" id="htitle">
+        <div class="hero-chip fu">
+          <i class="fas fa-bolt" aria-hidden="true"></i>
+          <span data-i18n="hero.chip">Servicios Eléctricos Profesionales</span>
+        </div>
+        <h1 class="hero-title fu d1" id="htitle" data-i18n-html="hero.title">
           Soluciones<br>eléctricas para<br>tu <span class="hl">hogar y negocio</span>
         </h1>
-        <p class="hero-sub fu d2">Servicios residenciales y comerciales con calidad, seguridad y rapidez garantizada en Houston, TX.</p>
+        <p class="hero-sub fu d2" data-i18n="hero.sub">Servicios residenciales y comerciales con calidad, seguridad y rapidez garantizada en Houston, TX.</p>
         <div class="hero-btns fu d2">
           <a href="#contact" class="btn btn-primary btn-lg">
-            <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Cotización Gratis
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span data-i18n="hero.btn1">Cotización Gratis</span>
           </a>
           <a href="#services" class="btn btn-outline btn-lg">
-            Ver Servicios <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            <span data-i18n="hero.btn2">Ver Servicios</span>
+            <i class="fas fa-arrow-right"></i>
           </a>
         </div>
         <div class="badges fu d3">
-          <span class="badge-item"><i class="fas fa-check-circle" aria-hidden="true"></i> Licenciados</span>
-          <span class="badge-item"><i class="fas fa-check-circle" aria-hidden="true"></i> Asegurados</span>
-          <span class="badge-item"><i class="fas fa-check-circle" aria-hidden="true"></i> Garantía Total</span>
+          <span class="badge-item"><i class="fas fa-check-circle"></i> <span data-i18n="hero.b1">Licenciados</span></span>
+          <span class="badge-item"><i class="fas fa-check-circle"></i> <span data-i18n="hero.b2">Asegurados</span></span>
+          <span class="badge-item"><i class="fas fa-check-circle"></i> <span data-i18n="hero.b3">Garantía Total</span></span>
         </div>
         <div class="stats fu d4">
-          <div class="stat"><span class="n">+500</span><span class="l">Proyectos completados</span></div>
-          <div class="stat"><span class="n">24/7</span><span class="l">Emergencias</span></div>
-          <div class="stat"><span class="n">5★</span><span class="l">Calificación promedio</span></div>
+          <div class="stat"><span class="n">+500</span><span class="l" data-i18n="hero.s1">Proyectos completados</span></div>
+          <div class="stat"><span class="n">24/7</span><span class="l" data-i18n="hero.s2">Emergencias</span></div>
+          <div class="stat"><span class="n">5★</span><span class="l" data-i18n="hero.s3">Calificación promedio</span></div>
         </div>
       </div>
       <div class="hero-vis fu d2" aria-hidden="true">
         <div class="hero-img-w">
-          <img src="https://images.unsplash.com/photo-1621905119-96e1e5df3d68?w=640&h=420&fit=crop&auto=format&q=80"
-               alt="Electricista profesional trabajando"
+          <img src="https://images.unsplash.com/photo-1621905119-96e1e5df3d68?w=640&h=420&fit=crop&auto=format&q=80" alt="Electricista"
                onerror="this.style.cssText='height:420px;width:100%;background:linear-gradient(135deg,#0a1525,#0d2040)';this.removeAttribute('src')">
         </div>
         <div class="hfloat">
           <div class="hfloat-ico"><i class="fas fa-shield-alt"></i></div>
-          <div class="hfloat-tx"><strong>100% Asegurado</strong><span>Cobertura completa</span></div>
+          <div class="hfloat-tx">
+            <strong data-i18n="hero.f1">100% Asegurado</strong>
+            <span data-i18n="hero.f2">Cobertura completa</span>
+          </div>
         </div>
-        <div class="htop"><strong>&lt;1h</strong>Respuesta emergencias</div>
+        <div class="htop"><strong>&lt;1h</strong><span data-i18n="hero.top">Respuesta emergencias</span></div>
       </div>
     </div>
   </div>
@@ -423,42 +412,40 @@ textarea.fc{resize:vertical;min-height:96px}
 <section id="services" aria-labelledby="stitle">
   <div class="container">
     <div class="sec-hd fu">
-      <span class="label"><i class="fas fa-bolt" aria-hidden="true"></i> Nuestros Servicios</span>
+      <span class="label"><i class="fas fa-bolt"></i> <span data-i18n="srv.label">Nuestros Servicios</span></span>
       <div class="div-line"></div>
-      <h2 class="sec-title" id="stitle">Soluciones para cada necesidad</h2>
-      <p class="sec-sub">Servicios eléctricos completos para hogares y negocios con calidad garantizada en cada trabajo.</p>
+      <h2 class="sec-title" id="stitle" data-i18n="srv.title">Soluciones para cada necesidad</h2>
+      <p class="sec-sub" data-i18n="srv.sub">Servicios eléctricos completos para hogares y negocios con calidad garantizada.</p>
     </div>
     <div class="tabs fu" role="tablist">
       <button class="tab on" data-tab="res" role="tab" aria-selected="true" aria-controls="tp-res" id="tbtn-res">
-        <i class="fas fa-home" aria-hidden="true"></i> Residencial
+        <i class="fas fa-home"></i> <span data-i18n="srv.tab.res">Residencial</span>
       </button>
       <button class="tab" data-tab="com" role="tab" aria-selected="false" aria-controls="tp-com" id="tbtn-com">
-        <i class="fas fa-building" aria-hidden="true"></i> Comercial
+        <i class="fas fa-building"></i> <span data-i18n="srv.tab.com">Comercial</span>
       </button>
     </div>
-
     <div class="tp on" id="tp-res" role="tabpanel" aria-labelledby="tbtn-res">
-      <div class="srv-grid">
-        <article class="sc fu"><div class="sc-ico"><i class="fas fa-plug"></i></div><h3>Tomacorrientes y Switches</h3><p>Instalación y reemplazo de tomacorrientes, interruptores y placas con materiales de primera calidad.</p><span class="sc-price">Desde $85</span></article>
-        <article class="sc fu d1"><div class="sc-ico"><i class="fas fa-fan"></i></div><h3>Ventiladores y Luminarias</h3><p>Instalación profesional de ventiladores de techo, lámparas y sistemas de iluminación decorativa.</p><span class="sc-price">Desde $120</span></article>
-        <article class="sc fu d2"><div class="sc-ico"><i class="fas fa-th-large"></i></div><h3>Reparación de Paneles</h3><p>Diagnóstico, reparación y actualización de paneles eléctricos residenciales para mayor seguridad.</p><span class="sc-price">Desde $250</span></article>
-        <article class="sc fu"><div class="sc-ico"><i class="fas fa-lightbulb"></i></div><h3>Iluminación LED</h3><p>Conversión a tecnología LED para ahorro de energía hasta 70%. Instalación rápida y limpia.</p><span class="sc-price">Desde $150</span></article>
-        <article class="sc fu d1"><div class="sc-ico"><i class="fas fa-search"></i></div><h3>Diagnóstico y Reparación</h3><p>Detección precisa de fallas eléctricas. Reparaciones rápidas que garantizan la seguridad de tu hogar.</p><span class="sc-price">Desde $95</span></article>
-        <article class="sc fu d2"><div class="sc-ico"><i class="fas fa-clipboard-check"></i></div><h3>Inspecciones Residenciales</h3><p>Inspección eléctrica completa con informe detallado. Ideal para compra-venta de propiedades.</p><span class="sc-price">Desde $180</span></article>
+      <div class="srv-grid" id="srv-res-grid">
+        <article class="sc fu"><div class="sc-ico"><i class="fas fa-plug"></i></div><h3 data-i18n="r1.t">Tomacorrientes y Switches</h3><p data-i18n="r1.d">Instalación y reemplazo de tomacorrientes, interruptores y placas con materiales de primera calidad.</p><span class="sc-price" data-i18n="r1.p">Desde $85</span></article>
+        <article class="sc fu d1"><div class="sc-ico"><i class="fas fa-fan"></i></div><h3 data-i18n="r2.t">Ventiladores y Luminarias</h3><p data-i18n="r2.d">Instalación profesional de ventiladores de techo, lámparas y sistemas de iluminación decorativa.</p><span class="sc-price" data-i18n="r2.p">Desde $120</span></article>
+        <article class="sc fu d2"><div class="sc-ico"><i class="fas fa-th-large"></i></div><h3 data-i18n="r3.t">Reparación de Paneles</h3><p data-i18n="r3.d">Diagnóstico, reparación y actualización de paneles eléctricos residenciales para mayor seguridad.</p><span class="sc-price" data-i18n="r3.p">Desde $250</span></article>
+        <article class="sc fu"><div class="sc-ico"><i class="fas fa-lightbulb"></i></div><h3 data-i18n="r4.t">Iluminación LED</h3><p data-i18n="r4.d">Conversión a tecnología LED para ahorro de energía hasta 70%. Instalación rápida y limpia.</p><span class="sc-price" data-i18n="r4.p">Desde $150</span></article>
+        <article class="sc fu d1"><div class="sc-ico"><i class="fas fa-search"></i></div><h3 data-i18n="r5.t">Diagnóstico y Reparación</h3><p data-i18n="r5.d">Detección precisa de fallas eléctricas. Reparaciones rápidas que garantizan la seguridad del hogar.</p><span class="sc-price" data-i18n="r5.p">Desde $95</span></article>
+        <article class="sc fu d2"><div class="sc-ico"><i class="fas fa-clipboard-check"></i></div><h3 data-i18n="r6.t">Inspecciones Residenciales</h3><p data-i18n="r6.d">Inspección eléctrica completa con informe detallado. Ideal para compra-venta de propiedades.</p><span class="sc-price" data-i18n="r6.p">Desde $180</span></article>
       </div>
     </div>
-
     <div class="tp" id="tp-com" role="tabpanel" aria-labelledby="tbtn-com">
       <div class="srv-grid">
-        <article class="sc fu"><div class="sc-ico"><i class="fas fa-hard-hat"></i></div><h3>Instalaciones Comerciales</h3><p>Proyectos eléctricos desde cero para locales, oficinas y edificios. Planificación y ejecución profesional.</p><span class="sc-price">Cotización personalizada</span></article>
-        <article class="sc fu d1"><div class="sc-ico"><i class="fas fa-store"></i></div><h3>LED Comercial y Oficinas</h3><p>Sistemas de iluminación LED para retail, restaurantes y oficinas. Ahorro energético comprobado.</p><span class="sc-price">Desde $500</span></article>
-        <article class="sc fu d2"><div class="sc-ico"><i class="fas fa-tools"></i></div><h3>Mantenimiento Preventivo</h3><p>Programas de mantenimiento mensual para prevenir fallas costosas. Incluye reporte técnico detallado.</p><span class="sc-price">Desde $300/mes</span></article>
-        <article class="sc fu"><div class="sc-ico"><i class="fas fa-network-wired"></i></div><h3>Sistemas Trifásicos</h3><p>Instalación y mantenimiento de sistemas trifásicos para industria, manufactura y equipos pesados.</p><span class="sc-price">Cotización personalizada</span></article>
-        <article class="sc fu d1"><div class="sc-ico"><i class="fas fa-server"></i></div><h3>Tableros Comerciales</h3><p>Instalación de tableros de distribución, centros de carga y sistemas de protección industrial.</p><span class="sc-price">Desde $800</span></article>
-        <article class="sc fu d2"><div class="sc-ico"><i class="fas fa-book"></i></div><h3>Cumplimiento Código NEC</h3><p>Auditorías y correcciones para cumplimiento total con el National Electrical Code. Certificación incluida.</p><span class="sc-price">Desde $250</span></article>
+        <article class="sc fu"><div class="sc-ico"><i class="fas fa-hard-hat"></i></div><h3 data-i18n="c1.t">Instalaciones Comerciales</h3><p data-i18n="c1.d">Proyectos eléctricos desde cero para locales, oficinas y edificios. Planificación y ejecución profesional.</p><span class="sc-price" data-i18n="c1.p">Cotización personalizada</span></article>
+        <article class="sc fu d1"><div class="sc-ico"><i class="fas fa-store"></i></div><h3 data-i18n="c2.t">LED Comercial y Oficinas</h3><p data-i18n="c2.d">Sistemas de iluminación LED para retail, restaurantes y oficinas. Ahorro energético comprobado.</p><span class="sc-price" data-i18n="c2.p">Desde $500</span></article>
+        <article class="sc fu d2"><div class="sc-ico"><i class="fas fa-tools"></i></div><h3 data-i18n="c3.t">Mantenimiento Preventivo</h3><p data-i18n="c3.d">Programas de mantenimiento mensual para prevenir fallas costosas. Incluye reporte técnico detallado.</p><span class="sc-price" data-i18n="c3.p">Desde $300/mes</span></article>
+        <article class="sc fu"><div class="sc-ico"><i class="fas fa-network-wired"></i></div><h3 data-i18n="c4.t">Sistemas Trifásicos</h3><p data-i18n="c4.d">Instalación y mantenimiento de sistemas trifásicos para industria, manufactura y equipos pesados.</p><span class="sc-price" data-i18n="c4.p">Cotización personalizada</span></article>
+        <article class="sc fu d1"><div class="sc-ico"><i class="fas fa-server"></i></div><h3 data-i18n="c5.t">Tableros Comerciales</h3><p data-i18n="c5.d">Instalación de tableros de distribución, centros de carga y sistemas de protección industrial.</p><span class="sc-price" data-i18n="c5.p">Desde $800</span></article>
+        <article class="sc fu d2"><div class="sc-ico"><i class="fas fa-book"></i></div><h3 data-i18n="c6.t">Cumplimiento Código NEC</h3><p data-i18n="c6.d">Auditorías y correcciones para cumplimiento total con el National Electrical Code. Certificación incluida.</p><span class="sc-price" data-i18n="c6.p">Desde $250</span></article>
       </div>
     </div>
-    <p class="srv-note fu"><i class="fas fa-tag"></i> Cotización gratuita y sin compromiso — Contáctanos hoy</p>
+    <p class="srv-note fu"><i class="fas fa-tag"></i> <span data-i18n="srv.note">Cotización gratuita y sin compromiso — Contáctanos hoy</span></p>
   </div>
 </section>
 
@@ -466,16 +453,16 @@ textarea.fc{resize:vertical;min-height:96px}
 <section id="why" aria-labelledby="wtitle">
   <div class="container">
     <div class="sec-hd center fu">
-      <span class="label"><i class="fas fa-bolt" aria-hidden="true"></i> ¿Por Qué Elegirnos?</span>
+      <span class="label"><i class="fas fa-bolt"></i> <span data-i18n="why.label">¿Por Qué Elegirnos?</span></span>
       <div class="div-line center"></div>
-      <h2 class="sec-title" id="wtitle">Tu tranquilidad,<br>nuestra prioridad</h2>
-      <p class="sec-sub">Más de 500 clientes satisfechos avalan nuestro trabajo. Estos son los pilares de nuestro servicio.</p>
+      <h2 class="sec-title" id="wtitle" data-i18n-html="why.title">Tu tranquilidad,<br>nuestra prioridad</h2>
+      <p class="sec-sub" data-i18n="why.sub">Más de 500 clientes satisfechos avalan nuestro trabajo.</p>
     </div>
     <div class="why-grid">
-      <div class="wc fu"><div class="wc-ico"><i class="fas fa-certificate"></i></div><div class="wc-n">100%</div><h3>Licenciados y Asegurados</h3><p>Todos nuestros electricistas cuentan con licencia estatal vigente y seguro de responsabilidad civil.</p></div>
-      <div class="wc fu d1"><div class="wc-ico"><i class="fas fa-clock"></i></div><div class="wc-n">&lt;1h</div><h3>Respuesta en Emergencias</h3><p>En menos de 1 hora estamos en tu puerta ante cualquier emergencia eléctrica, los 365 días del año.</p></div>
-      <div class="wc fu d2"><div class="wc-ico"><i class="fas fa-shield-alt"></i></div><div class="wc-n">5 años</div><h3>Garantía en Instalaciones</h3><p>Respaldamos todos nuestros trabajos de instalación con 5 años de garantía. Tu inversión protegida.</p></div>
-      <div class="wc fu d3"><div class="wc-ico"><i class="fas fa-dollar-sign"></i></div><div class="wc-n">$0</div><h3>Costos Ocultos</h3><p>Precios transparentes desde el primer momento. Lo que cotizamos es lo que cobras, sin sorpresas.</p></div>
+      <div class="wc fu"><div class="wc-ico"><i class="fas fa-certificate"></i></div><div class="wc-n">100%</div><h3 data-i18n="w1.t">Licenciados y Asegurados</h3><p data-i18n="w1.d">Todos nuestros electricistas cuentan con licencia estatal vigente y seguro de responsabilidad civil.</p></div>
+      <div class="wc fu d1"><div class="wc-ico"><i class="fas fa-clock"></i></div><div class="wc-n">&lt;1h</div><h3 data-i18n="w2.t">Respuesta en Emergencias</h3><p data-i18n="w2.d">En menos de 1 hora estamos en tu puerta ante cualquier emergencia eléctrica, los 365 días del año.</p></div>
+      <div class="wc fu d2"><div class="wc-ico"><i class="fas fa-shield-alt"></i></div><div class="wc-n">5 <span data-i18n="w3.years">años</span></div><h3 data-i18n="w3.t">Garantía en Instalaciones</h3><p data-i18n="w3.d">Respaldamos todos nuestros trabajos de instalación con 5 años de garantía. Tu inversión protegida.</p></div>
+      <div class="wc fu d3"><div class="wc-ico"><i class="fas fa-dollar-sign"></i></div><div class="wc-n">$0</div><h3 data-i18n="w4.t">Costos Ocultos</h3><p data-i18n="w4.d">Precios transparentes desde el primer momento. Lo que cotizamos es lo que cobras, sin sorpresas.</p></div>
     </div>
   </div>
 </section>
@@ -484,17 +471,17 @@ textarea.fc{resize:vertical;min-height:96px}
 <section id="gallery" aria-labelledby="gtitle">
   <div class="container">
     <div class="sec-hd fu">
-      <span class="label"><i class="fas fa-images" aria-hidden="true"></i> Nuestros Proyectos</span>
+      <span class="label"><i class="fas fa-images"></i> <span data-i18n="gal.label">Nuestros Proyectos</span></span>
       <div class="div-line"></div>
-      <h2 class="sec-title" id="gtitle">Trabajo que habla por sí solo</h2>
-      <p class="sec-sub">Proyectos completados con los más altos estándares en Houston y alrededores.</p>
+      <h2 class="sec-title" id="gtitle" data-i18n="gal.title">Trabajo que habla por sí solo</h2>
+      <p class="sec-sub" data-i18n="gal.sub">Proyectos completados con los más altos estándares en Houston y alrededores.</p>
     </div>
-    <div class="fbar fu" role="group" aria-label="Filtrar proyectos">
-      <button class="fb on" data-f="all" aria-pressed="true">Todos</button>
-      <button class="fb" data-f="res" aria-pressed="false">Residencial</button>
-      <button class="fb" data-f="com" aria-pressed="false">Comercial</button>
-      <button class="fb" data-f="light" aria-pressed="false">Iluminación</button>
-      <button class="fb" data-f="panel" aria-pressed="false">Paneles</button>
+    <div class="fbar fu" role="group">
+      <button class="fb on" data-f="all" aria-pressed="true" data-i18n="gal.all">Todos</button>
+      <button class="fb" data-f="res" aria-pressed="false" data-i18n="gal.res">Residencial</button>
+      <button class="fb" data-f="com" aria-pressed="false" data-i18n="gal.com">Comercial</button>
+      <button class="fb" data-f="light" aria-pressed="false" data-i18n="gal.light">Iluminación</button>
+      <button class="fb" data-f="panel" aria-pressed="false" data-i18n="gal.panel">Paneles</button>
     </div>
     <div class="gal-grid" id="ggrid"></div>
   </div>
@@ -504,16 +491,16 @@ textarea.fc{resize:vertical;min-height:96px}
 <section id="process" aria-labelledby="ptitle">
   <div class="container">
     <div class="sec-hd center fu">
-      <span class="label"><i class="fas fa-route" aria-hidden="true"></i> Cómo Trabajamos</span>
+      <span class="label"><i class="fas fa-route"></i> <span data-i18n="proc.label">Cómo Trabajamos</span></span>
       <div class="div-line center"></div>
-      <h2 class="sec-title" id="ptitle">Un proceso simple y transparente</h2>
-      <p class="sec-sub">Del primer contacto a la garantía final, sin complicaciones ni sorpresas.</p>
+      <h2 class="sec-title" id="ptitle" data-i18n="proc.title">Un proceso simple y transparente</h2>
+      <p class="sec-sub" data-i18n="proc.sub">Del primer contacto a la garantía final, sin complicaciones ni sorpresas.</p>
     </div>
     <div class="proc-grid">
-      <div class="ps fu"><div class="ps-n">1</div><h3>Contacto</h3><p>Llámanos, escríbenos por WhatsApp o completa el formulario. Respondemos en minutos.</p></div>
-      <div class="ps fu d1"><div class="ps-n">2</div><h3>Evaluación Gratuita</h3><p>Un técnico visita tu propiedad sin costo para evaluar y cotizar con precisión.</p></div>
-      <div class="ps fu d2"><div class="ps-n">3</div><h3>Trabajo Profesional</h3><p>Ejecutamos el trabajo con los mejores materiales. Limpio, seguro y a tiempo.</p></div>
-      <div class="ps fu d3"><div class="ps-n">4</div><h3>Garantía Total</h3><p>Entregamos el trabajo terminado con garantía escrita. Tu satisfacción es nuestra meta.</p></div>
+      <div class="ps fu"><div class="ps-n">1</div><h3 data-i18n="p1.t">Contacto</h3><p data-i18n="p1.d">Llámanos, escríbenos por WhatsApp o completa el formulario. Respondemos en minutos.</p></div>
+      <div class="ps fu d1"><div class="ps-n">2</div><h3 data-i18n="p2.t">Evaluación Gratuita</h3><p data-i18n="p2.d">Un técnico visita tu propiedad sin costo para evaluar y cotizar con precisión.</p></div>
+      <div class="ps fu d2"><div class="ps-n">3</div><h3 data-i18n="p3.t">Trabajo Profesional</h3><p data-i18n="p3.d">Ejecutamos el trabajo con los mejores materiales. Limpio, seguro y a tiempo.</p></div>
+      <div class="ps fu d3"><div class="ps-n">4</div><h3 data-i18n="p4.t">Garantía Total</h3><p data-i18n="p4.d">Entregamos el trabajo terminado con garantía escrita. Tu satisfacción es nuestra meta.</p></div>
     </div>
   </div>
 </section>
@@ -522,23 +509,23 @@ textarea.fc{resize:vertical;min-height:96px}
 <section id="testi" aria-labelledby="ttitle">
   <div class="container">
     <div class="sec-hd center fu">
-      <span class="label"><i class="fas fa-star" aria-hidden="true"></i> Testimonios</span>
+      <span class="label"><i class="fas fa-star"></i> <span data-i18n="tst.label">Testimonios</span></span>
       <div class="div-line center"></div>
-      <h2 class="sec-title" id="ttitle">Lo que dicen nuestros clientes</h2>
-      <p class="sec-sub">Más de 500 familias y negocios confían en Fly Electric LLC.</p>
+      <h2 class="sec-title" id="ttitle" data-i18n="tst.title">Lo que dicen nuestros clientes</h2>
+      <p class="sec-sub" data-i18n="tst.sub">Más de 500 familias y negocios confían en Fly Electric LLC.</p>
     </div>
     <div class="car-wrap fu">
       <div class="car-track" id="ctrack">
-        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Excelente servicio, llegaron en menos de 30 minutos cuando se nos fue la luz. El técnico fue muy profesional y resolvió el problema rápidamente. Sin duda los volvería a llamar."</p><div class="tc-auth"><div class="tc-av">MG</div><div class="tc-inf"><strong>María González</strong><span>Houston, TX</span><span class="ctag res">Cliente Residencial</span></div></div></div>
-        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Instalaron toda la iluminación LED de mi restaurante en un fin de semana sin afectar las operaciones. El ahorro en electricidad fue inmediato. Muy profesionales y puntuales."</p><div class="tc-auth"><div class="tc-av">RM</div><div class="tc-inf"><strong>Roberto Martínez</strong><span>Restaurante La Mesa — Houston, TX</span><span class="ctag com">Cliente Comercial</span></div></div></div>
-        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Actualizaron todo el panel eléctrico de nuestra casa. El trabajo quedó perfecto y el precio fue muy justo. La garantía de 5 años me da mucha tranquilidad. ¡100% recomendados!"</p><div class="tc-auth"><div class="tc-av">CL</div><div class="tc-inf"><strong>Carlos López</strong><span>Katy, TX</span><span class="ctag res">Cliente Residencial</span></div></div></div>
-        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Contratamos a Fly Electric para toda la instalación de nuestra nueva oficina. Trabajo impecable, cumplieron el NEC y entregaron antes de fecha. Los tenemos en contrato mensual."</p><div class="tc-auth"><div class="tc-av">AP</div><div class="tc-inf"><strong>Ana Pérez</strong><span>APM Solutions — Sugar Land, TX</span><span class="ctag com">Cliente Comercial</span></div></div></div>
-        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Llamé a las 2 AM por una emergencia y en 45 minutos ya estaban aquí. Solucionaron el problema de forma segura y el precio fue razonable a esa hora. ¡Increíble servicio!"</p><div class="tc-auth"><div class="tc-av">JR</div><div class="tc-inf"><strong>José Rodríguez</strong><span>Pearland, TX</span><span class="ctag res">Cliente Residencial</span></div></div></div>
+        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text" data-i18n="t1.q">"Excelente servicio, llegaron en menos de 30 minutos cuando se nos fue la luz. El técnico fue muy profesional y resolvió el problema rápidamente. Sin duda los volvería a llamar."</p><div class="tc-auth"><div class="tc-av">MG</div><div class="tc-inf"><strong>María González</strong><span>Houston, TX</span><span class="ctag res" data-i18n="tag.res">Cliente Residencial</span></div></div></div>
+        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text" data-i18n="t2.q">"Instalaron toda la iluminación LED de mi restaurante en un fin de semana sin afectar las operaciones. El ahorro en electricidad fue inmediato. Muy profesionales y puntuales."</p><div class="tc-auth"><div class="tc-av">RM</div><div class="tc-inf"><strong>Roberto Martínez</strong><span>Restaurante La Mesa</span><span class="ctag com" data-i18n="tag.com">Cliente Comercial</span></div></div></div>
+        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text" data-i18n="t3.q">"Actualizaron todo el panel eléctrico de nuestra casa. El trabajo quedó perfecto y el precio fue muy justo. La garantía de 5 años me da mucha tranquilidad. ¡100% recomendados!"</p><div class="tc-auth"><div class="tc-av">CL</div><div class="tc-inf"><strong>Carlos López</strong><span>Katy, TX</span><span class="ctag res" data-i18n="tag.res">Cliente Residencial</span></div></div></div>
+        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text" data-i18n="t4.q">"Contratamos a Fly Electric para toda la instalación de nuestra nueva oficina. Trabajo impecable, cumplieron el NEC y entregaron antes de fecha. Los tenemos en contrato mensual."</p><div class="tc-auth"><div class="tc-av">AP</div><div class="tc-inf"><strong>Ana Pérez</strong><span>APM Solutions — Sugar Land</span><span class="ctag com" data-i18n="tag.com">Cliente Comercial</span></div></div></div>
+        <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text" data-i18n="t5.q">"Llamé a las 2 AM por una emergencia y en 45 minutos ya estaban aquí. Solucionaron el problema de forma segura y el precio fue razonable a esa hora. ¡Increíble servicio!"</p><div class="tc-auth"><div class="tc-av">JR</div><div class="tc-inf"><strong>José Rodríguez</strong><span>Pearland, TX</span><span class="ctag res" data-i18n="tag.res">Cliente Residencial</span></div></div></div>
       </div>
     </div>
     <div class="car-ctrl">
       <button class="cbtn" id="cprev" aria-label="Anterior"><i class="fas fa-chevron-left"></i></button>
-      <div class="cdots" id="cdots" role="tablist"></div>
+      <div class="cdots" id="cdots"></div>
       <button class="cbtn" id="cnext" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>
@@ -549,59 +536,90 @@ textarea.fc{resize:vertical;min-height:96px}
   <div class="container">
     <div class="con-grid">
       <div class="fu">
-        <span class="label"><i class="fas fa-bolt" aria-hidden="true"></i> Contacto</span>
+        <span class="label"><i class="fas fa-bolt"></i> <span data-i18n="con.label">Contacto</span></span>
         <div class="div-line"></div>
-        <h2 class="sec-title" id="ctitle">Solicita tu cotización gratis</h2>
-        <div class="rbadge" aria-live="polite">Respondemos en menos de 1 hora</div>
-        <div class="cd"><div class="cd-ico"><i class="fas fa-phone-alt"></i></div><div><strong>Teléfono / Emergencias</strong><span class="phbig">(555) 123-4567</span></div></div>
-        <div class="cd"><div class="cd-ico"><i class="fas fa-envelope"></i></div><div><strong>Email</strong><span>info@flyelectricllc.com</span></div></div>
-        <div class="cd"><div class="cd-ico"><i class="fas fa-map-marker-alt"></i></div><div><strong>Área de Servicio</strong><span>Houston, TX y áreas metropolitanas</span></div></div>
-        <div class="cd"><div class="cd-ico"><i class="fas fa-clock"></i></div><div><strong>Horario</strong><span>Lun–Vie 7am–7pm · Sáb 8am–5pm · Emergencias 24/7</span></div></div>
+        <h2 class="sec-title" id="ctitle" data-i18n="con.title">Solicita tu cotización gratis</h2>
+        <div class="rbadge"><span data-i18n="con.badge">Respondemos en menos de 1 hora</span></div>
+        <div class="cd"><div class="cd-ico"><i class="fas fa-phone-alt"></i></div><div><strong data-i18n="con.ph.lbl">Teléfono / Emergencias</strong><span class="phbig">(571) 379-6040</span></div></div>
+        <div class="cd"><div class="cd-ico"><i class="fas fa-envelope"></i></div><div><strong data-i18n="con.em.lbl">Email</strong><span>info@flyelectricllc.com</span></div></div>
+        <div class="cd"><div class="cd-ico"><i class="fas fa-map-marker-alt"></i></div><div><strong data-i18n="con.ar.lbl">Área de Servicio</strong><span data-i18n="con.ar.val">Houston, TX y áreas metropolitanas</span></div></div>
+        <div class="cd"><div class="cd-ico"><i class="fas fa-clock"></i></div><div><strong data-i18n="con.hr.lbl">Horario</strong><span data-i18n="con.hr.val">Lun–Vie 7am–7pm · Sáb 8am–5pm · Emergencias 24/7</span></div></div>
         <div class="soc-row">
           <a href="#" class="sbtn" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
           <a href="#" class="sbtn" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="sbtn" aria-label="Google Reviews"><i class="fab fa-google"></i></a>
-          <a href="#" class="sbtn" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          <a href="#" class="sbtn" aria-label="Google"><i class="fab fa-google"></i></a>
+          <a href="https://wa.me/15713796040" class="sbtn" aria-label="WhatsApp" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i></a>
         </div>
       </div>
       <div class="fu d1">
         <div class="qform">
-          <h3>Cuéntanos sobre tu proyecto</h3>
+          <h3 data-i18n="form.title">Cuéntanos sobre tu proyecto</h3>
           <div id="fcontent">
+            <!--
+              FORMSPREE SETUP:
+              1. Ir a https://formspree.io y crear cuenta con frecaor1995@gmail.com
+              2. Crear un nuevo formulario → copiar el Form ID (ej: xyzabcde)
+              3. Reemplazar "YOUR_FORM_ID" en el JS por tu ID real
+            -->
             <form id="qf" novalidate>
               <div class="frow">
-                <div class="fg"><label for="fname">Nombre <span class="req">*</span></label><input type="text" id="fname" class="fc" placeholder="Juan García" required autocomplete="name"><span class="ferr" id="fname-e">Por favor ingresa tu nombre.</span></div>
-                <div class="fg"><label for="fphone">Teléfono <span class="req">*</span></label><input type="tel" id="fphone" class="fc" placeholder="(555) 000-0000" required autocomplete="tel"><span class="ferr" id="fphone-e">Ingresa un teléfono válido.</span></div>
-              </div>
-              <div class="fg"><label for="femail">Email <span class="req">*</span></label><input type="email" id="femail" class="fc" placeholder="juan@ejemplo.com" required autocomplete="email"><span class="ferr" id="femail-e">Ingresa un email válido.</span></div>
-              <div class="fg">
-                <label>Tipo de servicio <span class="req">*</span></label>
-                <div class="rg" role="radiogroup">
-                  <label class="ro"><input type="radio" name="stype" value="res" id="tr" checked><span>🏠 Residencial</span></label>
-                  <label class="ro"><input type="radio" name="stype" value="com" id="tc2"><span>🏢 Comercial</span></label>
+                <div class="fg">
+                  <label for="fname"><span data-i18n="form.name">Nombre</span> <span class="req">*</span></label>
+                  <input type="text" id="fname" name="Nombre" class="fc" required autocomplete="name" data-i18n-ph="form.ph.name">
+                  <span class="ferr" id="fname-e" data-i18n="form.err.name">Ingresa tu nombre completo.</span>
+                </div>
+                <div class="fg">
+                  <label for="fphone"><span data-i18n="form.phone">Teléfono</span> <span class="req">*</span></label>
+                  <input type="tel" id="fphone" name="Teléfono" class="fc" required autocomplete="tel" data-i18n-ph="form.ph.phone">
+                  <span class="ferr" id="fphone-e" data-i18n="form.err.phone">Teléfono inválido.</span>
                 </div>
               </div>
-              <div class="fg"><label for="fserv">Servicio específico</label><select id="fserv" class="fc"><option value="">— Selecciona —</option></select></div>
-              <div class="fg"><label for="faddr">Dirección del servicio</label><input type="text" id="faddr" class="fc" placeholder="Calle, Ciudad, TX" autocomplete="street-address"></div>
-              <div class="fg"><label for="fdesc">Describe el trabajo o problema</label><textarea id="fdesc" class="fc" rows="4" placeholder="Cuéntanos qué necesitas..."></textarea></div>
+              <div class="fg">
+                <label for="femail"><span data-i18n="form.email">Email</span> <span class="req">*</span></label>
+                <input type="email" id="femail" name="email" class="fc" required autocomplete="email" data-i18n-ph="form.ph.email">
+                <span class="ferr" id="femail-e" data-i18n="form.err.email">Email inválido.</span>
+              </div>
+              <div class="fg">
+                <label><span data-i18n="form.type">Tipo de servicio</span> <span class="req">*</span></label>
+                <div class="rg">
+                  <label class="ro"><input type="radio" name="Tipo" value="Residencial" id="tr" checked> <span data-i18n="form.res">🏠 Residencial</span></label>
+                  <label class="ro"><input type="radio" name="Tipo" value="Comercial" id="tc2"> <span data-i18n="form.com">🏢 Comercial</span></label>
+                </div>
+              </div>
+              <div class="fg">
+                <label for="fserv" data-i18n="form.srv">Servicio específico</label>
+                <select id="fserv" name="Servicio" class="fc"></select>
+              </div>
+              <div class="fg">
+                <label for="faddr" data-i18n="form.addr">Dirección del servicio</label>
+                <input type="text" id="faddr" name="Dirección" class="fc" autocomplete="street-address" data-i18n-ph="form.ph.addr">
+              </div>
+              <div class="fg">
+                <label for="fdesc" data-i18n="form.desc">Describe el trabajo o problema</label>
+                <textarea id="fdesc" name="Descripción" class="fc" rows="4" data-i18n-ph="form.ph.desc"></textarea>
+              </div>
+              <input type="hidden" name="_subject" value="Nueva cotización – Fly Electric LLC">
               <button type="submit" class="btn btn-primary bsub" id="bsub">
                 <i class="fas fa-paper-plane" id="bico"></i>
-                <span id="btxt">Enviar Solicitud</span>
+                <span id="btxt" data-i18n="form.submit">Enviar Solicitud</span>
               </button>
+              <p class="form-note" id="form-err-note">
+                <span data-i18n="form.setup">Formulario no configurado. </span>
+                <a href="https://formspree.io" target="_blank">Configura Formspree</a>
+              </p>
             </form>
           </div>
           <div class="fok" id="fok" aria-live="polite">
             <i class="fas fa-check-circle"></i>
-            <h3>¡Solicitud enviada!</h3>
-            <p>Un especialista se comunicará contigo en menos de 1 hora para confirmar tu cotización gratuita.</p>
-            <br><p style="font-size:.82rem;color:var(--muted)">¿Emergencia? Llama al <strong style="color:var(--yellow)">(555) 123-4567</strong></p>
+            <h3 data-i18n="form.ok.t">¡Solicitud enviada!</h3>
+            <p data-i18n="form.ok.d">Un especialista se comunicará contigo en menos de 1 hora para confirmar tu cotización gratuita.</p>
+            <br><p style="font-size:.82rem;color:var(--muted)"><span data-i18n="form.ok.em">¿Emergencia? Llama al</span> <strong style="color:var(--yellow)">(571) 379-6040</strong></p>
           </div>
         </div>
       </div>
     </div>
   </div>
 </section>
-
 </main>
 
 <!-- FOOTER -->
@@ -610,74 +628,285 @@ textarea.fc{resize:vertical;min-height:96px}
     <div class="foot-grid">
       <div>
         <div class="flogo"><div class="logo-ico"><i class="fas fa-bolt"></i></div><div class="logo-tx"><span>FLY ELECTRIC</span><span>LLC</span></div></div>
-        <p class="fdesc">Servicios eléctricos residenciales y comerciales con calidad, seguridad y rapidez garantizada. Tu electricista de confianza en Houston, TX.</p>
+        <p class="fdesc" data-i18n="foot.desc">Servicios eléctricos residenciales y comerciales con calidad, seguridad y rapidez garantizada. Tu electricista de confianza en Houston, TX.</p>
         <span class="flic">Licencia # TX-EL-2025</span>
       </div>
       <div class="fcol">
-        <h4>Servicios</h4>
+        <h4 data-i18n="foot.srv">Servicios</h4>
         <ul>
-          <li><a href="#services">Instalaciones Residenciales</a></li>
-          <li><a href="#services">Instalaciones Comerciales</a></li>
-          <li><a href="#services">Paneles Eléctricos</a></li>
-          <li><a href="#services">Iluminación LED</a></li>
-          <li><a href="#services">Mantenimiento Preventivo</a></li>
-          <li><a href="#services">Emergencias 24/7</a></li>
+          <li><a href="#services" data-i18n="fs1">Instalaciones Residenciales</a></li>
+          <li><a href="#services" data-i18n="fs2">Instalaciones Comerciales</a></li>
+          <li><a href="#services" data-i18n="fs3">Paneles Eléctricos</a></li>
+          <li><a href="#services" data-i18n="fs4">Iluminación LED</a></li>
+          <li><a href="#services" data-i18n="fs5">Mantenimiento Preventivo</a></li>
+          <li><a href="#services" data-i18n="fs6">Emergencias 24/7</a></li>
         </ul>
       </div>
       <div class="fcol">
-        <h4>Empresa</h4>
+        <h4 data-i18n="foot.co">Empresa</h4>
         <ul>
-          <li><a href="#why">Quiénes Somos</a></li>
-          <li><a href="#gallery">Proyectos</a></li>
-          <li><a href="#testi">Testimonios</a></li>
-          <li><a href="#process">Cómo Trabajamos</a></li>
-          <li><a href="#contact">Contáctanos</a></li>
+          <li><a href="#why" data-i18n="fc1">Quiénes Somos</a></li>
+          <li><a href="#gallery" data-i18n="fc2">Proyectos</a></li>
+          <li><a href="#testi" data-i18n="fc3">Testimonios</a></li>
+          <li><a href="#process" data-i18n="fc4">Cómo Trabajamos</a></li>
+          <li><a href="#contact" data-i18n="fc5">Contáctanos</a></li>
         </ul>
       </div>
       <div class="fcol">
-        <h4>Contacto</h4>
-        <div class="fci"><i class="fas fa-phone-alt"></i><span>(555) 123-4567</span></div>
+        <h4 data-i18n="foot.con">Contacto</h4>
+        <div class="fci"><i class="fas fa-phone-alt"></i><span>(571) 379-6040</span></div>
         <div class="fci"><i class="fas fa-envelope"></i><span>info@flyelectricllc.com</span></div>
-        <div class="fci"><i class="fas fa-map-marker-alt"></i><span>Houston, TX y áreas metropolitanas</span></div>
-        <div class="fci"><i class="fas fa-clock"></i><span>Lun–Vie 7am–7pm · Sáb 8am–5pm<br><strong style="color:var(--yellow)">Emergencias 24/7</strong></span></div>
+        <div class="fci"><i class="fas fa-map-marker-alt"></i><span data-i18n="con.ar.val">Houston, TX y áreas metropolitanas</span></div>
+        <div class="fci"><i class="fas fa-clock"></i><span data-i18n="foot.hrs">Lun–Vie 7am–7pm · Sáb 8am–5pm<br></span><strong style="color:var(--yellow)" data-i18n="foot.emer">Emergencias 24/7</strong></div>
       </div>
     </div>
     <div class="foot-bot">
-      <span>© 2026 Fly Electric LLC. Todos los derechos reservados.</span>
+      <span data-i18n="foot.copy">© 2026 Fly Electric LLC. Todos los derechos reservados.</span>
       <div class="fsoc">
         <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
         <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="#" aria-label="Google Reviews"><i class="fab fa-google"></i></a>
-        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href="#" aria-label="Google"><i class="fab fa-google"></i></a>
+        <a href="https://wa.me/15713796040" aria-label="WhatsApp" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i></a>
       </div>
     </div>
   </div>
 </footer>
 
 <!-- WhatsApp Float -->
-<a href="https://wa.me/15551234567" class="wa" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+<a href="https://wa.me/15713796040" class="wa" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
   <i class="fab fa-whatsapp"></i>
-  <span class="wa-tip">Escríbenos por WhatsApp</span>
+  <span class="wa-tip" data-i18n="wa.tip">Escríbenos por WhatsApp</span>
 </a>
 
 <!-- Lightbox -->
-<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+<div class="lb" id="lb" role="dialog" aria-modal="true">
   <button class="lb-cl" id="lb-cl" aria-label="Cerrar"><i class="fas fa-times"></i></button>
   <img src="" alt="" id="lb-img">
 </div>
 
 <script>
-// ── GALLERY DATA ──
+// ─────────────────────────────────────────────
+// FORMSPREE — reemplaza YOUR_FORM_ID con tu ID
+// 1. Regístrate en https://formspree.io con frecaor1995@gmail.com
+// 2. Crea un nuevo formulario y copia el ID (ej: xabcde12)
+// ─────────────────────────────────────────────
+const FORMSPREE_ID = 'xojryqzd';
+
+// ─────────────────────────────────────────────
+// TRANSLATIONS
+// ─────────────────────────────────────────────
+const TR = {
+  es: {
+    'banner.text':'Emergencias eléctricas 24/7 — Llámanos ahora:',
+    'banner.sub':'Respuesta en menos de 1 hora',
+    'nav.home':'Inicio','nav.services':'Servicios','nav.projects':'Proyectos',
+    'nav.testi':'Testimonios','nav.contact':'Contacto','nav.cta':'Cotización Gratis',
+    'hero.chip':'Servicios Eléctricos Profesionales',
+    'hero.title':'Soluciones<br>eléctricas para<br>tu <span class="hl">hogar y negocio</span>',
+    'hero.sub':'Servicios residenciales y comerciales con calidad, seguridad y rapidez garantizada en Houston, TX.',
+    'hero.btn1':'Cotización Gratis','hero.btn2':'Ver Servicios',
+    'hero.b1':'Licenciados','hero.b2':'Asegurados','hero.b3':'Garantía Total',
+    'hero.s1':'Proyectos completados','hero.s2':'Emergencias','hero.s3':'Calificación promedio',
+    'hero.f1':'100% Asegurado','hero.f2':'Cobertura completa','hero.top':'Respuesta emergencias',
+    'srv.label':'Nuestros Servicios',
+    'srv.title':'Soluciones para cada necesidad',
+    'srv.sub':'Servicios eléctricos completos para hogares y negocios con calidad garantizada.',
+    'srv.tab.res':'Residencial','srv.tab.com':'Comercial',
+    'r1.t':'Tomacorrientes y Switches','r1.d':'Instalación y reemplazo de tomacorrientes, interruptores y placas con materiales de primera calidad.','r1.p':'Desde $85',
+    'r2.t':'Ventiladores y Luminarias','r2.d':'Instalación profesional de ventiladores de techo, lámparas y sistemas de iluminación decorativa.','r2.p':'Desde $120',
+    'r3.t':'Reparación de Paneles','r3.d':'Diagnóstico, reparación y actualización de paneles eléctricos residenciales para mayor seguridad.','r3.p':'Desde $250',
+    'r4.t':'Iluminación LED','r4.d':'Conversión a tecnología LED para ahorro de energía hasta 70%. Instalación rápida y limpia.','r4.p':'Desde $150',
+    'r5.t':'Diagnóstico y Reparación','r5.d':'Detección precisa de fallas eléctricas. Reparaciones rápidas que garantizan la seguridad del hogar.','r5.p':'Desde $95',
+    'r6.t':'Inspecciones Residenciales','r6.d':'Inspección eléctrica completa con informe detallado. Ideal para compra-venta de propiedades.','r6.p':'Desde $180',
+    'c1.t':'Instalaciones Comerciales','c1.d':'Proyectos eléctricos desde cero para locales, oficinas y edificios. Planificación y ejecución profesional.','c1.p':'Cotización personalizada',
+    'c2.t':'LED Comercial y Oficinas','c2.d':'Sistemas de iluminación LED para retail, restaurantes y oficinas. Ahorro energético comprobado.','c2.p':'Desde $500',
+    'c3.t':'Mantenimiento Preventivo','c3.d':'Programas de mantenimiento mensual para prevenir fallas costosas. Incluye reporte técnico detallado.','c3.p':'Desde $300/mes',
+    'c4.t':'Sistemas Trifásicos','c4.d':'Instalación y mantenimiento de sistemas trifásicos para industria, manufactura y equipos pesados.','c4.p':'Cotización personalizada',
+    'c5.t':'Tableros Comerciales','c5.d':'Instalación de tableros de distribución, centros de carga y sistemas de protección industrial.','c5.p':'Desde $800',
+    'c6.t':'Cumplimiento Código NEC','c6.d':'Auditorías y correcciones para cumplimiento total con el National Electrical Code. Certificación incluida.','c6.p':'Desde $250',
+    'srv.note':'Cotización gratuita y sin compromiso — Contáctanos hoy',
+    'why.label':'¿Por Qué Elegirnos?',
+    'why.title':'Tu tranquilidad,<br>nuestra prioridad',
+    'why.sub':'Más de 500 clientes satisfechos avalan nuestro trabajo.',
+    'w1.t':'Licenciados y Asegurados','w1.d':'Todos nuestros electricistas cuentan con licencia estatal vigente y seguro de responsabilidad civil.',
+    'w2.t':'Respuesta en Emergencias','w2.d':'En menos de 1 hora estamos en tu puerta ante cualquier emergencia eléctrica, los 365 días del año.',
+    'w3.t':'Garantía en Instalaciones','w3.d':'Respaldamos todos nuestros trabajos de instalación con 5 años de garantía. Tu inversión protegida.','w3.years':'años',
+    'w4.t':'Costos Ocultos','w4.d':'Precios transparentes desde el primer momento. Lo que cotizamos es lo que cobras, sin sorpresas.',
+    'gal.label':'Nuestros Proyectos','gal.title':'Trabajo que habla por sí solo',
+    'gal.sub':'Proyectos completados con los más altos estándares en Houston y alrededores.',
+    'gal.all':'Todos','gal.res':'Residencial','gal.com':'Comercial','gal.light':'Iluminación','gal.panel':'Paneles',
+    'proc.label':'Cómo Trabajamos','proc.title':'Un proceso simple y transparente',
+    'proc.sub':'Del primer contacto a la garantía final, sin complicaciones ni sorpresas.',
+    'p1.t':'Contacto','p1.d':'Llámanos, escríbenos por WhatsApp o completa el formulario. Respondemos en minutos.',
+    'p2.t':'Evaluación Gratuita','p2.d':'Un técnico visita tu propiedad sin costo para evaluar y cotizar con precisión.',
+    'p3.t':'Trabajo Profesional','p3.d':'Ejecutamos el trabajo con los mejores materiales. Limpio, seguro y a tiempo.',
+    'p4.t':'Garantía Total','p4.d':'Entregamos el trabajo terminado con garantía escrita. Tu satisfacción es nuestra meta.',
+    'tst.label':'Testimonios','tst.title':'Lo que dicen nuestros clientes','tst.sub':'Más de 500 familias y negocios confían en Fly Electric LLC.',
+    'tag.res':'Cliente Residencial','tag.com':'Cliente Comercial',
+    't1.q':'"Excelente servicio, llegaron en menos de 30 minutos cuando se nos fue la luz. El técnico fue muy profesional y resolvió el problema rápidamente. Sin duda los volvería a llamar."',
+    't2.q':'"Instalaron toda la iluminación LED de mi restaurante en un fin de semana sin afectar las operaciones. El ahorro en electricidad fue inmediato. Muy profesionales y puntuales."',
+    't3.q':'"Actualizaron todo el panel eléctrico de nuestra casa. El trabajo quedó perfecto y el precio fue muy justo. La garantía de 5 años me da mucha tranquilidad. ¡100% recomendados!"',
+    't4.q':'"Contratamos a Fly Electric para toda la instalación de nuestra nueva oficina. Trabajo impecable, cumplieron el NEC y entregaron antes de fecha. Los tenemos en contrato mensual."',
+    't5.q':'"Llamé a las 2 AM por una emergencia y en 45 minutos ya estaban aquí. Solucionaron el problema de forma segura y el precio fue razonable a esa hora. ¡Increíble servicio!"',
+    'con.label':'Contacto','con.title':'Solicita tu cotización gratis','con.badge':'Respondemos en menos de 1 hora',
+    'con.ph.lbl':'Teléfono / Emergencias','con.em.lbl':'Email','con.ar.lbl':'Área de Servicio',
+    'con.ar.val':'Houston, TX y áreas metropolitanas','con.hr.lbl':'Horario',
+    'con.hr.val':'Lun–Vie 7am–7pm · Sáb 8am–5pm · Emergencias 24/7',
+    'form.title':'Cuéntanos sobre tu proyecto','form.name':'Nombre','form.phone':'Teléfono','form.email':'Email',
+    'form.type':'Tipo de servicio','form.res':'🏠 Residencial','form.com':'🏢 Comercial',
+    'form.srv':'Servicio específico','form.addr':'Dirección del servicio','form.desc':'Describe el trabajo o problema',
+    'form.submit':'Enviar Solicitud','form.sending':'Enviando...',
+    'form.ph.name':'Juan García','form.ph.phone':'(555) 000-0000','form.ph.email':'juan@ejemplo.com',
+    'form.ph.addr':'Calle, Ciudad, TX','form.ph.desc':'Cuéntanos qué necesitas...',
+    'form.err.name':'Ingresa tu nombre completo.','form.err.phone':'Teléfono inválido.','form.err.email':'Email inválido.',
+    'form.ok.t':'¡Solicitud enviada!',
+    'form.ok.d':'Un especialista se comunicará contigo en menos de 1 hora para confirmar tu cotización gratuita.',
+    'form.ok.em':'¿Emergencia? Llama al',
+    'form.setup':'Formulario no configurado. Revisa el ID de Formspree.',
+    'foot.desc':'Servicios eléctricos residenciales y comerciales con calidad, seguridad y rapidez garantizada. Tu electricista de confianza en Houston, TX.',
+    'foot.srv':'Servicios','foot.co':'Empresa','foot.con':'Contacto',
+    'fs1':'Instalaciones Residenciales','fs2':'Instalaciones Comerciales','fs3':'Paneles Eléctricos','fs4':'Iluminación LED','fs5':'Mantenimiento Preventivo','fs6':'Emergencias 24/7',
+    'fc1':'Quiénes Somos','fc2':'Proyectos','fc3':'Testimonios','fc4':'Cómo Trabajamos','fc5':'Contáctanos',
+    'foot.hrs':'Lun–Vie 7am–7pm · Sáb 8am–5pm','foot.emer':'Emergencias 24/7',
+    'foot.copy':'© 2026 Fly Electric LLC. Todos los derechos reservados.',
+    'wa.tip':'Escríbenos por WhatsApp',
+    'opts.res':['Instalación de tomacorrientes y switches','Instalación de ventiladores y luminarias','Reparación de paneles eléctricos','Instalación de iluminación LED','Diagnóstico y reparación de fallas','Inspecciones residenciales completas','Emergencia eléctrica','Otro servicio residencial'],
+    'opts.com':['Instalaciones eléctricas comerciales','Iluminación LED comercial y de oficinas','Mantenimiento preventivo programado','Instalación de sistemas trifásicos','Tableros y paneles comerciales','Cumplimiento código NEC','Emergencia eléctrica comercial','Otro servicio comercial'],
+    'opts.placeholder':'— Selecciona —',
+    'gal.tag.res':'Residencial','gal.tag.com':'Comercial',
+  },
+  en: {
+    'banner.text':'Electrical emergencies 24/7 — Call us now:',
+    'banner.sub':'Response in less than 1 hour',
+    'nav.home':'Home','nav.services':'Services','nav.projects':'Projects',
+    'nav.testi':'Testimonials','nav.contact':'Contact','nav.cta':'Free Quote',
+    'hero.chip':'Professional Electrical Services',
+    'hero.title':'Electrical solutions<br>for your<br><span class="hl">home and business</span>',
+    'hero.sub':'Residential and commercial electrical services with guaranteed quality, safety, and speed in Houston, TX.',
+    'hero.btn1':'Get Free Quote','hero.btn2':'Our Services',
+    'hero.b1':'Licensed','hero.b2':'Insured','hero.b3':'Full Warranty',
+    'hero.s1':'Projects completed','hero.s2':'Emergency service','hero.s3':'Average rating',
+    'hero.f1':'100% Insured','hero.f2':'Full coverage','hero.top':'Emergency response',
+    'srv.label':'Our Services',
+    'srv.title':'Solutions for every need',
+    'srv.sub':'Complete electrical services for homes and businesses with guaranteed quality on every job.',
+    'srv.tab.res':'Residential','srv.tab.com':'Commercial',
+    'r1.t':'Outlets & Switches','r1.d':'Installation and replacement of outlets, switches, and cover plates with top-quality materials.','r1.p':'From $85',
+    'r2.t':'Fans & Light Fixtures','r2.d':'Professional installation of ceiling fans, lamps, and decorative lighting systems.','r2.p':'From $120',
+    'r3.t':'Panel Repair','r3.d':'Diagnosis, repair and upgrade of residential electrical panels for greater safety.','r3.p':'From $250',
+    'r4.t':'LED Lighting','r4.d':'Convert to LED technology for up to 70% energy savings. Fast and clean installation.','r4.p':'From $150',
+    'r5.t':'Diagnosis & Repair','r5.d':'Precise fault detection. Fast repairs that guarantee the safety of your home.','r5.p':'From $95',
+    'r6.t':'Home Inspections','r6.d':'Complete electrical inspection with detailed report. Ideal for real estate transactions.','r6.p':'From $180',
+    'c1.t':'Commercial Installations','c1.d':'Full electrical projects for businesses, offices and buildings. Professional planning and execution.','c1.p':'Custom quote',
+    'c2.t':'Commercial & Office LED','c2.d':'LED lighting systems for retail, restaurants and offices. Proven energy savings.','c2.p':'From $500',
+    'c3.t':'Preventive Maintenance','c3.d':'Monthly maintenance programs to prevent costly failures. Includes detailed technical report.','c3.p':'From $300/mo',
+    'c4.t':'Three-Phase Systems','c4.d':'Installation and maintenance of three-phase systems for industry, manufacturing and heavy equipment.','c4.p':'Custom quote',
+    'c5.t':'Commercial Panels','c5.d':'Installation of distribution boards, load centers and industrial protection systems.','c5.p':'From $800',
+    'c6.t':'NEC Code Compliance','c6.d':'Audits and corrections for full National Electrical Code compliance. Certification included.','c6.p':'From $250',
+    'srv.note':'Free and no-obligation quote — Contact us today',
+    'why.label':'Why Choose Us?',
+    'why.title':'Your peace of mind,<br>our priority',
+    'why.sub':'Over 500 satisfied customers back our work.',
+    'w1.t':'Licensed & Insured','w1.d':'All our electricians hold a valid state license and carry full liability insurance.',
+    'w2.t':'Emergency Response','w2.d':'We\'ll be at your door in less than 1 hour for any electrical emergency, 365 days a year.',
+    'w3.t':'Installation Warranty','w3.d':'We back all our installation work with a 5-year warranty. Your investment is protected.','w3.years':'year',
+    'w4.t':'Hidden Costs','w4.d':'Transparent pricing from the start. What we quote is what you pay — no surprises.',
+    'gal.label':'Our Projects','gal.title':'Work that speaks for itself',
+    'gal.sub':'Projects completed to the highest standards in Houston and surrounding areas.',
+    'gal.all':'All','gal.res':'Residential','gal.com':'Commercial','gal.light':'Lighting','gal.panel':'Panels',
+    'proc.label':'How We Work','proc.title':'A simple and transparent process',
+    'proc.sub':'From first contact to final warranty — no complications, no surprises.',
+    'p1.t':'Contact','p1.d':'Call us, message us on WhatsApp, or fill out the form. We respond in minutes.',
+    'p2.t':'Free Evaluation','p2.d':'A technician visits your property at no cost to assess and quote precisely.',
+    'p3.t':'Professional Work','p3.d':'We complete the job with the best materials. Clean, safe, and on time.',
+    'p4.t':'Full Warranty','p4.d':'We deliver the finished work with a written warranty. Your satisfaction is our goal.',
+    'tst.label':'Testimonials','tst.title':'What our clients say','tst.sub':'Over 500 families and businesses trust Fly Electric LLC.',
+    'tag.res':'Residential Client','tag.com':'Commercial Client',
+    't1.q':'"Excellent service, they arrived in less than 30 minutes when our power went out. The technician was very professional and quickly fixed the problem. I would definitely call them again."',
+    't2.q':'"They installed all the LED lighting in my restaurant over a weekend without affecting operations. The electricity savings were immediate. Very professional and punctual."',
+    't3.q':'"They upgraded the entire electrical panel in our home. The work was perfect and the price was very fair. The 5-year warranty gives me great peace of mind. 100% recommended!"',
+    't4.q':'"We hired Fly Electric for the entire electrical installation of our new office. Impeccable work, NEC compliant and delivered ahead of schedule. We have them on a monthly contract."',
+    't5.q':'"I called at 2 AM for an emergency and in 45 minutes they were here. They solved the problem safely and the price was reasonable for that hour. Incredible service!"',
+    'con.label':'Contact','con.title':'Get your free quote','con.badge':'We respond in less than 1 hour',
+    'con.ph.lbl':'Phone / Emergencies','con.em.lbl':'Email','con.ar.lbl':'Service Area',
+    'con.ar.val':'Houston, TX and metropolitan areas','con.hr.lbl':'Hours',
+    'con.hr.val':'Mon–Fri 7am–7pm · Sat 8am–5pm · Emergencies 24/7',
+    'form.title':'Tell us about your project','form.name':'Full Name','form.phone':'Phone','form.email':'Email',
+    'form.type':'Service type','form.res':'🏠 Residential','form.com':'🏢 Commercial',
+    'form.srv':'Specific service','form.addr':'Service address','form.desc':'Describe the work or issue',
+    'form.submit':'Send Request','form.sending':'Sending...',
+    'form.ph.name':'John Smith','form.ph.phone':'(555) 000-0000','form.ph.email':'john@example.com',
+    'form.ph.addr':'Street, City, TX','form.ph.desc':'Tell us what you need...',
+    'form.err.name':'Please enter your full name.','form.err.phone':'Invalid phone number.','form.err.email':'Invalid email address.',
+    'form.ok.t':'Request Sent!',
+    'form.ok.d':'A specialist will contact you within 1 hour to confirm your free quote.',
+    'form.ok.em':'Emergency? Call us at',
+    'form.setup':'Form not configured. Check the Formspree ID.',
+    'foot.desc':'Residential and commercial electrical services with guaranteed quality, safety and speed. Your trusted electrician in Houston, TX.',
+    'foot.srv':'Services','foot.co':'Company','foot.con':'Contact',
+    'fs1':'Residential Installations','fs2':'Commercial Installations','fs3':'Electrical Panels','fs4':'LED Lighting','fs5':'Preventive Maintenance','fs6':'Emergencies 24/7',
+    'fc1':'Who We Are','fc2':'Projects','fc3':'Testimonials','fc4':'How We Work','fc5':'Contact Us',
+    'foot.hrs':'Mon–Fri 7am–7pm · Sat 8am–5pm','foot.emer':'Emergencies 24/7',
+    'foot.copy':'© 2026 Fly Electric LLC. All rights reserved.',
+    'wa.tip':'Message us on WhatsApp',
+    'opts.res':['Outlet & switch installation','Fan & fixture installation','Panel repair','LED lighting installation','Fault diagnosis & repair','Home electrical inspection','Electrical emergency','Other residential service'],
+    'opts.com':['Commercial electrical installation','Commercial & office LED lighting','Scheduled preventive maintenance','Three-phase system installation','Commercial panels & boards','NEC code compliance audit','Commercial electrical emergency','Other commercial service'],
+    'opts.placeholder':'— Select —',
+    'gal.tag.res':'Residential','gal.tag.com':'Commercial',
+  }
+};
+
+// ─── LANGUAGE STATE ───
+let lang = localStorage.getItem('fe_lang') || 'es';
+
+function t(k){ return TR[lang][k] || k; }
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.getElementById('lang-cur').textContent = lang === 'es' ? 'EN' : 'ES';
+  // Text
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.dataset.i18n;
+    if(TR[lang][k] !== undefined) el.textContent = TR[lang][k];
+  });
+  // HTML
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+    const k = el.dataset.i18nHtml;
+    if(TR[lang][k] !== undefined) el.innerHTML = TR[lang][k];
+  });
+  // Placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k = el.dataset.i18nPh;
+    if(TR[lang][k] !== undefined) el.placeholder = TR[lang][k];
+  });
+  // Service options
+  fillOpts(document.querySelector('input[name="Tipo"]:checked')?.value === 'Comercial' ? 'com' : 'res');
+  // Gallery rebuild for tag language
+  buildGallery(document.querySelector('.fb.on')?.dataset.f || 'all');
+  // Validation errors (update visible ones)
+  ['fname','fphone','femail'].forEach(id=>{
+    const e = document.getElementById(id+'-e');
+    if(e && e.classList.contains('show')) e.textContent = TR[lang]['form.err.'+id.replace('f','')];
+  });
+}
+
+document.getElementById('lang-btn').addEventListener('click',()=>{
+  lang = lang === 'es' ? 'en' : 'es';
+  localStorage.setItem('fe_lang', lang);
+  applyLang();
+});
+
+// ─── GALLERY ───
 const gdata = [
-  {t:"Panel Residencial Moderno",  type:"res", cats:["res","panel"], loc:"Houston, TX",    img:"https://images.unsplash.com/photo-1621905119-96e1e5df3d68?w=500&h=375&fit=crop&auto=format&q=75"},
-  {t:"Iluminación LED Comercial",  type:"com", cats:["com","light"], loc:"Sugar Land, TX", img:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=375&fit=crop&auto=format&q=75"},
-  {t:"Cableado Residencial Nuevo", type:"res", cats:["res"],         loc:"Katy, TX",       img:"https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=500&h=375&fit=crop&auto=format&q=75"},
-  {t:"Tablero Comercial",          type:"com", cats:["com","panel"], loc:"Houston, TX",    img:"https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500&h=375&fit=crop&auto=format&q=75"},
-  {t:"LED Exterior Residencial",   type:"res", cats:["res","light"], loc:"Pearland, TX",   img:"https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=500&h=375&fit=crop&auto=format&q=75"},
-  {t:"Instalación Oficina",        type:"com", cats:["com"],         loc:"The Woodlands",  img:"https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&h=375&fit=crop&auto=format&q=75"},
-  {t:"Remodelación Cocina",        type:"res", cats:["res"],         loc:"Friendswood, TX",img:"https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=375&fit=crop&auto=format&q=75"},
-  {t:"Iluminación Restaurante",    type:"com", cats:["com","light"], loc:"Houston, TX",    img:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&h=375&fit=crop&auto=format&q=75"},
-  {t:"Actualización Panel Casa",   type:"res", cats:["res","panel"], loc:"Missouri City",  img:"https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=500&h=375&fit=crop&auto=format&q=75"},
+  {t:{es:'Panel Residencial Moderno',en:'Modern Residential Panel'},type:'res',cats:['res','panel'],loc:'Houston, TX',img:'https://images.unsplash.com/photo-1621905119-96e1e5df3d68?w=500&h=375&fit=crop&auto=format&q=75'},
+  {t:{es:'Iluminación LED Comercial',en:'Commercial LED Lighting'},type:'com',cats:['com','light'],loc:'Sugar Land, TX',img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=375&fit=crop&auto=format&q=75'},
+  {t:{es:'Cableado Residencial Nuevo',en:'New Residential Wiring'},type:'res',cats:['res'],loc:'Katy, TX',img:'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=500&h=375&fit=crop&auto=format&q=75'},
+  {t:{es:'Tablero Comercial',en:'Commercial Panel Board'},type:'com',cats:['com','panel'],loc:'Houston, TX',img:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500&h=375&fit=crop&auto=format&q=75'},
+  {t:{es:'LED Exterior Residencial',en:'Residential Outdoor LED'},type:'res',cats:['res','light'],loc:'Pearland, TX',img:'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=500&h=375&fit=crop&auto=format&q=75'},
+  {t:{es:'Instalación Oficina',en:'Office Installation'},type:'com',cats:['com'],loc:'The Woodlands',img:'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&h=375&fit=crop&auto=format&q=75'},
+  {t:{es:'Remodelación Cocina',en:'Kitchen Remodel'},type:'res',cats:['res'],loc:'Friendswood, TX',img:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=375&fit=crop&auto=format&q=75'},
+  {t:{es:'Iluminación Restaurante',en:'Restaurant Lighting'},type:'com',cats:['com','light'],loc:'Houston, TX',img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&h=375&fit=crop&auto=format&q=75'},
+  {t:{es:'Actualización Panel Casa',en:'Home Panel Upgrade'},type:'res',cats:['res','panel'],loc:'Missouri City',img:'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=500&h=375&fit=crop&auto=format&q=75'},
 ];
 
 function buildGallery(f){
@@ -686,133 +915,159 @@ function buildGallery(f){
   const items = f==='all' ? gdata : gdata.filter(i=>i.cats.includes(f));
   items.forEach((item,idx)=>{
     const d = document.createElement('div');
-    d.className = 'gi fu';
-    d.style.transitionDelay = (idx%3*.1)+'s';
-    d.tabIndex = 0;
-    d.setAttribute('role','button');
-    d.setAttribute('aria-label','Ver '+item.t);
-    d.innerHTML = `<img src="${item.img}" alt="${item.t} – ${item.loc}" loading="lazy" onerror="this.style.cssText='height:100%;width:100%;background:linear-gradient(135deg,#0a1525,#0d2040)';this.removeAttribute('src')">
-      <div class="gov" aria-hidden="true"><div class="gov-tx"><h4>${item.t}</h4><span><i class="fas fa-map-marker-alt"></i> ${item.loc}</span></div></div>
-      <span class="gtag">${item.type==='res'?'Residencial':'Comercial'}</span>`;
-    d.onclick = ()=>openLB(item.img, item.t);
-    d.onkeydown = e=>{ if(e.key==='Enter'||e.key===' ') openLB(item.img, item.t); };
+    d.className='gi fu'; d.style.transitionDelay=(idx%3*.1)+'s';
+    d.tabIndex=0; d.setAttribute('role','button'); d.setAttribute('aria-label',item.t[lang]);
+    const tagLabel = item.type==='res' ? t('gal.tag.res') : t('gal.tag.com');
+    d.innerHTML=`<img src="${item.img}" alt="${item.t[lang]}" loading="lazy" onerror="this.style.cssText='height:100%;width:100%;background:linear-gradient(135deg,#0a1525,#0d2040)';this.removeAttribute('src')">
+      <div class="gov" aria-hidden="true"><div class="gov-tx"><h4>${item.t[lang]}</h4><span><i class="fas fa-map-marker-alt"></i> ${item.loc}</span></div></div>
+      <span class="gtag">${tagLabel}</span>`;
+    d.onclick=()=>openLB(item.img,item.t[lang]);
+    d.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')openLB(item.img,item.t[lang]);};
     grid.appendChild(d);
   });
-  setTimeout(observe, 40);
+  setTimeout(observe,40);
 }
 
 document.querySelectorAll('.fb').forEach(b=>{
   b.addEventListener('click',function(){
-    document.querySelectorAll('.fb').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false')});
+    document.querySelectorAll('.fb').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});
     this.classList.add('on'); this.setAttribute('aria-pressed','true');
     buildGallery(this.dataset.f);
   });
 });
 
-// Lightbox
-function openLB(src,alt){ document.getElementById('lb-img').src=src; document.getElementById('lb-img').alt=alt; document.getElementById('lb').classList.add('open'); document.body.style.overflow='hidden'; }
-document.getElementById('lb-cl').onclick = closeLB;
-document.getElementById('lb').addEventListener('click',e=>{ if(e.target===document.getElementById('lb')) closeLB(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLB(); });
-function closeLB(){ document.getElementById('lb').classList.remove('open'); document.body.style.overflow=''; }
+// ─── LIGHTBOX ───
+function openLB(src,alt){document.getElementById('lb-img').src=src;document.getElementById('lb-img').alt=alt;document.getElementById('lb').classList.add('open');document.body.style.overflow='hidden';}
+document.getElementById('lb-cl').onclick=closeLB;
+document.getElementById('lb').addEventListener('click',e=>{if(e.target===document.getElementById('lb'))closeLB();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLB();});
+function closeLB(){document.getElementById('lb').classList.remove('open');document.body.style.overflow='';}
 
-// Tabs
+// ─── TABS ───
 document.querySelectorAll('.tab').forEach(b=>{
   b.addEventListener('click',function(){
-    document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false')});
+    document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false');});
     document.querySelectorAll('.tp').forEach(x=>x.classList.remove('on'));
     this.classList.add('on'); this.setAttribute('aria-selected','true');
     document.getElementById('tp-'+this.dataset.tab).classList.add('on');
   });
 });
 
-// Carousel
-const track = document.getElementById('ctrack');
-const cards = track.querySelectorAll('.tc');
-const dotsEl = document.getElementById('cdots');
-let cur = 0, auto;
-
+// ─── CAROUSEL ───
+const track=document.getElementById('ctrack');
+const cards=track.querySelectorAll('.tc');
+const dotsEl=document.getElementById('cdots');
+let cur=0,auto;
 cards.forEach((_,i)=>{
-  const d = document.createElement('button');
-  d.className = 'cdot'+(i===0?' on':'');
+  const d=document.createElement('button');
+  d.className='cdot'+(i===0?' on':'');
   d.setAttribute('aria-label','Testimonio '+(i+1));
-  d.onclick = ()=>goto(i);
+  d.onclick=()=>goto(i);
   dotsEl.appendChild(d);
 });
-
-function vis(){ return window.innerWidth<768?1:window.innerWidth<900?2:3; }
-
+function vis(){return window.innerWidth<768?1:window.innerWidth<900?2:3;}
 function goto(n){
-  const v = vis(), max = cards.length-v;
-  cur = Math.max(0,Math.min(n,max));
-  const gap = 20;
-  const cw = (track.parentElement.offsetWidth - gap*(v-1))/v;
-  track.style.transform = `translateX(-${cur*(cw+gap)}px)`;
+  const v=vis(),max=cards.length-v;
+  cur=Math.max(0,Math.min(n,max));
+  const gap=20,cw=(track.parentElement.offsetWidth-gap*(v-1))/v;
+  track.style.transform=`translateX(-${cur*(cw+gap)}px)`;
   document.querySelectorAll('.cdot').forEach((d,i)=>d.classList.toggle('on',i===cur));
 }
-
-document.getElementById('cprev').onclick = ()=>{ clearInterval(auto); goto(cur-1); startAuto(); };
-document.getElementById('cnext').onclick = ()=>{ clearInterval(auto); goto(cur+1>cards.length-vis()?0:cur+1); startAuto(); };
-function startAuto(){ auto = setInterval(()=>goto(cur+1>cards.length-vis()?0:cur+1),5000); }
+document.getElementById('cprev').onclick=()=>{clearInterval(auto);goto(cur-1);startAuto();};
+document.getElementById('cnext').onclick=()=>{clearInterval(auto);goto(cur+1>cards.length-vis()?0:cur+1);startAuto();};
+function startAuto(){auto=setInterval(()=>goto(cur+1>cards.length-vis()?0:cur+1),5000);}
 startAuto();
 window.addEventListener('resize',()=>goto(cur),{passive:true});
 
-// Form services
-const opts = {
-  res:["Instalación de tomacorrientes y switches","Instalación de ventiladores y luminarias","Reparación de paneles eléctricos","Instalación de iluminación LED","Diagnóstico y reparación de fallas","Inspecciones residenciales completas","Emergencia eléctrica","Otro servicio residencial"],
-  com:["Instalaciones eléctricas comerciales","Iluminación LED comercial y de oficinas","Mantenimiento preventivo programado","Instalación de sistemas trifásicos","Tableros y paneles comerciales","Cumplimiento código NEC","Emergencia eléctrica comercial","Otro servicio comercial"]
-};
-function fillOpts(t){ const s=document.getElementById('fserv'); s.innerHTML='<option value="">— Selecciona —</option>'; opts[t].forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;s.appendChild(op)}); }
-document.querySelectorAll('input[name="stype"]').forEach(r=>r.addEventListener('change',function(){ fillOpts(this.value); }));
-fillOpts('res');
+// ─── FORM SERVICE OPTIONS ───
+function fillOpts(type){
+  const s=document.getElementById('fserv');
+  const key = type==='com' ? 'opts.com' : 'opts.res';
+  const items = TR[lang][key] || [];
+  s.innerHTML=`<option value="">${t('opts.placeholder')}</option>`;
+  items.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;s.appendChild(op);});
+}
+document.querySelectorAll('input[name="Tipo"]').forEach(r=>r.addEventListener('change',function(){fillOpts(this.value==='Comercial'?'com':'res');}));
 
-// Validation
-function ve(id,msg){ const el=document.getElementById(id); el.classList.add('err'); el.classList.remove('ok'); const e=document.getElementById(id+'-e'); if(e){e.textContent=msg;e.classList.add('show');} }
-function vc(id){ const el=document.getElementById(id); el.classList.remove('err'); el.classList.add('ok'); const e=document.getElementById(id+'-e'); if(e) e.classList.remove('show'); }
+// ─── FORM VALIDATION ───
+function showErr(id,msg){const el=document.getElementById(id);el.classList.add('err');el.classList.remove('ok');const e=document.getElementById(id+'-e');if(e){e.textContent=msg;e.classList.add('show');}}
+function clearErr(id){const el=document.getElementById(id);el.classList.remove('err');el.classList.add('ok');const e=document.getElementById(id+'-e');if(e)e.classList.remove('show');}
 function vf(id){
   const v=document.getElementById(id).value.trim();
-  if(id==='fname'){ v.length<2?ve('fname','Ingresa tu nombre completo.'):vc('fname'); }
-  else if(id==='fphone'){ /^[\d\s()\-+]{7,}$/.test(v)?vc('fphone'):ve('fphone','Teléfono inválido.'); }
-  else if(id==='femail'){ /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)?vc('femail'):ve('femail','Email inválido.'); }
+  if(id==='fname'){v.length<2?showErr('fname',t('form.err.name')):clearErr('fname');}
+  else if(id==='fphone'){/^[\d\s()\-+]{7,}$/.test(v)?clearErr('fphone'):showErr('fphone',t('form.err.phone'));}
+  else if(id==='femail'){/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)?clearErr('femail'):showErr('femail',t('form.err.email'));}
 }
 ['fname','fphone','femail'].forEach(id=>{
   document.getElementById(id).addEventListener('blur',()=>vf(id));
-  document.getElementById(id).addEventListener('input',()=>{ if(document.getElementById(id).classList.contains('err')) vf(id); });
+  document.getElementById(id).addEventListener('input',()=>{if(document.getElementById(id).classList.contains('err'))vf(id);});
 });
 
-document.getElementById('qf').addEventListener('submit',function(e){
+// ─── FORM SUBMIT → FORMSPREE ───
+document.getElementById('qf').addEventListener('submit',async function(e){
   e.preventDefault();
   let ok=true;
-  ['fname','fphone','femail'].forEach(id=>{ vf(id); if(document.getElementById(id).classList.contains('err')||!document.getElementById(id).value.trim()) ok=false; });
-  if(!document.getElementById('fname').value.trim()){ ve('fname','Este campo es obligatorio.'); ok=false; }
-  if(!document.getElementById('fphone').value.trim()){ ve('fphone','Este campo es obligatorio.'); ok=false; }
-  if(!document.getElementById('femail').value.trim()){ ve('femail','Este campo es obligatorio.'); ok=false; }
-  if(!ok) return;
-  const btn=document.getElementById('bsub'); btn.disabled=true;
-  document.getElementById('btxt').textContent='Enviando...';
+  ['fname','fphone','femail'].forEach(id=>{
+    if(!document.getElementById(id).value.trim()){showErr(id,t('form.err.name'));ok=false;}
+    else{vf(id);if(document.getElementById(id).classList.contains('err'))ok=false;}
+  });
+  if(!ok)return;
+
+  const btn=document.getElementById('bsub');
+  btn.disabled=true;
+  document.getElementById('btxt').textContent=t('form.sending');
   document.getElementById('bico').className='fas fa-spinner fa-spin';
-  setTimeout(()=>{ document.getElementById('fcontent').style.display='none'; document.getElementById('fok').style.display='block'; },1500);
+
+  if(FORMSPREE_ID==='YOUR_FORM_ID'){
+    // Dev mode: show note instead of erroring
+    btn.disabled=false;
+    document.getElementById('btxt').textContent=t('form.submit');
+    document.getElementById('bico').className='fas fa-paper-plane';
+    document.getElementById('form-err-note').classList.add('show');
+    return;
+  }
+
+  try{
+    const fd=new FormData(this);
+    fd.append('Idioma',lang==='es'?'Español':'English');
+    const r=await fetch(`https://formspree.io/f/${FORMSPREE_ID}`,{
+      method:'POST',body:fd,headers:{'Accept':'application/json'}
+    });
+    if(r.ok){
+      document.getElementById('fcontent').style.display='none';
+      document.getElementById('fok').style.display='block';
+    } else {
+      throw new Error('Formspree error');
+    }
+  } catch(_){
+    btn.disabled=false;
+    document.getElementById('btxt').textContent=t('form.submit');
+    document.getElementById('bico').className='fas fa-paper-plane';
+    alert(lang==='es'?'Error al enviar. Por favor intenta de nuevo.':'Error sending. Please try again.');
+  }
 });
 
-// Hamburger
+// ─── HAMBURGER ───
 document.getElementById('burger').addEventListener('click',function(){
   const open=document.getElementById('mob-menu').classList.toggle('open');
   this.classList.toggle('open',open);
   this.setAttribute('aria-expanded',String(open));
 });
-function closeMob(){ document.getElementById('mob-menu').classList.remove('open'); document.getElementById('burger').classList.remove('open'); document.getElementById('burger').setAttribute('aria-expanded','false'); }
+function closeMob(){document.getElementById('mob-menu').classList.remove('open');document.getElementById('burger').classList.remove('open');document.getElementById('burger').setAttribute('aria-expanded','false');}
 
-// Header shadow
+// ─── HEADER SCROLL ───
 window.addEventListener('scroll',()=>document.getElementById('hdr').classList.toggle('sc',scrollY>8),{passive:true});
 
-// Scroll animations
+// ─── SCROLL ANIMATIONS ───
 function observe(){
-  const io = new IntersectionObserver(entries=>{
-    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('vis'); io.unobserve(en.target); } });
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('vis');io.unobserve(en.target);}});
   },{threshold:.1,rootMargin:'0px 0px -36px 0px'});
   document.querySelectorAll('.fu:not(.vis)').forEach(el=>io.observe(el));
 }
 
+// ─── INIT ───
+applyLang();
 buildGallery('all');
 observe();
 </script>
