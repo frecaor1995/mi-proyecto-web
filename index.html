@@ -347,6 +347,11 @@ textarea.fc{resize:vertical;min-height:96px}
 .stat .n.counting{text-shadow:0 0 28px rgba(255,184,0,.9),0 0 56px rgba(255,184,0,.45)}
 @keyframes statBurst{0%{transform:scale(.8);opacity:.5}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
 .stat .n.burst{display:inline-block;animation:statBurst .55s cubic-bezier(.34,1.56,.64,1) both}
+
+/* ── LOGO IMAGE ── */
+.hdr-logo{height:40px;width:auto;display:block;padding:4px 10px;background:#fff;border-radius:7px;transition:opacity .2s ease}
+.hdr-logo:hover{opacity:.85}
+.ftr-logo{height:50px;width:auto;display:block;padding:5px 12px;background:#fff;border-radius:8px;opacity:.92}
 </style>
 </head>
 <body>
@@ -364,9 +369,8 @@ textarea.fc{resize:vertical;min-height:96px}
 <header id="hdr">
   <div class="container">
     <div class="hdr-in">
-      <a href="#" class="logo" aria-label="Fly Electric LLC">
-        <div class="logo-ico" aria-hidden="true"><i class="fas fa-bolt"></i></div>
-        <div class="logo-tx"><span>FLY ELECTRIC</span><span>LLC</span></div>
+      <a href="#" class="logo" aria-label="Fly Electric Solutions LLC">
+        <img src="logo-blanco.png" alt="Fly Electric Solutions LLC" class="hdr-logo">
       </a>
       <nav class="nav" aria-label="Nav">
         <a href="#hero" data-i18n="nav.home">Inicio</a>
@@ -591,7 +595,7 @@ textarea.fc{resize:vertical;min-height:96px}
         <h2 class="sec-title" id="ctitle" data-i18n="con.title">Solicita tu cotización gratis</h2>
         <div class="rbadge"><span data-i18n="con.badge">Respondemos en menos de 1 hora</span></div>
         <div class="cd"><div class="cd-ico"><i class="fas fa-phone-alt"></i></div><div><strong data-i18n="con.ph.lbl">Teléfono / Emergencias</strong><span class="phbig">(571) 379-6040</span></div></div>
-        <div class="cd"><div class="cd-ico"><i class="fas fa-envelope"></i></div><div><strong data-i18n="con.em.lbl">Email</strong><span>info@flyelectricllc.com</span></div></div>
+        <div class="cd"><div class="cd-ico"><i class="fas fa-envelope"></i></div><div><strong data-i18n="con.em.lbl">Email</strong><span>info@flyelectricsolution.com</span></div></div>
         <div class="cd"><div class="cd-ico"><i class="fas fa-map-marker-alt"></i></div><div><strong data-i18n="con.ar.lbl">Área de Servicio</strong><span data-i18n="con.ar.val">Houston, TX y áreas metropolitanas</span></div></div>
         <div class="cd"><div class="cd-ico"><i class="fas fa-clock"></i></div><div><strong data-i18n="con.hr.lbl">Horario</strong><span data-i18n="con.hr.val">Lun–Vie 7am–7pm · Sáb 8am–5pm · Emergencias 24/7</span></div></div>
         <div class="soc-row">
@@ -648,7 +652,8 @@ textarea.fc{resize:vertical;min-height:96px}
                 <label for="fdesc" data-i18n="form.desc">Describe el trabajo o problema</label>
                 <textarea id="fdesc" name="Descripción" class="fc" rows="4" data-i18n-ph="form.ph.desc"></textarea>
               </div>
-              <input type="hidden" name="_subject" value="Nueva cotización – Fly Electric LLC">
+              <input type="hidden" name="_subject" value="Nueva cotización – Fly Electric Solutions LLC">
+              <input type="hidden" name="_replyto" value="info@flyelectricsolution.com">
               <button type="submit" class="btn btn-primary bsub" id="bsub">
                 <i class="fas fa-paper-plane" id="bico"></i>
                 <span id="btxt" data-i18n="form.submit">Enviar Solicitud</span>
@@ -677,7 +682,9 @@ textarea.fc{resize:vertical;min-height:96px}
   <div class="container">
     <div class="foot-grid">
       <div>
-        <div class="flogo"><div class="logo-ico"><i class="fas fa-bolt"></i></div><div class="logo-tx"><span>FLY ELECTRIC</span><span>LLC</span></div></div>
+        <div class="flogo">
+          <img src="logo.png" alt="Fly Electric Solutions LLC" class="ftr-logo">
+        </div>
         <p class="fdesc" data-i18n="foot.desc">Servicios eléctricos residenciales y comerciales con calidad, seguridad y rapidez garantizada. Tu electricista de confianza en Houston, TX.</p>
         <span class="flic">Licencia # TX-EL-2025</span>
       </div>
@@ -705,7 +712,7 @@ textarea.fc{resize:vertical;min-height:96px}
       <div class="fcol">
         <h4 data-i18n="foot.con">Contacto</h4>
         <div class="fci"><i class="fas fa-phone-alt"></i><span>(571) 379-6040</span></div>
-        <div class="fci"><i class="fas fa-envelope"></i><span>info@flyelectricllc.com</span></div>
+        <div class="fci"><i class="fas fa-envelope"></i><span>info@flyelectricsolution.com</span></div>
         <div class="fci"><i class="fas fa-map-marker-alt"></i><span data-i18n="con.ar.val">Houston, TX y áreas metropolitanas</span></div>
         <div class="fci"><i class="fas fa-clock"></i><span data-i18n="foot.hrs">Lun–Vie 7am–7pm · Sáb 8am–5pm<br></span><strong style="color:var(--yellow)" data-i18n="foot.emer">Emergencias 24/7</strong></div>
       </div>
