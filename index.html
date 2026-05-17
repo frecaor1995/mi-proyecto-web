@@ -615,7 +615,7 @@ textarea.fc{resize:vertical;min-height:96px}
               2. Crear un nuevo formulario → copiar el Form ID (ej: xyzabcde)
               3. Reemplazar "YOUR_FORM_ID" en el JS por tu ID real
             -->
-            <form id="qf" novalidate action="https://formspree.io/f/mdabrddv" method="POST">
+            <form id="qf" novalidate action="https://formsubmit.co/info@flyelectricsolution.com" method="POST">
               <div class="frow">
                 <div class="fg">
                   <label for="fname"><span data-i18n="form.name">Nombre</span> <span class="req">*</span></label>
@@ -654,7 +654,8 @@ textarea.fc{resize:vertical;min-height:96px}
               </div>
               <input type="hidden" name="_replyto" value="">
               <input type="hidden" name="_subject" value="New Quote Request - Fly Electric Solutions">
-              <input type="hidden" name="_cc" value="info@flyelectricsolution.com">
+              <input type="hidden" name="_captcha" value="false">
+              <input type="hidden" name="_template" value="table">
               <button type="submit" class="btn btn-primary bsub" id="bsub">
                 <i class="fas fa-paper-plane" id="bico"></i>
                 <span id="btxt" data-i18n="form.submit">Enviar Solicitud</span>
@@ -744,11 +745,9 @@ textarea.fc{resize:vertical;min-height:96px}
 
 <script>
 // ─────────────────────────────────────────────
-// FORMSPREE — reemplaza YOUR_FORM_ID con tu ID
-// 1. Regístrate en https://formspree.io con frecaor1995@gmail.com
-// 2. Crea un nuevo formulario y copia el ID (ej: xabcde12)
+// FORMSUBMIT — envía directo a info@flyelectricsolution.com
 // ─────────────────────────────────────────────
-const FORMSPREE_ID = 'mdabrddv';
+const FORM_ENDPOINT = 'https://formsubmit.co/ajax/info@flyelectricsolution.com';
 
 // ─────────────────────────────────────────────
 // TRANSLATIONS
@@ -1076,21 +1075,13 @@ document.getElementById('qf').addEventListener('submit',async function(e){
   document.getElementById('btxt').textContent=t('form.sending');
   document.getElementById('bico').className='fas fa-spinner fa-spin';
 
-  if(FORMSPREE_ID==='YOUR_FORM_ID'){
-    // Dev mode: show note instead of erroring
-    btn.disabled=false;
-    document.getElementById('btxt').textContent=t('form.submit');
-    document.getElementById('bico').className='fas fa-paper-plane';
-    document.getElementById('form-err-note').classList.add('show');
-    return;
-  }
-
   try{
     const fd=new FormData(this);
     fd.set('_replyto',document.getElementById('femail').value);
-    fd.set('_cc','info@flyelectricsolution.com');
+    fd.set('_captcha','false');
+    fd.set('_template','table');
     fd.append('Idioma',lang==='es'?'Español':'English');
-    const r=await fetch(`https://formspree.io/f/${FORMSPREE_ID}`,{
+    const r=await fetch(FORM_ENDPOINT,{
       method:'POST',body:fd,headers:{'Accept':'application/json'}
     });
     if(r.ok){
