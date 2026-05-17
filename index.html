@@ -609,13 +609,7 @@ textarea.fc{resize:vertical;min-height:96px}
         <div class="qform">
           <h3 data-i18n="form.title">Cuéntanos sobre tu proyecto</h3>
           <div id="fcontent">
-            <!--
-              FORMSPREE SETUP:
-              1. Ir a https://formspree.io y crear cuenta con frecaor1995@gmail.com
-              2. Crear un nuevo formulario → copiar el Form ID (ej: xyzabcde)
-              3. Reemplazar "YOUR_FORM_ID" en el JS por tu ID real
-            -->
-            <form id="qf" novalidate action="https://formsubmit.co/info@flyelectricsolution.com" method="POST">
+            <form id="qf" novalidate action="https://api.web3forms.com/submit" method="POST">
               <div class="frow">
                 <div class="fg">
                   <label for="fname"><span data-i18n="form.name">Nombre</span> <span class="req">*</span></label>
@@ -652,12 +646,10 @@ textarea.fc{resize:vertical;min-height:96px}
                 <label for="fdesc" data-i18n="form.desc">Describe el trabajo o problema</label>
                 <textarea id="fdesc" name="Descripción" class="fc" rows="4" data-i18n-ph="form.ph.desc"></textarea>
               </div>
-              <input type="hidden" name="_replyto" id="h_replyto" value="">
-              <input type="hidden" name="_subject" value="New Quote Request - Fly Electric Solutions">
-              <input type="hidden" name="_autoresponse" id="h_autoresponse" value="">
-              <input type="hidden" name="_captcha" value="false">
-              <input type="hidden" name="_template" value="table">
-              <input type="hidden" name="_next" value="https://flyelectricsolution.com/?sent=1">
+              <input type="hidden" name="access_key" value="9cc8cafc-e58e-4b08-9c04-0fe90f0448f0">
+              <input type="hidden" name="subject" id="h_subject" value="New Quote Request - Fly Electric Solutions">
+              <input type="hidden" name="from_name" value="Fly Electric Solutions Website">
+              <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
               <button type="submit" class="btn btn-primary bsub" id="bsub">
                 <i class="fas fa-paper-plane" id="bico"></i>
                 <span id="btxt" data-i18n="form.submit">Enviar Solicitud</span>
@@ -749,7 +741,7 @@ textarea.fc{resize:vertical;min-height:96px}
 // ─────────────────────────────────────────────
 // FORMSUBMIT — envía directo a info@flyelectricsolution.com
 // ─────────────────────────────────────────────
-const FORM_ENDPOINT = 'https://formsubmit.co/ajax/info@flyelectricsolution.com';
+const FORM_ENDPOINT = 'https://api.web3forms.com/submit';
 
 // ─────────────────────────────────────────────
 // TRANSLATIONS
@@ -1077,12 +1069,26 @@ document.getElementById('qf').addEventListener('submit',async function(e){
   document.getElementById('btxt').textContent=t('form.sending');
   document.getElementById('bico').className='fas fa-spinner fa-spin';
 
-  // Set _replyto and _autoresponse before submitting
-  document.getElementById('h_replyto').value = document.getElementById('femail').value;
-  document.getElementById('h_autoresponse').value = lang === 'es'
-    ? 'Gracias por contactar a Fly Electric Solutions LLC. Hemos recibido tu solicitud de cotización y un electricista licenciado se comunicará contigo en menos de 1 hora. Para emergencias urgentes llámanos directamente al (832) 123-4567. ¡Esperamos servirte pronto!'
-    : 'Thank you for contacting Fly Electric Solutions LLC! We have received your quote request and a licensed electrician will contact you within 1 hour. For urgent emergencies please call us directly at (832) 123-4567. We look forward to serving you!';
-  this.submit();
+  try{
+    const fd = new FormData(this);
+    const r = await fetch(FORM_ENDPOINT,{
+      method:'POST',
+      headers:{'Accept':'application/json'},
+      body:fd
+    });
+    const result = await r.json();
+    if(result.success){
+      document.getElementById('fcontent').style.display='none';
+      document.getElementById('fok').style.display='block';
+    } else {
+      throw new Error(result.message||'Error');
+    }
+  } catch(_){
+    btn.disabled=false;
+    document.getElementById('btxt').textContent=t('form.submit');
+    document.getElementById('bico').className='fas fa-paper-plane';
+    alert(lang==='es'?'Error al enviar. Por favor intenta de nuevo.':'Error sending. Please try again.');
+  }
 });
 
 // ─── HAMBURGER ───
@@ -1096,15 +1102,6 @@ function closeMob(){document.getElementById('mob-menu').classList.remove('open')
 // ─── HEADER SCROLL ───
 window.addEventListener('scroll',()=>document.getElementById('hdr').classList.toggle('sc',scrollY>8),{passive:true});
 
-// ─── SUCCESS TOAST (after Formsubmit redirect back) ───
-if(new URLSearchParams(location.search).get('sent')==='1'){
-  const toast=document.createElement('div');
-  toast.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;font-weight:700;font-size:.9rem;padding:14px 28px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9999;display:flex;align-items:center;gap:10px;';
-  toast.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'+(lang==='es'?'¡Solicitud enviada con éxito!':'Quote request sent successfully!');
-  document.body.appendChild(toast);
-  setTimeout(()=>toast.remove(),5000);
-  history.replaceState({},'',location.pathname+location.hash);
-}
 
 // ─── SCROLL ANIMATIONS ───
 function observe(){
