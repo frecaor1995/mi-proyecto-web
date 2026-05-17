@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quote Calculator — Fly Electric Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #FFD000;
+    --black: #0a0a0a;
+    --dark: #111111;
+    --card: #181818;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #666;
+    --green: #00e87a;
+    --red: #ff4545;
+    --blue: #4fa3ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--black); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(255,208,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,208,0,0.03) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; z-index: 0; }
+  .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+
+/* Lang bar */
+.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+.lang-switch { display: flex; background: var(–dark); border: 1px solid var(–border); border-radius: 100px; padding: 4px; gap: 2px; }
+.lang-btn { padding: 6px 18px; border-radius: 100px; border: none; background: transparent; color: var(–muted); font-family: ‘Syne’, sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.lang-btn.active { background: var(–yellow); color: var(–black); }
+.brand { display: flex; align-items: center; gap: 8px; font-family: ‘Syne’, sans-serif; font-size: 14px; font-weight: 700; color: var(–muted); }
+.brand span { color: var(–yellow); }
+
+/* Header */
+.header { text-align: center; margin-bottom: 40px; }
+.badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,208,0,0.1); border: 1px solid rgba(255,208,0,0.25); border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 500; color: var(–yellow); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+.badge::before { content: ‘’; width: 6px; height: 6px; background: var(–yellow); border-radius: 50%; animation: pulse 2s infinite; }
+h1 { font-family: ‘Syne’, sans-serif; font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; color: #fff; line-height: 1.1; }
+h1 span { color: var(–yellow); }
+.subtitle { margin-top: 10px; color: var(–muted); font-size: 15px; }
+.loc { font-size: 13px; color: var(–muted); margin-top: 8px; }
+
+/* Steps */
+.steps { display: flex; align-items: center; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; gap: 4px; }
+.step-dot { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.step-dot .num { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(–border); display: flex; align-items: center; justify-content: center; font-family: ‘Syne’, sans-serif; font-weight: 700; font-size: 13px; color: var(–muted); background: var(–dark); transition: all 0.3s; }
+.step-dot .lbl { font-size: 10px; color: var(–muted); font-weight: 500; white-space: nowrap; transition: color 0.3s; }
+.step-dot.active .num { border-color: var(–yellow); color: var(–black); background: var(–yellow); }
+.step-dot.active .lbl { color: var(–yellow); }
+.step-dot.done .num { border-color: var(–green); color: var(–green); background: rgba(0,232,122,0.1); }
+.step-line { width: 50px; height: 2px; background: var(–border); margin: 0 4px 20px; transition: background 0.4s; flex-shrink: 0; }
+.step-line.done { background: var(–green); }
+
+/* Card */
+.card { background: var(–card); border: 1px solid var(–border); border-radius: 20px; padding: 36px; }
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+.step-title { font-family: ‘Syne’, sans-serif; font-size: 21px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+.step-desc { color: var(–muted); font-size: 14px; margin-bottom: 24px; }
+
+/* Services */
+.services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.svc-card { border: 1.5px solid var(–border); border-radius: 14px; padding: 16px 12px; cursor: pointer; transition: all 0.2s; background: var(–dark); text-align: center; }
+.svc-card:hover { border-color: rgba(255,208,0,0.4); transform: translateY(-2px); }
+.svc-card.selected { border-color: var(–yellow); background: rgba(255,208,0,0.07); }
+.svc-icon { font-size: 28px; margin-bottom: 7px; display: block; }
+.svc-name { font-family: ‘Syne’, sans-serif; font-size: 12px; font-weight: 600; color: #fff; line-height: 1.3; }
+.svc-from { font-size: 11px; color: var(–muted); margin-top: 3px; }
+.svc-desc { font-size: 11px; color: var(–muted); margin-top: 5px; line-height: 1.4; display: none; }
+.svc-card.selected .svc-desc { display: block; color: rgba(255,208,0,0.7); }
+
+/* Sub-questions */
+.subq { background: rgba(255,208,0,0.04); border: 1px solid rgba(255,208,0,0.15); border-radius: 14px; padding: 20px; margin-top: 20px; }
+.subq-title { font-family: ‘Syne’, sans-serif; font-size: 14px; font-weight: 700; color: var(–yellow); margin-bottom: 14px; }
+.options-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt-btn { padding: 8px 16px; border-radius: 100px; border: 1.5px solid var(–border); background: var(–dark); color: var(–text); font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: ‘DM Sans’, sans-serif; }
+.opt-btn:hover { border-color: rgba(255,208,0,0.4); }
+.opt-btn.selected { border-color: var(–yellow); background: rgba(255,208,0,0.1); color: var(–yellow); }
+
+/* Fields */
+.fields { display: flex; flex-direction: column; gap: 16px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } }
+.field label { display: block; font-size: 11px; font-weight: 500; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; }
+.field input, .field select { width: 100%; background: var(–dark); border: 1.5px solid var(–border); border-radius: 10px; padding: 11px 14px; color: var(–text); font-family: ‘DM Sans’, sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; appearance: none; }
+.field input:focus, .field select:focus { border-color: var(–yellow); }
+.field select { background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘12’ height=‘8’ fill=‘none’%3E%3Cpath d=‘M1 1l5 5 5-5’ stroke=’%23666’ stroke-width=‘1.5’ stroke-linecap=‘round’/%3E%3C/svg%3E”); background-repeat: no-repeat; background-position: right 14px center; cursor: pointer; }
+.field select option { background: var(–dark); }
+.field-hint { font-size: 11px; color: var(–muted); margin-top: 4px; }
+
+/* Toggle */
+.toggle-field { display: flex; align-items: center; justify-content: space-between; background: var(–dark); border: 1.5px solid var(–border); border-radius: 10px; padding: 13px 16px; cursor: pointer; transition: border-color 0.2s; }
+.toggle-field:hover { border-color: rgba(255,208,0,0.3); }
+.toggle-field.on { border-color: rgba(255,208,0,0.5); }
+.toggle-info strong { font-size: 14px; color: #fff; display: block; }
+.toggle-info span { font-size: 12px; color: var(–muted); }
+.toggle-switch { width: 44px; height: 24px; background: var(–border); border-radius: 100px; position: relative; transition: background 0.3s; flex-shrink: 0; }
+.toggle-switch::after { content: ‘’; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform 0.3s; }
+.toggle-field.on .toggle-switch { background: var(–yellow); }
+.toggle-field.on .toggle-switch::after { transform: translateX(20px); background: var(–black); }
+
+/* Result */
+.result-box { background: linear-gradient(135deg, rgba(255,208,0,0.08), rgba(255,208,0,0.02)); border: 1.5px solid rgba(255,208,0,0.3); border-radius: 16px; padding: 28px; text-align: center; margin-bottom: 18px; position: relative; overflow: hidden; }
+.result-box::before { content: ‘⚡’; position: absolute; font-size: 100px; opacity: 0.04; right: -10px; top: -10px; line-height: 1; }
+.result-label { font-size: 11px; color: var(–yellow); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; margin-bottom: 8px; }
+.result-price { font-family: ‘Syne’, sans-serif; font-size: clamp(2rem, 6vw, 3rem); font-weight: 800; color: #fff; line-height: 1; margin-bottom: 5px; }
+.result-price span { color: var(–yellow); }
+.result-range { font-size: 13px; color: var(–muted); }
+.rush-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,69,69,0.12); border: 1px solid rgba(255,69,69,0.3); color: var(–red); padding: 4px 12px; border-radius: 100px; font-size: 12px; margin-top: 8px; }
+
+.breakdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.bd-item { background: var(–dark); border: 1px solid var(–border); border-radius: 10px; padding: 12px; text-align: center; }
+.bd-val { font-family: ‘Syne’, sans-serif; font-size: 15px; font-weight: 700; color: #fff; }
+.bd-lbl { font-size: 10px; color: var(–muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.includes { background: var(–dark); border: 1px solid var(–border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.inc-title { font-size: 11px; color: var(–muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.inc-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(–text); padding: 4px 0; }
+.inc-item::before { content: ‘✓’; width: 18px; height: 18px; background: rgba(0,232,122,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(–green); font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.disclaimer { background: rgba(255,208,0,0.04); border: 1px solid rgba(255,208,0,0.12); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: var(–muted); margin-bottom: 18px; line-height: 1.6; }
+
+/* Contact */
+.contact-form { display: flex; flex-direction: column; gap: 13px; }
+.contact-form input, .contact-form select { width: 100%; background: var(–dark); border: 1.5px solid var(–border); border-radius: 10px; padding: 12px 16px; color: var(–text); font-family: ‘DM Sans’, sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; appearance: none; }
+.contact-form input:focus, .contact-form select:focus { border-color: var(–yellow); }
+.contact-form input::placeholder { color: var(–muted); }
+.contact-form select { background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘12’ height=‘8’ fill=‘none’%3E%3Cpath d=‘M1 1l5 5 5-5’ stroke=’%23666’ stroke-width=‘1.5’ stroke-linecap=‘round’/%3E%3C/svg%3E”); background-repeat: no-repeat; background-position: right 14px center; cursor: pointer; }
+.contact-form select option { background: var(–dark); }
+
+.email-lang-note { background: rgba(79,163,255,0.08); border: 1px solid rgba(79,163,255,0.2); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(–blue); margin-top: 4px; }
+
+/* Buttons */
+.btn-row { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
+.btn { padding: 12px 24px; border-radius: 10px; font-family: ‘Syne’, sans-serif; font-size: 14px; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; }
+.btn-back { background: transparent; border: 1.5px solid var(–border); color: var(–muted); }
+.btn-back:hover { border-color: var(–text); color: var(–text); }
+.btn-next { background: var(–yellow); color: var(–black); }
+.btn-next:hover { background: #ffe033; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,208,0,0.25); }
+.btn-send { background: var(–green); color: var(–black); width: 100%; padding: 15px; font-size: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; cursor: pointer; font-family: ‘Syne’, sans-serif; font-weight: 700; transition: all 0.2s; margin-top: 16px; }
+.btn-send:hover { background: #1affa0; transform: translateY(-1px); }
+.btn-send:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* Success */
+.success-screen { text-align: center; padding: 20px 0; }
+.success-icon { width: 72px; height: 72px; background: rgba(0,232,122,0.12); border: 2px solid rgba(0,232,122,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+.success-screen h2 { font-family: ‘Syne’, sans-serif; font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+.success-screen p { color: var(–muted); font-size: 14px; line-height: 1.7; max-width: 420px; margin: 0 auto 24px; }
+.email-confirm-box { background: var(–dark); border: 1px solid var(–border); border-radius: 12px; padding: 16px; margin: 0 auto 24px; max-width: 380px; font-size: 13px; color: var(–muted); }
+.email-confirm-box strong { color: var(–green); display: block; margin-bottom: 4px; font-size: 14px; }
+.btn-restart { background: transparent; border: 1.5px solid var(–border); color: var(–text); padding: 11px 22px; border-radius: 10px; font-family: ‘Syne’, sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+.btn-restart:hover { border-color: var(–yellow); color: var(–yellow); }
+
+.error-msg { color: var(–red); font-size: 13px; margin-top: 10px; display: none; }
+.error-msg.show { display: block; }
+.sending-msg { color: var(–yellow); font-size: 13px; margin-top: 10px; display: none; }
+.sending-msg.show { display: block; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@media (max-width: 500px) { .card { padding: 20px 16px; } .breakdown { grid-template-columns: 1fr 1fr; } .step-line { width: 28px; } }
+</style>
+
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Top bar -->
+
+  <div class="top-bar">
+    <div class="brand">⚡ <span>Fly Electric</span> Solutions</div>
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('es')">ES</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+
+  <div class="header">
+    <div class="badge" id="h-badge">⚡ Instant Quote Calculator</div>
+    <h1 id="h-title">How much will your<br><span>electrical project cost?</span></h1>
+    <p class="subtitle" id="h-sub">Get a detailed estimate in under 2 minutes — no calls needed.</p>
+    <p class="loc">📍 <span id="h-loc">Houston, TX & surrounding areas · Licensed & Insured</span></p>
+  </div>
+
+  <!-- Steps -->
+
+  <div class="steps" id="stepsEl">
+    <div class="step-dot active" id="dot-1"><div class="num">1</div><div class="lbl" id="sl-1">Service</div></div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2"><div class="num">2</div><div class="lbl" id="sl-2">Details</div></div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3"><div class="num">3</div><div class="lbl" id="sl-3">Estimate</div></div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-dot" id="dot-4"><div class="num">4</div><div class="lbl" id="sl-4">Contact</div></div>
+  </div>
+
+  <div class="card">
+
+```
+<!-- STEP 1: Service -->
+<div class="step-panel active" id="panel-1">
+  <div class="step-title" id="p1-title">What service do you need?</div>
+  <div class="step-desc" id="p1-desc">Select a service to see specific options and pricing.</div>
+  <div class="services-grid" id="svcGrid"></div>
+  <div id="subQuestions"></div>
+  <p class="error-msg" id="err-1">Please select a service.</p>
+  <div class="btn-row"><button class="btn btn-next" onclick="nextStep(1)" id="btn1">Continue →</button></div>
+</div>
+
+<!-- STEP 2: Details -->
+<div class="step-panel" id="panel-2">
+  <div class="step-title" id="p2-title">Project details</div>
+  <div class="step-desc" id="p2-desc">The more precise, the better the estimate.</div>
+  <div class="fields">
+    <div class="field-row">
+      <div class="field">
+        <label id="lbl-sqft">Square footage</label>
+        <input type="number" id="sqft" placeholder="e.g. 1,500" min="1">
+        <div class="field-hint" id="hint-sqft">Enter in sq ft</div>
+      </div>
+      <div class="field">
+        <label id="lbl-prop">Property type</label>
+        <select id="propiedad">
+          <option value="" id="prop0">Select...</option>
+          <option value="residential" id="prop1">Residential</option>
+          <option value="commercial" id="prop2">Commercial</option>
+          <option value="industrial" id="prop3">Industrial</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label id="lbl-zone">Area / Zone</label>
+      <select id="zona">
+        <option value="houston">Houston (Inner Loop / Midtown)</option>
+        <option value="suburbs">Sugar Land · Pearland · Katy · The Woodlands</option>
+        <option value="galveston">Galveston County</option>
+        <option value="conroe">Conroe / Montgomery County</option>
+        <option value="baytown">Baytown · Pasadena · Deer Park</option>
+      </select>
+    </div>
+    <div class="toggle-field" id="rushToggle" onclick="toggleRush()">
+      <div class="toggle-info">
+        <strong id="tgl-t">Emergency / Rush Service</strong>
+        <span id="tgl-s">Response within 24h — +25% to base price</span>
+      </div>
+      <div class="toggle-switch"></div>
+    </div>
+  </div>
+  <p class="error-msg" id="err-2">Please fill in all fields.</p>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevStep(2)" id="btn2b">← Back</button>
+    <button class="btn btn-next" onclick="nextStep(2)" id="btn2n">See Estimate →</button>
+  </div>
+</div>
+
+<!-- STEP 3: Result -->
+<div class="step-panel" id="panel-3">
+  <div class="step-title" id="p3-title">Your Estimate</div>
+  <div class="step-desc" id="p3-desc">Based on Fly Electric's Houston-area rates. Final quote confirmed after site visit.</div>
+  <div class="result-box">
+    <div class="result-label" id="rl">Estimated Project Cost</div>
+    <div class="result-price">$<span id="pMin">0</span> – $<span id="pMax">0</span></div>
+    <div class="result-range" id="rr">USD · Labor + basic materials</div>
+    <div id="rushBadge" style="display:none"><div class="rush-badge">🚨 Rush +25% included</div></div>
+  </div>
+  <div class="breakdown" id="bdGrid"></div>
+  <div class="includes">
+    <div class="inc-title" id="inc-t">What's included</div>
+    <div id="incList"></div>
+  </div>
+  <div class="disclaimer" id="disc">⚠️ This estimate is based on Fly Electric's standard Houston-area rates. Final price depends on site conditions, permit fees, and material availability. A licensed electrician will provide a binding quote after inspection.</div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevStep(3)" id="btn3b">← Recalculate</button>
+    <button class="btn btn-next" onclick="nextStep(3)" id="btn3n">Request Formal Quote →</button>
+  </div>
+</div>
+
+<!-- STEP 4: Contact -->
+<div class="step-panel" id="panel-4">
+  <div class="step-title" id="p4-title">Get your formal quote</div>
+  <div class="step-desc" id="p4-desc">A licensed electrician will contact you within 2 business hours.</div>
+  <div class="contact-form">
+    <input type="text" id="c-name" placeholder="Full name *">
+    <input type="tel" id="c-phone" placeholder="Phone / WhatsApp *">
+    <input type="email" id="c-email" placeholder="Email address *">
+    <input type="text" id="c-address" placeholder="Property address (optional)">
+    <div class="field">
+      <label id="lbl-emaillang">Confirmation email language / Idioma del email de confirmación</label>
+      <select id="emailLang">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+      </select>
+    </div>
+    <div class="email-lang-note" id="lang-note">📧 You'll receive a confirmation email in your selected language with your estimate summary.</div>
+  </div>
+  <p class="error-msg" id="err-4">Please fill in name, phone and email.</p>
+  <p class="sending-msg" id="sending-msg">⏳ Sending your request...</p>
+  <button class="btn btn-send" onclick="enviar()" id="btn-send">
+    ✅ <span id="send-lbl">Submit Quote Request</span>
+  </button>
+  <button class="btn btn-back" style="width:100%;margin-top:10px;justify-content:center;" onclick="prevStep(4)" id="btn4b">← Back</button>
+</div>
+
+<!-- SUCCESS -->
+<div class="step-panel" id="panel-success">
+  <div class="success-screen">
+    <div class="success-icon">✓</div>
+    <h2 id="suc-t">Request Sent!</h2>
+    <p id="suc-p">A specialist from <strong>Fly Electric Solutions</strong> will contact you within 2 business hours.</p>
+    <div class="email-confirm-box">
+      <strong id="suc-email-t">✉️ Confirmation email sent</strong>
+      <span id="suc-email-p">Check your inbox — we sent a summary of your estimate.</span>
+    </div>
+    <button class="btn-restart" onclick="reiniciar()" id="btn-restart">Get another quote</button>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+// ── TRANSLATIONS ──────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    badge:'⚡ Instant Quote Calculator',
+    title:'How much will your<br><span>electrical project cost?</span>',
+    sub:'Get a detailed estimate in under 2 minutes — no calls needed.',
+    loc:'Houston, TX & surrounding areas · Licensed & Insured',
+    sl:['Service','Details','Estimate','Contact'],
+    p1t:'What service do you need?', p1d:'Select a service to see specific options and pricing.',
+    p2t:'Project details', p2d:'The more precise, the better the estimate.',
+    lblSqft:'Square footage', hintSqft:'Enter in sq ft',
+    lblProp:'Property type', prop0:'Select...', prop1:'Residential', prop2:'Commercial', prop3:'Industrial',
+    lblZone:'Area / Zone',
+    tglT:'Emergency / Rush Service', tglS:'Response within 24h — +25% to base price',
+    err1:'Please select a service.', err2:'Please fill in all fields.',
+    btn1:'Continue →', btn2b:'← Back', btn2n:'See Estimate →',
+    p3t:'Your Estimate', p3d:"Based on Fly Electric's Houston-area rates. Final quote confirmed after site visit.",
+    rl:'Estimated Project Cost', rr:'USD · Labor + basic materials',
+    rushBadge:'🚨 Rush +25% included',
+    incT:"What's included",
+    disc:"⚠️ This estimate is based on Fly Electric's standard Houston-area rates. Final price depends on site conditions, permit fees, and material availability.",
+    btn3b:'← Recalculate', btn3n:'Request Formal Quote →',
+    p4t:'Get your formal quote', p4d:'A licensed electrician will contact you within 2 business hours.',
+    phName:'Full name *', phPhone:'Phone / WhatsApp *', phEmail:'Email address *', phAddr:'Property address (optional)',
+    lblELang:'Confirmation email language',
+    langNote:'📧 You\'ll receive a confirmation email in your selected language with your estimate summary.',
+    err4:'Please fill in name, phone and email.',
+    sending:'⏳ Sending your request...',
+    sendLbl:'Submit Quote Request', btn4b:'← Back',
+    sucT:'Request Sent!',
+    sucP:'A specialist from <strong>Fly Electric Solutions</strong> will contact you within 2 business hours.',
+    sucET:'✉️ Confirmation email sent', sucEP:'Check your inbox — we sent a summary of your estimate.',
+    btnRestart:'Get another quote',
+    bdLabels:['Service','Property','Sq Ft','Area'],
+  },
+  es: {
+    badge:'⚡ Calculadora de Cotización',
+    title:'¿Cuánto costará tu<br><span>proyecto eléctrico?</span>',
+    sub:'Obtén un estimado detallado en menos de 2 minutos, sin llamadas.',
+    loc:'Houston, TX y áreas cercanas · Licenciados y Asegurados',
+    sl:['Servicio','Detalles','Estimado','Contacto'],
+    p1t:'¿Qué servicio necesitas?', p1d:'Selecciona un servicio para ver opciones y precios.',
+    p2t:'Detalles del proyecto', p2d:'Entre más preciso, mejor será el estimado.',
+    lblSqft:'Pies cuadrados', hintSqft:'Ingresa en sq ft (pies cuadrados)',
+    lblProp:'Tipo de propiedad', prop0:'Seleccionar...', prop1:'Residencial', prop2:'Comercial', prop3:'Industrial',
+    lblZone:'Área / Zona',
+    tglT:'Servicio de Emergencia / Urgente', tglS:'Atención en 24h — +25% al precio base',
+    err1:'Por favor selecciona un servicio.', err2:'Por favor completa todos los campos.',
+    btn1:'Continuar →', btn2b:'← Atrás', btn2n:'Ver Estimado →',
+    p3t:'Tu Estimado', p3d:'Basado en las tarifas de Fly Electric en Houston. Cotización final confirmada tras visita.',
+    rl:'Costo Estimado del Proyecto', rr:'USD · Mano de obra + materiales básicos',
+    rushBadge:'🚨 Urgente +25% incluido',
+    incT:'Qué incluye esta cotización',
+    disc:'⚠️ Este estimado está basado en las tarifas estándar de Fly Electric en Houston. El precio final depende de las condiciones del lugar, permisos y disponibilidad de materiales.',
+    btn3b:'← Recalcular', btn3n:'Solicitar Cotización Formal →',
+    p4t:'Recibe tu cotización formal', p4d:'Un electricista certificado te contactará en menos de 2 horas hábiles.',
+    phName:'Nombre completo *', phPhone:'Teléfono / WhatsApp *', phEmail:'Correo electrónico *', phAddr:'Dirección de la propiedad (opcional)',
+    lblELang:'Idioma del email de confirmación',
+    langNote:'📧 Recibirás un email de confirmación en el idioma seleccionado con el resumen de tu estimado.',
+    err4:'Por favor completa nombre, teléfono y email.',
+    sending:'⏳ Enviando tu solicitud...',
+    sendLbl:'Enviar Solicitud de Cotización', btn4b:'← Atrás',
+    sucT:'¡Solicitud Enviada!',
+    sucP:'Un especialista de <strong>Fly Electric Solutions</strong> te contactará en menos de 2 horas hábiles.',
+    sucET:'✉️ Email de confirmación enviado', sucEP:'Revisa tu bandeja de entrada — te enviamos el resumen de tu estimado.',
+    btnRestart:'Hacer otra cotización',
+    bdLabels:['Servicio','Propiedad','Pies Cuad.','Área'],
+  }
+};
+
+// ── SERVICES DATA ─────────────────────────────────────────────────────────────
+const SERVICES = [
+  {
+    id:'outlets', icon:'🔌',
+    name:{ en:'Outlets & Switches', es:'Tomacorrientes y Switches' },
+    from:'From $85',
+    desc:{ en:'Installation, replacement & GFCI outlets', es:'Instalación, reemplazo y tomas GFCI' },
+    base:85, perSqft:0, perUnit:65,
+    unitQ:{ en:'How many outlets/switches?', es:'¿Cuántas tomas/switches?' },
+    unitOpts:{ en:['1–2','3–5','6–10','10+'], es:['1–2','3–5','6–10','10+'] },
+    unitMult:[1, 3.5, 7, 12],
+    includes:{ en:['Licensed labor','GFCI/AFCI outlets','Faceplate & hardware','Code-compliant wiring','30-day guarantee'], es:['Mano de obra certificada','Tomas GFCI/AFCI','Placas y accesorios','Cableado conforme al código','Garantía 30 días'] }
+  },
+  {
+    id:'fans', icon:'💡',
+    name:{ en:'Fans & Lighting', es:'Ventiladores y Luminarias' },
+    from:'From $120',
+    desc:{ en:'Ceiling fans, fixtures & decorative lighting', es:'Ventiladores, lámparas e iluminación decorativa' },
+    base:120, perSqft:1.2, perUnit:110,
+    unitQ:{ en:'How many units to install?', es:'¿Cuántas unidades instalar?' },
+    unitOpts:{ en:['1','2–3','4–6','7+'], es:['1','2–3','4–6','7+'] },
+    unitMult:[1, 2.5, 5, 8],
+    includes:{ en:['Fixture mounting','Wiring & junction box','Switch installation','Dimmer optional (+$45)','1-year labor warranty'], es:['Montaje de luminaria','Cableado y caja de conexiones','Instalación de interruptor','Dimmer opcional (+$45)','Garantía de mano de obra 1 año'] }
+  },
+  {
+    id:'panel', icon:'⚡',
+    name:{ en:'Panel / Breaker Upgrade', es:'Panel / Actualización de Breakers' },
+    from:'From $1,800',
+    desc:{ en:'Main panel, sub-panels & breaker replacement', es:'Panel principal, subpaneles y reemplazo de breakers' },
+    base:1800, perSqft:0, perUnit:0,
+    unitQ:{ en:'Panel amperage needed?', es:'¿Amperaje del panel?' },
+    unitOpts:{ en:['100A (small home)','150A (medium home)','200A (large home/commercial)','400A (heavy commercial)'], es:['100A (casa pequeña)','150A (casa mediana)','200A (casa grande/comercial)','400A (comercial pesado)'] },
+    unitMult:[1, 1.2, 1.55, 2.4],
+    includes:{ en:['New main panel or sub-panel','AFCI/GFCI breakers','Service entrance wiring','City permit & inspection','5-year parts warranty'], es:['Panel principal o subpanel nuevo','Breakers AFCI/GFCI','Cableado de acometida','Permiso municipal e inspección','Garantía de piezas 5 años'] }
+  },
+  {
+    id:'led', icon:'🌟',
+    name:{ en:'LED Lighting', es:'Iluminación LED' },
+    from:'From $150',
+    desc:{ en:'LED conversion, recessed lighting & commercial', es:'Conversión LED, luces empotradas y comercial' },
+    base:150, perSqft:1.5, perUnit:0,
+    unitQ:{ en:'Type of LED project?', es:'¿Tipo de proyecto LED?' },
+    unitOpts:{ en:['Residential (home/apartment)','Retail / Restaurant','Office / Corporate','Warehouse / Industrial'], es:['Residencial (casa/apartamento)','Retail / Restaurante','Oficina / Corporativo','Bodega / Industrial'] },
+    unitMult:[1, 1.4, 1.6, 2.0],
+    includes:{ en:['Certified LED fixtures','Wiring & switches','Dimmer controls','Energy savings report','Manufacturer warranty'], es:['Luminarias LED certificadas','Cableado e interruptores','Controles dimmer','Reporte de ahorro energético','Garantía del fabricante'] }
+  },
+  {
+    id:'ev', icon:'🚗',
+    name:{ en:'EV Charger', es:'Cargador EV' },
+    from:'From $1,200',
+    desc:{ en:'Level 2 home & commercial EV charging stations', es:'Estaciones de carga EV nivel 2 residencial y comercial' },
+    base:1200, perSqft:0, perUnit:0,
+    unitQ:{ en:'How many charging ports?', es:'¿Cuántos puertos de carga?' },
+    unitOpts:{ en:['1 port (home)','2 ports','3–4 ports (small fleet)','5+ ports (commercial)'], es:['1 puerto (casa)','2 puertos','3–4 puertos (flota pequeña)','5+ puertos (comercial)'] },
+    unitMult:[1, 1.7, 2.8, 4.5],
+    includes:{ en:['Level 2 charger (240V)','Dedicated 50A circuit','GFCI breaker protection','Compatible with all EVs','Permit & inspection included'], es:['Cargador nivel 2 (240V)','Circuito dedicado 50A','Protección GFCI','Compatible con todos los EVs','Permiso e inspección incluidos'] }
+  },
+  {
+    id:'maintenance', icon:'🔧',
+    name:{ en:'Maintenance / Repair', es:'Mantenimiento / Reparación' },
+    from:'From $175',
+    desc:{ en:'Diagnostics, fault repair & preventive plans', es:'Diagnóstico, reparación de fallas y planes preventivos' },
+    base:175, perSqft:0.4, perUnit:0,
+    unitQ:{ en:'Type of service?', es:'¿Tipo de servicio?' },
+    unitOpts:{ en:['Diagnostic only','Single repair','Multiple repairs','Monthly maintenance plan'], es:['Solo diagnóstico','Reparación sencilla','Reparaciones múltiples','Plan mensual de mantenimiento'] },
+    unitMult:[1, 1.5, 2.5, 4],
+    includes:{ en:['Full diagnostic inspection','Fault repair & parts','Safety & GFCI check','Written technical report','30-day workmanship guarantee'], es:['Inspección de diagnóstico completa','Reparación de fallas y piezas','Revisión de seguridad y GFCI','Reporte técnico escrito','Garantía de trabajo 30 días'] }
+  },
+  {
+    id:'generator', icon:'🔋',
+    name:{ en:'Generator / Backup', es:'Generador / Respaldo' },
+    from:'From $3,500',
+    desc:{ en:'Whole-home & commercial generator installation', es:'Instalación de generador residencial y comercial' },
+    base:3500, perSqft:0, perUnit:0,
+    unitQ:{ en:'Generator size needed?', es:'¿Tamaño del generador?' },
+    unitOpts:{ en:['10–14kW (small home)','16–20kW (medium home)','22–30kW (large home)','40kW+ (commercial)'], es:['10–14kW (casa pequeña)','16–20kW (casa mediana)','22–30kW (casa grande)','40kW+ (comercial)'] },
+    unitMult:[1, 1.35, 1.8, 3.2],
+    includes:{ en:['Automatic transfer switch','Full system installation','Load bank testing','Owner training & manual','Annual service plan available'], es:['Transferencia automática','Instalación completa del sistema','Prueba de carga','Capacitación al propietario','Plan de servicio anual disponible'] }
+  },
+  {
+    id:'inspection', icon:'📋',
+    name:{ en:'Inspection / NEC', es:'Inspección / NEC' },
+    from:'From $180',
+    desc:{ en:'Full electrical inspection & NEC code compliance', es:'Inspección eléctrica completa y cumplimiento NEC' },
+    base:180, perSqft:0.25, perUnit:0,
+    unitQ:{ en:'Purpose of inspection?', es:'¿Propósito de la inspección?' },
+    unitOpts:{ en:['Home purchase/sale','Insurance requirement','NEC compliance audit','Pre-renovation'], es:['Compra/venta de propiedad','Requisito de seguro','Auditoría de cumplimiento NEC','Pre-remodelación'] },
+    unitMult:[1, 1, 1.4, 1.2],
+    includes:{ en:['Full electrical walkthrough','Written inspection report','Code violation list','Repair recommendations','Certificate of inspection'], es:['Revisión eléctrica completa','Reporte de inspección escrito','Lista de violaciones al código','Recomendaciones de reparación','Certificado de inspección'] }
+  }
+];
+
+// ── PRICING MULTIPLIERS ───────────────────────────────────────────────────────
+const propMult = { residential:1.0, commercial:1.30, industrial:1.65 };
+const zonaMult = { houston:1.0, suburbs:0.93, galveston:1.06, conroe:0.90, baytown:0.95 };
+const propName = {
+  en:{ residential:'Residential', commercial:'Commercial', industrial:'Industrial' },
+  es:{ residential:'Residencial', commercial:'Comercial', industrial:'Industrial' }
+};
+const zonaName = {
+  en:{ houston:'Houston', suburbs:'Suburbs', galveston:'Galveston', conroe:'Conroe', baytown:'Baytown' },
+  es:{ houston:'Houston', suburbs:'Suburbios', galveston:'Galveston', conroe:'Conroe', baytown:'Baytown' }
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const S = { lang:'en', svcId:null, unitOptIdx:null, sqft:0, propiedad:'', zona:'houston', rush:false };
+
+// ── RENDER SERVICES ───────────────────────────────────────────────────────────
+function renderServices() {
+  const grid = document.getElementById('svcGrid');
+  grid.innerHTML = SERVICES.map(s => `
+    <div class="svc-card ${S.svcId===s.id?'selected':''}" onclick="selectSvc('${s.id}')">
+      <span class="svc-icon">${s.icon}</span>
+      <div class="svc-name">${s.name[S.lang]}</div>
+      <div class="svc-from">${s.from}</div>
+      <div class="svc-desc">${s.desc[S.lang]}</div>
+    </div>
+  `).join('');
+  renderSubQ();
+}
+
+function selectSvc(id) {
+  S.svcId = id; S.unitOptIdx = null;
+  document.getElementById('err-1').classList.remove('show');
+  renderServices();
+}
+
+function renderSubQ() {
+  const el = document.getElementById('subQuestions');
+  if (!S.svcId) { el.innerHTML=''; return; }
+  const svc = SERVICES.find(s=>s.id===S.svcId);
+  const opts = svc.unitOpts[S.lang];
+  el.innerHTML = `
+    <div class="subq">
+      <div class="subq-title">${svc.unitQ[S.lang]}</div>
+      <div class="options-row">
+        ${opts.map((o,i)=>`<button class="opt-btn ${S.unitOptIdx===i?'selected':''}" onclick="selectOpt(${i})">${o}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function selectOpt(i) { S.unitOptIdx = i; renderSubQ(); }
+
+// ── CALC ──────────────────────────────────────────────────────────────────────
+function calcular() {
+  const svc = SERVICES.find(s=>s.id===S.svcId);
+  const pm = propMult[S.propiedad] || 1;
+  const zm = zonaMult[S.zona] || 1;
+  const um = S.unitOptIdx !== null ? svc.unitMult[S.unitOptIdx] : 1;
+  let base = svc.base * um + (svc.perSqft * S.sqft);
+  base = base * pm * zm;
+  if (S.rush) base *= 1.25;
+  const min = Math.round(base * 0.88 / 25) * 25;
+  const max = Math.round(base * 1.18 / 25) * 25;
+  return { min, max };
+}
+
+function mostrarResultado() {
+  const { min, max } = calcular();
+  document.getElementById('pMin').textContent = min.toLocaleString('en-US');
+  document.getElementById('pMax').textContent = max.toLocaleString('en-US');
+  document.getElementById('rushBadge').style.display = S.rush ? 'block' : 'none';
+  const t = T[S.lang];
+  const svc = SERVICES.find(s=>s.id===S.svcId);
+  const optLabel = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : '—';
+  const bdData = [svc.name[S.lang], propName[S.lang][S.propiedad]||'—', S.sqft?S.sqft.toLocaleString()+' sq ft':'—', zonaName[S.lang][S.zona]||'—'];
+  document.getElementById('bdGrid').innerHTML = t.bdLabels.map((l,i)=>`<div class="bd-item"><div class="bd-val">${bdData[i]}</div><div class="bd-lbl">${l}</div></div>`).join('');
+  document.getElementById('incList').innerHTML = svc.includes[S.lang].map(i=>`<div class="inc-item">${i}</div>`).join('');
+}
+
+// ── LANGUAGE ──────────────────────────────────────────────────────────────────
+function setLang(l) {
+  S.lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active', b.textContent===l.toUpperCase()));
+  applyT();
+  renderServices();
+}
+
+function applyT() {
+  const t = T[S.lang];
+  const ids = {
+    'h-badge':'badge','h-title':'title','h-sub':'sub','h-loc':'loc',
+    'p1-title':'p1t','p1-desc':'p1d','p2-title':'p2t','p2-desc':'p2d',
+    'lbl-sqft':'lblSqft','hint-sqft':'hintSqft','lbl-prop':'lblProp',
+    'prop0':'prop0','prop1':'prop1','prop2':'prop2','prop3':'prop3',
+    'lbl-zone':'lblZone','tgl-t':'tglT','tgl-s':'tglS',
+    'err-1':'err1','err-2':'err2','btn1':'btn1','btn2b':'btn2b','btn2n':'btn2n',
+    'p3-title':'p3t','p3-desc':'p3d','rl':'rl','rr':'rr','inc-t':'incT',
+    'disc':'disc','btn3b':'btn3b','btn3n':'btn3n',
+    'p4-title':'p4t','p4-desc':'p4d','lbl-emaillang':'lblELang',
+    'lang-note':'langNote','err-4':'err4','sending-msg':'sending',
+    'send-lbl':'sendLbl','btn4b':'btn4b',
+    'suc-t':'sucT','suc-p':'sucP','suc-email-t':'sucET','suc-email-p':'sucEP',
+    'btn-restart':'btnRestart'
+  };
+  Object.entries(ids).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) { if (['h-title','suc-p'].includes(id)) el.innerHTML = t[key]; else el.textContent = t[key]; }
+  });
+  ['sl-1','sl-2','sl-3','sl-4'].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.textContent=t.sl[i]; });
+  const ph = ['c-name','c-phone','c-email','c-addr'];
+  ph.forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.placeholder=t[['phName','phPhone','phEmail','phAddr'][i]]; });
+}
+
+// ── TOGGLE ────────────────────────────────────────────────────────────────────
+function toggleRush() {
+  S.rush = !S.rush;
+  document.getElementById('rushToggle').classList.toggle('on', S.rush);
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function nextStep(from) {
+  if (from===1) {
+    if (!S.svcId) { document.getElementById('err-1').classList.add('show'); return; }
+  }
+  if (from===2) {
+    const sqft = document.getElementById('sqft').value;
+    const prop = document.getElementById('propiedad').value;
+    if (!sqft || !prop) { document.getElementById('err-2').classList.add('show'); return; }
+    S.sqft = parseFloat(sqft);
+    S.propiedad = prop;
+    S.zona = document.getElementById('zona').value;
+    mostrarResultado();
+  }
+  goTo(from+1);
+}
+
+function prevStep(from) { goTo(from-1); }
+
+function goTo(n) {
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+  updateDots(n);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateDots(cur) {
+  for (let i=1;i<=4;i++) {
+    const d=document.getElementById('dot-'+i);
+    d.classList.remove('active','done');
+    if (i<cur) d.classList.add('done');
+    else if (i===cur) d.classList.add('active');
+    if (i<4) document.getElementById('line-'+i).classList.toggle('done',i<cur);
+  }
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+async function enviar() {
+  const name = document.getElementById('c-name').value.trim();
+  const phone = document.getElementById('c-phone').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const addr = document.getElementById('c-address').value.trim();
+  const emailLang = document.getElementById('emailLang').value;
+  if (!name||!phone||!email) { document.getElementById('err-4').classList.add('show'); return; }
+
+  const btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  document.getElementById('sending-msg').classList.add('show');
+
+  const svc = SERVICES.find(s=>s.id===S.svcId);
+  const { min, max } = calcular();
+  const optLabel = S.unitOptIdx !== null ? svc.unitOpts['en'][S.unitOptIdx] : 'N/A';
+
+  // Email body based on selected language
+  const emailBody = emailLang === 'es'
+    ? `Hola ${name},\n\nGracias por contactar a Fly Electric Solutions. Hemos recibido tu solicitud de cotización.\n\nRESUMEN DE TU ESTIMADO:\n- Servicio: ${svc.name['es']}\n- Opción: ${svc.unitOpts['es'][S.unitOptIdx]||'N/A'}\n- Área: ${S.sqft} sq ft\n- Tipo: ${propName['es'][S.propiedad]||'N/A'}\n- Zona: ${zonaName['es'][S.zona]}\n- Urgente: ${S.rush?'Sí':'No'}\n- Estimado: $${min.toLocaleString()} – $${max.toLocaleString()} USD\n\nUn electricista certificado te contactará en menos de 2 horas hábiles.\n\nTeléfono de emergencias: (571) 379-6040\n\nFly Electric Solutions LLC\nHouston, TX`
+    : `Hello ${name},\n\nThank you for contacting Fly Electric Solutions. We have received your quote request.\n\nYOUR ESTIMATE SUMMARY:\n- Service: ${svc.name['en']}\n- Option: ${optLabel}\n- Area: ${S.sqft} sq ft\n- Property: ${propName['en'][S.propiedad]||'N/A'}\n- Zone: ${zonaName['en'][S.zona]}\n- Rush: ${S.rush?'Yes':'No'}\n- Estimate: $${min.toLocaleString()} – $${max.toLocaleString()} USD\n\nA licensed electrician will contact you within 2 business hours.\n\nEmergency line: (571) 379-6040\n\nFly Electric Solutions LLC\nHouston, TX`;
+
+  const payload = {
+    name, phone, email,
+    _replyto: email,
+    _subject: emailLang==='es'
+      ? `Solicitud de Cotización — ${svc.name['es']} — Fly Electric`
+      : `Quote Request — ${svc.name['en']} — Fly Electric`,
+    service: svc.name['en'],
+    service_option: optLabel,
+    sqft: S.sqft,
+    property_type: S.propiedad,
+    zone: S.zona,
+    rush_service: S.rush ? 'Yes' : 'No',
+    estimate_min: '$'+min.toLocaleString(),
+    estimate_max: '$'+max.toLocaleString(),
+    property_address: addr || 'Not provided',
+    confirmation_language: emailLang,
+    email_body_for_client: emailBody,
+    message: `Quote Request from ${name} | Service: ${svc.name['en']} | Estimate: $${min.toLocaleString()}–$${max.toLocaleString()} | Phone: ${phone}`
+  };
+
+  try {
+    const res = await fetch('https://formspree.io/f/mdabrddv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+      document.getElementById('panel-success').classList.add('active');
+      document.getElementById('stepsEl').style.display='none';
+    } else {
+      throw new Error('Server error');
+    }
+  } catch(e) {
+    document.getElementById('err-4').classList.add('show');
+    document.getElementById('err-4').textContent = S.lang==='es'
+      ? 'Error al enviar. Por favor intenta de nuevo o llama al (571) 379-6040.'
+      : 'Error sending. Please try again or call (571) 379-6040.';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('sending-msg').classList.remove('show');
+  }
+}
+
+function reiniciar() {
+  Object.assign(S,{svcId:null,unitOptIdx:null,sqft:0,propiedad:'',zona:'houston',rush:false});
+  ['sqft','c-name','c-phone','c-email','c-address'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('propiedad').value='';
+  document.getElementById('zona').value='houston';
+  document.getElementById('rushToggle').classList.remove('on');
+  document.getElementById('stepsEl').style.display='flex';
+  renderServices();
+  goTo(1);
+}
+
+// Init
+applyT();
+renderServices();
+</script>
+
+</body>
+</html>
