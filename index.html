@@ -654,6 +654,7 @@ textarea.fc{resize:vertical;min-height:96px}
               </div>
               <input type="hidden" name="_replyto" id="h_replyto" value="">
               <input type="hidden" name="_subject" value="New Quote Request - Fly Electric Solutions">
+              <input type="hidden" name="_autoresponse" id="h_autoresponse" value="">
               <input type="hidden" name="_captcha" value="false">
               <input type="hidden" name="_template" value="table">
               <input type="hidden" name="_next" value="https://flyelectricsolution.com/?sent=1">
@@ -1076,8 +1077,11 @@ document.getElementById('qf').addEventListener('submit',async function(e){
   document.getElementById('btxt').textContent=t('form.sending');
   document.getElementById('bico').className='fas fa-spinner fa-spin';
 
-  // Set _replyto to the customer's email, then submit normally
+  // Set _replyto and _autoresponse before submitting
   document.getElementById('h_replyto').value = document.getElementById('femail').value;
+  document.getElementById('h_autoresponse').value = lang === 'es'
+    ? 'Gracias por contactar a Fly Electric Solutions LLC. Hemos recibido tu solicitud de cotización y un electricista licenciado se comunicará contigo en menos de 1 hora. Para emergencias urgentes llámanos directamente al (832) 123-4567. ¡Esperamos servirte pronto!'
+    : 'Thank you for contacting Fly Electric Solutions LLC! We have received your quote request and a licensed electrician will contact you within 1 hour. For urgent emergencies please call us directly at (832) 123-4567. We look forward to serving you!';
   this.submit();
 });
 
