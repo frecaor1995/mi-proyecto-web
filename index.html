@@ -652,10 +652,11 @@ textarea.fc{resize:vertical;min-height:96px}
                 <label for="fdesc" data-i18n="form.desc">Describe el trabajo o problema</label>
                 <textarea id="fdesc" name="Descripción" class="fc" rows="4" data-i18n-ph="form.ph.desc"></textarea>
               </div>
-              <input type="hidden" name="_replyto" value="">
+              <input type="hidden" name="_replyto" id="h_replyto" value="">
               <input type="hidden" name="_subject" value="New Quote Request - Fly Electric Solutions">
               <input type="hidden" name="_captcha" value="false">
               <input type="hidden" name="_template" value="table">
+              <input type="hidden" name="_next" value="https://flyelectricsolution.com/?sent=1">
               <button type="submit" class="btn btn-primary bsub" id="bsub">
                 <i class="fas fa-paper-plane" id="bico"></i>
                 <span id="btxt" data-i18n="form.submit">Enviar Solicitud</span>
@@ -1075,27 +1076,9 @@ document.getElementById('qf').addEventListener('submit',async function(e){
   document.getElementById('btxt').textContent=t('form.sending');
   document.getElementById('bico').className='fas fa-spinner fa-spin';
 
-  try{
-    const fd=new FormData(this);
-    fd.set('_replyto',document.getElementById('femail').value);
-    fd.set('_captcha','false');
-    fd.set('_template','table');
-    fd.append('Idioma',lang==='es'?'Español':'English');
-    const r=await fetch(FORM_ENDPOINT,{
-      method:'POST',body:fd,headers:{'Accept':'application/json'}
-    });
-    if(r.ok){
-      document.getElementById('fcontent').style.display='none';
-      document.getElementById('fok').style.display='block';
-    } else {
-      throw new Error('Formspree error');
-    }
-  } catch(_){
-    btn.disabled=false;
-    document.getElementById('btxt').textContent=t('form.submit');
-    document.getElementById('bico').className='fas fa-paper-plane';
-    alert(lang==='es'?'Error al enviar. Por favor intenta de nuevo.':'Error sending. Please try again.');
-  }
+  // Set _replyto to the customer's email, then submit normally
+  document.getElementById('h_replyto').value = document.getElementById('femail').value;
+  this.submit();
 });
 
 // ─── HAMBURGER ───
@@ -1108,6 +1091,16 @@ function closeMob(){document.getElementById('mob-menu').classList.remove('open')
 
 // ─── HEADER SCROLL ───
 window.addEventListener('scroll',()=>document.getElementById('hdr').classList.toggle('sc',scrollY>8),{passive:true});
+
+// ─── SUCCESS TOAST (after Formsubmit redirect back) ───
+if(new URLSearchParams(location.search).get('sent')==='1'){
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;font-weight:700;font-size:.9rem;padding:14px 28px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9999;display:flex;align-items:center;gap:10px;';
+  toast.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'+(lang==='es'?'¡Solicitud enviada con éxito!':'Quote request sent successfully!');
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),5000);
+  history.replaceState({},'',location.pathname+location.hash);
+}
 
 // ─── SCROLL ANIMATIONS ───
 function observe(){
