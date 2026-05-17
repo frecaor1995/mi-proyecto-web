@@ -652,8 +652,9 @@ textarea.fc{resize:vertical;min-height:96px}
                 <label for="fdesc" data-i18n="form.desc">Describe el trabajo o problema</label>
                 <textarea id="fdesc" name="Descripción" class="fc" rows="4" data-i18n-ph="form.ph.desc"></textarea>
               </div>
-              <input type="hidden" name="_replyto" value="info@flyelectricsolution.com">
+              <input type="hidden" name="_replyto" value="">
               <input type="hidden" name="_subject" value="New Quote Request - Fly Electric Solutions">
+              <input type="hidden" name="_cc" value="info@flyelectricsolution.com">
               <button type="submit" class="btn btn-primary bsub" id="bsub">
                 <i class="fas fa-paper-plane" id="bico"></i>
                 <span id="btxt" data-i18n="form.submit">Enviar Solicitud</span>
@@ -1086,6 +1087,8 @@ document.getElementById('qf').addEventListener('submit',async function(e){
 
   try{
     const fd=new FormData(this);
+    fd.set('_replyto',document.getElementById('femail').value);
+    fd.set('_cc','info@flyelectricsolution.com');
     fd.append('Idioma',lang==='es'?'Español':'English');
     const r=await fetch(`https://formspree.io/f/${FORMSPREE_ID}`,{
       method:'POST',body:fd,headers:{'Accept':'application/json'}
