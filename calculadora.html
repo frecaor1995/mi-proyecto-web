@@ -651,51 +651,44 @@ async function enviar() {
   btn.disabled = true;
   document.getElementById('sending-msg').classList.add('show');
 
-  const svc = SERVICES.find(s=>s.id===S.svcId);
+  const svc          = SERVICES.find(s => s.id === S.svcId);
   const { min, max } = calcular();
-  const optLabel = S.unitOptIdx !== null ? svc.unitOpts['en'][S.unitOptIdx] : 'N/A';
-
-  // Email body based on selected language
-  const emailBody = emailLang === 'es'
-    ? `Hola ${name},\n\nGracias por contactar a Fly Electric Solutions. Hemos recibido tu solicitud de cotización.\n\nRESUMEN DE TU ESTIMADO:\n- Servicio: ${svc.name['es']}\n- Opción: ${svc.unitOpts['es'][S.unitOptIdx]||'N/A'}\n- Área: ${S.sqft} sq ft\n- Tipo: ${propName['es'][S.propiedad]||'N/A'}\n- Zona: ${zonaName['es'][S.zona]}\n- Urgente: ${S.rush?'Sí':'No'}\n- Estimado: $${min.toLocaleString()} – $${max.toLocaleString()} USD\n\nUn electricista certificado te contactará en menos de 2 horas hábiles.\n\nTeléfono de emergencias: (571) 379-6040\n\nFly Electric Solutions LLC\nHouston, TX`
-    : `Hello ${name},\n\nThank you for contacting Fly Electric Solutions. We have received your quote request.\n\nYOUR ESTIMATE SUMMARY:\n- Service: ${svc.name['en']}\n- Option: ${optLabel}\n- Area: ${S.sqft} sq ft\n- Property: ${propName['en'][S.propiedad]||'N/A'}\n- Zone: ${zonaName['en'][S.zona]}\n- Rush: ${S.rush?'Yes':'No'}\n- Estimate: $${min.toLocaleString()} – $${max.toLocaleString()} USD\n\nA licensed electrician will contact you within 2 business hours.\n\nEmergency line: (571) 379-6040\n\nFly Electric Solutions LLC\nHouston, TX`;
+  const optLabel     = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
 
   const payload = {
-    name, phone, email,
-    _replyto: email,
-    _subject: emailLang==='es'
-      ? `Solicitud de Cotización — ${svc.name['es']} — Fly Electric`
-      : `Quote Request — ${svc.name['en']} — Fly Electric`,
-    service: svc.name['en'],
-    service_option: optLabel,
-    sqft: S.sqft,
-    property_type: S.propiedad,
-    zone: S.zona,
-    rush_service: S.rush ? 'Yes' : 'No',
-    estimate_min: '$'+min.toLocaleString(),
-    estimate_max: '$'+max.toLocaleString(),
-    property_address: addr || 'Not provided',
-    confirmation_language: emailLang,
-    email_body_for_client: emailBody,
-    message: `Quote Request from ${name} | Service: ${svc.name['en']} | Estimate: $${min.toLocaleString()}–$${max.toLocaleString()} | Phone: ${phone}`
+    name,
+    phone,
+    email,
+    address:      addr,
+    lang:         emailLang,
+    service:      svc.name[S.lang],
+    option:       optLabel,
+    sqft:         String(S.sqft || ''),
+    propertyType: propName[S.lang][S.propiedad] || S.propiedad,
+    zone:         zonaName[S.lang][S.zona],
+    rush:         S.rush ? 'yes' : 'no',
+    priceMin:     min.toLocaleString('en-US'),
+    priceMax:     max.toLocaleString('en-US'),
+    includes:     svc.includes[S.lang].join('||'),
   };
 
   try {
-    const res = await fetch('https://formspree.io/f/mdabrddv', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(payload)
+    const res  = await fetch('/api/quote', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
     });
-    if (res.ok) {
-      document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+    const data = await res.json();
+    if (data.success) {
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
       document.getElementById('panel-success').classList.add('active');
-      document.getElementById('stepsEl').style.display='none';
+      document.getElementById('stepsEl').style.display = 'none';
     } else {
-      throw new Error('Server error');
+      throw new Error(data.error || 'Error');
     }
   } catch(e) {
     document.getElementById('err-4').classList.add('show');
-    document.getElementById('err-4').textContent = S.lang==='es'
+    document.getElementById('err-4').textContent = S.lang === 'es'
       ? 'Error al enviar. Por favor intenta de nuevo o llama al (571) 379-6040.'
       : 'Error sending. Please try again or call (571) 379-6040.';
   } finally {

@@ -1,0 +1,25 @@
+{
+  "name": "mi-proyecto-web",
+  "version": "1.0.0",
+  "description": "estoy creando la pagina web de FLY ELECTRIC LLC",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frecaor1995/mi-proyecto-web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/frecaor1995/mi-proyecto-web/issues"
+  },
+  "homepage": "https://github.com/frecaor1995/mi-proyecto-web#readme",
+  "dependencies": {
+    "nodemailer": "^8.0.7"
+  }
+}
