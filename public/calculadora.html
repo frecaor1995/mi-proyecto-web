@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quote Calculator — Fly Electric Solutions</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<!-- EmailJS via REST API — no SDK, no domain whitelist needed -->
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <!-- jsPDF — PDF generation in the browser -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -1601,34 +1602,11 @@ function generarPDF(d, qn) {
 //          {{price_max}}, {{quote_number}}, {{valid_until}})
 //   Attachment name: {{pdf_name}}   Attachment content: {{pdf_content}}  ← base64
 //
-// EmailJS REST API — bypasses SDK domain-whitelist restrictions entirely.
 async function sendEmailJS(templateId, params) {
-  const payload = {
-    service_id:      window.EMAILJS_SERVICE_ID,
-    template_id:     templateId,
-    user_id:         window.EMAILJS_PUBLIC_KEY,
-    template_params: params,
-  };
-  console.log('[sendEmailJS] → template:', templateId);
-  console.log('[sendEmailJS] → service:', window.EMAILJS_SERVICE_ID, '| key:', window.EMAILJS_PUBLIC_KEY);
-  console.log('[sendEmailJS] → params:', JSON.stringify(params));
-
-  let res, text;
-  try {
-    res  = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    text = await res.text();
-  } catch(networkErr) {
-    console.error('[sendEmailJS] ✗ Network/CORS error:', networkErr.message);
-    throw networkErr;
-  }
-
-  console.log('[sendEmailJS] ← HTTP', res.status, res.statusText, '| body:', text);
-  if (!res.ok) throw new Error(`EmailJS ${res.status}: ${text}`);
-  return text;
+  console.log('[sendEmailJS] → template:', templateId, '| params:', JSON.stringify(params));
+  const res = await emailjs.send(window.EMAILJS_SERVICE_ID, templateId, params);
+  console.log('[sendEmailJS] ← OK status:', res.status, res.text);
+  return res;
 }
 
 // Returns { qn, commit } — call commit() only after a successful send so the
@@ -1778,6 +1756,7 @@ function reiniciar() {
 }
 
 // Init
+emailjs.init({ publicKey: window.EMAILJS_PUBLIC_KEY });
 applyT();
 renderServices();
 </script>
