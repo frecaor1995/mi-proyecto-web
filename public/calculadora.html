@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quote Calculator — Fly Electric Solutions</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<!-- EmailJS — client-side email (no backend needed) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!-- jsPDF — PDF generation in the browser -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+  // ── EMAILJS CONFIGURATION ────────────────────────────────────────────────
+  // 1. Sign up free at https://emailjs.com (200 emails/month)
+  // 2. Email Services → Add Service → Gmail → connect frecaor1995@gmail.com
+  // 3. Create TWO templates (see comments in enviar() for required variables)
+  // 4. Account → API Keys → copy Public Key
+  window.EMAILJS_PUBLIC_KEY      = 'YOUR_PUBLIC_KEY';
+  window.EMAILJS_SERVICE_ID      = 'YOUR_SERVICE_ID';
+  window.EMAILJS_TEMPLATE_BIZ    = 'template_biz';    // alert to info@flyelectricsolution.com
+  window.EMAILJS_TEMPLATE_CLIENT = 'template_client'; // PDF quote to the client
+  // ────────────────────────────────────────────────────────────────────────
+})();
+</script>
 <style>
   :root {
     --blue-primary: #1A6FFF;
@@ -1426,7 +1444,164 @@ function updateDots(cur) {
   if (fill) fill.style.width = (((cur-1)/3)*100) + '%';
 }
 
+// ── PDF GENERATOR ─────────────────────────────────────────────────────────────
+function generarPDF(d, qn) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'pt', format:'letter' });
+  const W = doc.internal.pageSize.getWidth();
+  const es = d.lang === 'es';
+
+  const exp = new Date(); exp.setDate(exp.getDate()+15);
+  const expStr  = exp.toLocaleDateString(es?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'});
+  const todayStr = new Date().toLocaleDateString(es?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  // Header blue bar
+  doc.setFillColor(26,111,255);
+  doc.rect(0,0,W,76,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.text('Fly Electric Solutions',38,34);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  doc.text('Licensed & Insured  ·  Houston, TX  ·  (571) 379-6040  ·  info@flyelectricsolution.com',38,50);
+
+  // Quote number pill (top-right)
+  doc.setFillColor(255,255,255,0.15);
+  doc.setDrawColor(255,255,255,0.4);
+  doc.roundedRect(W-175,12,137,50,6,6,'FD');
+  doc.setTextColor(200,220,255); doc.setFontSize(7); doc.setFont('helvetica','bold');
+  doc.text(es?'N° COTIZACIÓN':'QUOTE NO.',W-168,27);
+  doc.setTextColor(255,255,255); doc.setFontSize(11);
+  doc.text(qn,W-168,46);
+
+  // Title bar
+  doc.setFillColor(241,245,249);
+  doc.rect(0,76,W,28,'F');
+  doc.setTextColor(15,23,42); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text(es?'COTIZACIÓN PRELIMINAR DE SERVICIOS ELÉCTRICOS':'PRELIMINARY ELECTRICAL SERVICES QUOTE',38,95);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  doc.text(`${es?'Fecha':'Date'}: ${todayStr}`,W-38,95,{align:'right'});
+
+  let y = 124;
+
+  // Client card
+  doc.setFillColor(255,255,255); doc.setDrawColor(226,232,240);
+  doc.roundedRect(28,y,W-56,84,6,6,'FD');
+  doc.setTextColor(100,116,139); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  doc.text(es?'PREPARADO PARA':'PREPARED FOR',44,y+15);
+  doc.setTextColor(15,23,42); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(d.name,44,y+32);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(100,116,139);
+  doc.text(d.phone,44,y+48);
+  doc.text(d.email,44,y+63);
+  if(d.address) doc.text(d.address,44,y+78);
+
+  // Validity right side inside client card
+  doc.setTextColor(100,116,139); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  doc.text(es?'VALIDEZ':'VALIDITY',W/2+30,y+15);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  doc.text(`${es?'Válida hasta':'Valid until'}: ${expStr}`,W/2+30,y+32);
+  if(d.rush==='yes'){
+    doc.setTextColor(239,68,68);
+    doc.text(es?'Urgente: Sí (+25%)':'Rush: Yes (+25%)',W/2+30,y+48);
+  }
+  y += 102;
+
+  // Price box
+  doc.setFillColor(238,244,255); doc.setDrawColor(26,111,255);
+  doc.roundedRect(28,y,W-56,68,8,8,'FD');
+  doc.setTextColor(26,111,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text(es?'RANGO ESTIMADO DEL PROYECTO':'ESTIMATED PROJECT RANGE',W/2,y+16,{align:'center'});
+  doc.setTextColor(15,23,42); doc.setFontSize(28); doc.setFont('helvetica','bold');
+  const priceStr = `$${d.priceMin}  –  $${d.priceMax}`;
+  doc.text(priceStr,W/2,y+46,{align:'center'});
+  doc.setTextColor(100,116,139); doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(`USD · ${es?'Mano de obra + materiales básicos':'Labor + basic materials'}`,W/2,y+60,{align:'center'});
+  y += 86;
+
+  // Service detail table
+  const rows = [
+    [es?'Servicio':'Service', d.service],
+    [es?'Opción':'Option',   d.option],
+    [es?'Propiedad':'Property', `${d.propertyType} · ${d.sqft} sq ft`],
+    [es?'Zona':'Zone',       d.zone],
+  ];
+  const tableH = 18 + rows.length*18;
+  doc.setFillColor(248,250,252); doc.setDrawColor(226,232,240);
+  doc.roundedRect(28,y,W-56,tableH,6,6,'FD');
+  doc.setTextColor(100,116,139); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  doc.text(es?'DETALLE DEL SERVICIO':'SERVICE DETAIL',44,y+13);
+  rows.forEach((r,i)=>{
+    const ry = y+26+(i*18);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(100,116,139);
+    doc.text(r[0]+':',44,ry);
+    doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42);
+    doc.text(r[1],140,ry);
+  });
+  y += tableH+12;
+
+  // Includes
+  const items = (d.includes||'').split('||').filter(Boolean);
+  const incH = 18+items.length*15;
+  doc.setFillColor(255,255,255); doc.setDrawColor(226,232,240);
+  doc.roundedRect(28,y,W-56,incH,6,6,'FD');
+  doc.setTextColor(100,116,139); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  doc.text(es?"QUÉ INCLUYE ESTA COTIZACIÓN":"WHAT'S INCLUDED",44,y+13);
+  items.forEach((item,i)=>{
+    const iy = y+25+(i*15);
+    doc.setFillColor(16,185,129);
+    doc.circle(44,iy-3,2.5,'F');
+    doc.setTextColor(51,65,85); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.text(item,52,iy);
+  });
+  y += incH+12;
+
+  // Disclaimer
+  const disc = es
+    ? 'Cotización PRELIMINAR generada automáticamente. El costo final puede variar según condiciones del sitio, permisos y disponibilidad de materiales. La cotización formal será emitida tras inspección presencial.'
+    : 'PRELIMINARY quote generated automatically. Final cost may vary based on site conditions, permits, and material availability. A formal binding quote will be issued after an on-site inspection.';
+  const discLines = doc.splitTextToSize(disc, W-110);
+  const discH = 20+discLines.length*13+14;
+  doc.setFillColor(255,251,235); doc.setDrawColor(245,158,11);
+  doc.roundedRect(28,y,W-56,discH,6,6,'FD');
+  doc.setTextColor(180,83,9); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  doc.text(es?'AVISO IMPORTANTE':'IMPORTANT DISCLAIMER',44,y+13);
+  doc.setFont('helvetica','normal'); doc.setTextColor(120,53,15); doc.setFontSize(8.5);
+  doc.text(discLines,44,y+26);
+  doc.setTextColor(101,163,13); doc.setFontSize(8);
+  doc.text(`${es?'Válida 15 días':'Valid 15 days'} · ${expStr}`,44,y+discH-6);
+  y += discH+10;
+
+  // Footer
+  doc.setFillColor(26,111,255);
+  doc.rect(0,y,W,44,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('Fly Electric Solutions LLC',38,y+18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  doc.text(`Houston, TX · ${es?'Licenciados y Asegurados':'Licensed & Insured'}`,38,y+33);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('(571) 379-6040',W-38,y+18,{align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  doc.text('info@flyelectricsolution.com',W-38,y+33,{align:'right'});
+
+  return doc;
+}
+
 // ── SUBMIT ────────────────────────────────────────────────────────────────────
+// EmailJS templates required:
+//
+// TEMPLATE_BIZ (to: info@flyelectricsolution.com) — plain text alert:
+//   Subject: [{{quote_number}}] Quote — {{service}} — {{client_name}}
+//   Body: Name:{{client_name}} Phone:{{client_phone}} Email:{{client_email}}
+//         Address:{{client_address}} Service:{{service}} Option:{{option}}
+//         Property:{{property_type}} Zone:{{zone}} Sqft:{{sqft}} Rush:{{rush}}
+//         Estimate: ${{price_min}} – ${{price_max}} USD  Includes:{{includes_list}}
+//
+// TEMPLATE_CLIENT (to: {{to_email}}) — HTML email with PDF attachment:
+//   Subject: {{subject_line}}
+//   Body: (any HTML you like using {{to_name}}, {{service}}, {{price_min}},
+//          {{price_max}}, {{quote_number}}, {{valid_until}})
+//   Attachment name: {{pdf_name}}   Attachment content: {{pdf_content}}  ← base64
+//
 async function enviar() {
   const name      = document.getElementById('c-name').value.trim();
   const phone     = document.getElementById('c-phone').value.trim();
@@ -1439,15 +1614,14 @@ async function enviar() {
   btn.disabled = true;
   document.getElementById('sending-msg').classList.add('show');
 
-  const svc        = SERVICES.find(s => s.id === S.svcId);
-  const { min, max } = calcular();
-  const optLabel      = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
-  const includesList  = svc.includes[S.lang].join('||');
+  const svc     = SERVICES.find(s => s.id === S.svcId);
+  const {min,max} = calcular();
+  const optLabel  = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
+  const es        = emailLang === 'es';
+  const qn        = 'FES-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Math.floor(Math.random()*900)+100);
 
-  const payload = {
-    name,
-    phone,
-    email,
+  const d = {
+    name, phone, email,
     address:      addr,
     lang:         emailLang,
     service:      svc.name[S.lang],
@@ -1458,28 +1632,69 @@ async function enviar() {
     rush:         S.rush ? 'yes' : 'no',
     priceMin:     min.toLocaleString('en-US'),
     priceMax:     max.toLocaleString('en-US'),
-    includes:     includesList,
+    includes:     svc.includes[S.lang].join('||'),
   };
 
   try {
-    const res  = await fetch('/api/quote', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
+    // 1. Generate PDF + auto-download to browser
+    const doc    = generarPDF(d, qn);
+    const pdfB64 = doc.output('datauristring').split(',')[1];
+    doc.save(`${qn} - Fly Electric Solutions.pdf`);
+
+    // Initialize EmailJS with public key
+    emailjs.init(window.EMAILJS_PUBLIC_KEY);
+
+    // 2. Business alert → info@flyelectricsolution.com
+    await emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_BIZ, {
+      quote_number:   qn,
+      client_name:    name,
+      client_phone:   phone,
+      client_email:   email,
+      client_address: addr || (es ? 'No provista' : 'Not provided'),
+      service:        d.service,
+      option:         optLabel,
+      property_type:  d.propertyType,
+      zone:           d.zone,
+      sqft:           d.sqft,
+      rush:           d.rush === 'yes' ? 'YES (+25%)' : 'No',
+      price_min:      d.priceMin,
+      price_max:      d.priceMax,
+      includes_list:  svc.includes['en'].join(', '),
     });
-    const data = await res.json();
-    if (data.success) {
-      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('panel-success').classList.add('active');
-      document.getElementById('stepsEl').style.display = 'none';
-    } else {
-      throw new Error(data.message || 'Error');
-    }
+
+    // 3. Client email with PDF attachment
+    const expDate = new Date(); expDate.setDate(expDate.getDate()+15);
+    await emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_CLIENT, {
+      to_email:     email,
+      to_name:      name,
+      subject_line: es
+        ? `Tu Cotización ${qn} — ${d.service} — Fly Electric Solutions`
+        : `Your Quote ${qn} — ${d.service} — Fly Electric Solutions`,
+      quote_number: qn,
+      service:      d.service,
+      option:       optLabel,
+      price_min:    d.priceMin,
+      price_max:    d.priceMax,
+      property:     d.propertyType,
+      zone:         d.zone,
+      sqft:         d.sqft,
+      rush:         d.rush === 'yes' ? (es ? 'Sí (+25%)' : 'Yes (+25%)') : 'No',
+      valid_until:  expDate.toLocaleDateString(es?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'}),
+      pdf_name:     `${qn} - Fly Electric Solutions.pdf`,
+      pdf_content:  pdfB64,
+    });
+
+    // 4. Show success
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-success').classList.add('active');
+    document.getElementById('stepsEl').style.display = 'none';
+
   } catch(e) {
+    console.error('[enviar]', e);
     document.getElementById('err-4').classList.add('show');
     document.getElementById('err-4').textContent = S.lang === 'es'
-      ? 'Error al enviar. Por favor intenta de nuevo o llama al (571) 379-6040.'
-      : 'Error sending. Please try again or call (571) 379-6040.';
+      ? 'Error al enviar. Por favor llama al (571) 379-6040.'
+      : 'Error sending. Please call (571) 379-6040.';
   } finally {
     btn.disabled = false;
     document.getElementById('sending-msg').classList.remove('show');
