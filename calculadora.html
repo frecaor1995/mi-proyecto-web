@@ -1602,15 +1602,23 @@ function generarPDF(d, qn) {
 //          {{price_max}}, {{quote_number}}, {{valid_until}})
 //   Attachment name: {{pdf_name}}   Attachment content: {{pdf_content}}  ← base64
 //
+// Returns { qn, commit } — call commit() only after a successful send so the
+// counter never advances on a failed attempt.
 function getQuoteNumber() {
+  try {
     const year = new Date().getFullYear();
     const key  = `fes_qseq_${year}`;
-    const seq  = (parseInt(localStorage.getItem(key) || '0')) + 1;
-    localStorage.setItem(key, String(seq));
-    return `FES-${year}-${String(seq).padStart(6, '0')}`;
+    const next = (parseInt(localStorage.getItem(key) || '0')) + 1;
+    const qn   = `FES-${year}-${String(next).padStart(6, '0')}`;
+    return { qn, commit: () => localStorage.setItem(key, String(next)) };
+  } catch(e) {
+    // localStorage blocked (private browsing, etc.) — use timestamp fallback
+    const ts = Date.now().toString().slice(-6);
+    return { qn: `FES-${new Date().getFullYear()}-${ts}`, commit: () => {} };
   }
+}
 
-  async function enviar() {
+async function enviar() {
   const name      = document.getElementById('c-name').value.trim();
   const phone     = document.getElementById('c-phone').value.trim();
   const email     = document.getElementById('c-email').value.trim();
@@ -1626,7 +1634,7 @@ function getQuoteNumber() {
   const {min,max} = calcular();
   const optLabel  = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
   const es        = emailLang === 'es';
-  const qn        = getQuoteNumber();
+  const { qn, commit: commitQN } = getQuoteNumber();  // peek — not committed yet
 
   const d = {
     name, phone, email,
@@ -1643,20 +1651,10 @@ function getQuoteNumber() {
     includes:     svc.includes[S.lang].join('||'),
   };
 
-  // 1. Generate PDF + auto-download (separate from email sending)
-  try {
-    const doc = generarPDF(d, qn);
-    doc.save(`${qn} - Fly Electric Solutions.pdf`);
-    console.log('[enviar] PDF downloaded:', qn);
-  } catch(pdfErr) {
-    console.error('[enviar] PDF generation failed:', pdfErr);
-  }
-
   const expDate = new Date(); expDate.setDate(expDate.getDate()+15);
   const expStr  = expDate.toLocaleDateString(es?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'});
 
-  // 2. Business alert → info@flyelectricsolution.com
-  // NOTE: pdf_content intentionally omitted — base64 PDFs exceed EmailJS 50KB payload limit
+  // Business alert → info@flyelectricsolution.com
   const bizParams = {
     to_email:       'info@flyelectricsolution.com',
     quote_number:   qn,
@@ -1675,7 +1673,7 @@ function getQuoteNumber() {
     includes_list:  svc.includes['en'].join(', '),
   };
 
-  // 3. Client confirmation
+  // Client confirmation
   const clientParams = {
     to_email:     email,
     to_name:      name,
@@ -1695,30 +1693,39 @@ function getQuoteNumber() {
       : `Your Quote ${qn} — ${d.service} — Fly Electric Solutions`,
   };
 
+  // ── 1. SEND EMAILS FIRST ────────────────────────────────────────────────────
   let bizSent = false, clientSent = false;
 
   try {
-    console.log('[enviar] Sending biz email…', bizParams);
+    console.log('[enviar] Biz params:', bizParams);
     const r1 = await emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_BIZ, bizParams);
     console.log('[enviar] Biz email OK:', r1.status, r1.text);
     bizSent = true;
   } catch(e1) {
-    console.error('[enviar] Biz email FAILED:', e1);
+    console.error('[enviar] Biz email FAILED — status:', e1.status, '| text:', e1.text, '| raw:', e1);
   }
 
   try {
-    console.log('[enviar] Sending client email…', clientParams);
+    console.log('[enviar] Client params:', clientParams);
     const r2 = await emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_CLIENT, clientParams);
     console.log('[enviar] Client email OK:', r2.status, r2.text);
     clientSent = true;
   } catch(e2) {
-    console.error('[enviar] Client email FAILED:', e2);
+    console.error('[enviar] Client email FAILED — status:', e2.status, '| text:', e2.text, '| raw:', e2);
   }
 
   btn.disabled = false;
   document.getElementById('sending-msg').classList.remove('show');
 
   if (bizSent || clientSent) {
+    // ── 2. COMMIT COUNTER + DOWNLOAD PDF only after at least one email sent ───
+    commitQN();
+    try {
+      generarPDF(d, qn).save(`${qn} - Fly Electric Solutions.pdf`);
+      console.log('[enviar] PDF downloaded:', qn);
+    } catch(pdfErr) {
+      console.error('[enviar] PDF generation failed:', pdfErr);
+    }
     document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-success').classList.add('active');
     document.getElementById('stepsEl').style.display = 'none';
@@ -1742,7 +1749,7 @@ function reiniciar() {
 }
 
 // Init
-emailjs.init(window.EMAILJS_PUBLIC_KEY);
+emailjs.init({ publicKey: window.EMAILJS_PUBLIC_KEY });
 applyT();
 renderServices();
 </script>
