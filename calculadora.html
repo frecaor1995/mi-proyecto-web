@@ -1673,6 +1673,7 @@ async function enviar() {
     await w3fSend({
       subject:   `[${qn}] New Quote — ${d.service} — ${name}`,
       from_name: name,
+      to_email:  'info@flyelectricsolution.com',
       replyto:   email,
       message:   bizMessage,
     });
