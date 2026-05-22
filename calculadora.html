@@ -1602,12 +1602,6 @@ function generarPDF(d, qn) {
 //          {{price_max}}, {{quote_number}}, {{valid_until}})
 //   Attachment name: {{pdf_name}}   Attachment content: {{pdf_content}}  ← base64
 //
-async function sendEmailJS(templateId, params) {
-  console.log('[sendEmailJS] → template:', templateId, '| params:', JSON.stringify(params));
-  const res = await emailjs.send(window.EMAILJS_SERVICE_ID, templateId, params);
-  console.log('[sendEmailJS] ← OK status:', res.status, res.text);
-  return res;
-}
 
 // Returns { qn, commit } — call commit() only after a successful send so the
 // counter never advances on a failed attempt.
@@ -1705,8 +1699,8 @@ async function enviar() {
 
   try {
     console.log('[enviar] Biz params:', bizParams);
-    const r1 = await sendEmailJS(window.EMAILJS_TEMPLATE_BIZ, bizParams);
-    console.log('[enviar] Biz email OK:', r1);
+    const r1 = await emailjs.send("service_c1rg6l8", "template_4bmmdk1", bizParams);
+    console.log('[enviar] Biz email OK:', r1.status, r1.text);
     bizSent = true;
   } catch(e1) {
     console.error('[enviar] Biz email FAILED:', e1.message, e1);
@@ -1714,8 +1708,8 @@ async function enviar() {
 
   try {
     console.log('[enviar] Client params:', clientParams);
-    const r2 = await sendEmailJS(window.EMAILJS_TEMPLATE_CLIENT, clientParams);
-    console.log('[enviar] Client email OK:', r2);
+    const r2 = await emailjs.send("service_c1rg6l8", "template_4bmmdk1", clientParams);
+    console.log('[enviar] Client email OK:', r2.status, r2.text);
     clientSent = true;
   } catch(e2) {
     console.error('[enviar] Client email FAILED:', e2.message, e2);
@@ -1756,7 +1750,7 @@ function reiniciar() {
 }
 
 // Init
-emailjs.init({ publicKey: window.EMAILJS_PUBLIC_KEY });
+emailjs.init("RVOP08jayj5h5HTf-");
 applyT();
 renderServices();
 </script>
