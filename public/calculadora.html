@@ -5,23 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quote Calculator — Fly Electric Solutions</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<!-- EmailJS SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!-- no SDK needed — Web3Forms uses plain fetch -->
 <!-- jsPDF — PDF generation in the browser -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-(function(){
-  // ── EMAILJS CONFIGURATION ────────────────────────────────────────────────
-  // 1. Sign up free at https://emailjs.com (200 emails/month)
-  // 2. Email Services → Add Service → Gmail → connect frecaor1995@gmail.com
-  // 3. Create TWO templates (see comments in enviar() for required variables)
-  // 4. Account → API Keys → copy Public Key
-  window.EMAILJS_PUBLIC_KEY      = 'RVOP08jayj5h5HTf-';
-  window.EMAILJS_SERVICE_ID      = 'service_c1rg6l8';
-  window.EMAILJS_TEMPLATE_BIZ    = 'template_4bmmdk1';
-  window.EMAILJS_TEMPLATE_CLIENT = 'template_4bmmdk1';
-  // ────────────────────────────────────────────────────────────────────────
-})();
+  // Web3Forms access key — submissions go to info@flyelectricsolution.com
+  window.W3F_KEY = '9cc8cafc';
 </script>
 <style>
   :root {
@@ -1586,22 +1575,7 @@ function generarPDF(d, qn) {
   return doc;
 }
 
-// ── SUBMIT ────────────────────────────────────────────────────────────────────
-// EmailJS templates required:
-//
-// TEMPLATE_BIZ (to: info@flyelectricsolution.com) — plain text alert:
-//   Subject: [{{quote_number}}] Quote — {{service}} — {{client_name}}
-//   Body: Name:{{client_name}} Phone:{{client_phone}} Email:{{client_email}}
-//         Address:{{client_address}} Service:{{service}} Option:{{option}}
-//         Property:{{property_type}} Zone:{{zone}} Sqft:{{sqft}} Rush:{{rush}}
-//         Estimate: ${{price_min}} – ${{price_max}} USD  Includes:{{includes_list}}
-//
-// TEMPLATE_CLIENT (to: {{to_email}}) — HTML email with PDF attachment:
-//   Subject: {{subject_line}}
-//   Body: (any HTML you like using {{to_name}}, {{service}}, {{price_min}},
-//          {{price_max}}, {{quote_number}}, {{valid_until}})
-//   Attachment name: {{pdf_name}}   Attachment content: {{pdf_content}}  ← base64
-//
+// ── SUBMIT ───────────────────────────────────────────────────────────────────
 
 // Returns { qn, commit } — call commit() only after a successful send so the
 // counter never advances on a failed attempt.
@@ -1655,71 +1629,49 @@ async function enviar() {
   const expDate = new Date(); expDate.setDate(expDate.getDate()+15);
   const expStr  = expDate.toLocaleDateString(es?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'});
 
-  // Business alert → info@flyelectricsolution.com
-  const bizParams = {
-    to_email:       'info@flyelectricsolution.com',
-    quote_number:   qn,
-    client_name:    name,
-    client_phone:   phone,
-    client_email:   email,
-    client_address: addr || (es ? 'No provista' : 'Not provided'),
-    service:        d.service,
-    option:         optLabel,
-    property_type:  d.propertyType,
-    zone:           d.zone,
-    sqft:           d.sqft,
-    rush:           d.rush === 'yes' ? 'YES (+25%)' : 'No',
-    price_min:      d.priceMin,
-    price_max:      d.priceMax,
-    includes_list:  svc.includes['en'].join(', '),
-  };
-
-  // Client confirmation
-  const clientParams = {
-    to_email:     email,
-    to_name:      name,
-    quote_number: qn,
-    service:      d.service,
-    option:       optLabel,
-    price_min:    d.priceMin,
-    price_max:    d.priceMax,
-    property:     d.propertyType,
-    zone:         d.zone,
-    sqft:         d.sqft,
-    rush:         d.rush === 'yes' ? (es ? 'Sí (+25%)' : 'Yes (+25%)') : 'No',
-    valid_until:  expStr,
-    phone:        '(571) 379-6040',
-    subject_line: es
-      ? `Tu Cotización ${qn} — ${d.service} — Fly Electric Solutions`
-      : `Your Quote ${qn} — ${d.service} — Fly Electric Solutions`,
-  };
-
-  // ── 1. SEND EMAILS FIRST ────────────────────────────────────────────────────
-  let bizSent = false, clientSent = false;
-
+  // ── 1. SEND via Web3Forms ────────────────────────────────────────────────────
+  let sent = false;
   try {
-    console.log('[enviar] Biz params:', bizParams);
-    const r1 = await emailjs.send("service_c1rg6l8", "template_4bmmdk1", bizParams);
-    console.log('[enviar] Biz email OK:', r1.status, r1.text);
-    bizSent = true;
-  } catch(e1) {
-    console.error('[enviar] Biz email FAILED:', e1.message, e1);
-  }
-
-  try {
-    console.log('[enviar] Client params:', clientParams);
-    const r2 = await emailjs.send("service_c1rg6l8", "template_4bmmdk1", clientParams);
-    console.log('[enviar] Client email OK:', r2.status, r2.text);
-    clientSent = true;
-  } catch(e2) {
-    console.error('[enviar] Client email FAILED:', e2.message, e2);
+    const payload = {
+      access_key:   '9cc8cafc',
+      subject:      `[${qn}] Quote — ${d.service} — ${name}`,
+      from_name:    'Fly Electric Solutions',
+      replyto:      email,
+      quote_number: qn,
+      client_name:  name,
+      client_phone: phone,
+      client_email: email,
+      client_address: addr || (es ? 'No provista' : 'Not provided'),
+      service:      d.service,
+      option:       optLabel,
+      property_type: d.propertyType,
+      zone:         d.zone,
+      sqft:         d.sqft,
+      rush:         d.rush === 'yes' ? 'YES (+25%)' : 'No',
+      price_min:    d.priceMin,
+      price_max:    d.priceMax,
+      valid_until:  expStr,
+      includes_list: svc.includes['en'].join(', '),
+    };
+    console.log('[enviar] Web3Forms payload:', payload);
+    const res  = await fetch('https://api.web3forms.com/submit', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+    console.log('[enviar] Web3Forms response:', data);
+    if (!data.success) throw new Error(data.message);
+    sent = true;
+  } catch(err) {
+    console.error('[enviar] Web3Forms FAILED:', err.message, err);
   }
 
   btn.disabled = false;
   document.getElementById('sending-msg').classList.remove('show');
 
-  if (bizSent || clientSent) {
-    // ── 2. COMMIT COUNTER + DOWNLOAD PDF only after at least one email sent ───
+  if (sent) {
+    // ── 2. COMMIT COUNTER + DOWNLOAD PDF ────────────────────────────────────
     commitQN();
     try {
       generarPDF(d, qn).save(`${qn} - Fly Electric Solutions.pdf`);
@@ -1750,7 +1702,6 @@ function reiniciar() {
 }
 
 // Init
-emailjs.init("RVOP08jayj5h5HTf-");
 applyT();
 renderServices();
 </script>
