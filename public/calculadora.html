@@ -1622,7 +1622,7 @@ function getQuoteNumber() {
   btn.disabled = true;
   document.getElementById('sending-msg').classList.add('show');
 
-  const svc     = SERVICES.find(s => s.id === S.svcId);
+  const svc       = SERVICES.find(s => s.id === S.svcId);
   const {min,max} = calcular();
   const optLabel  = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
   const es        = emailLang === 'es';
@@ -1643,69 +1643,90 @@ function getQuoteNumber() {
     includes:     svc.includes[S.lang].join('||'),
   };
 
+  // 1. Generate PDF + auto-download (separate from email sending)
   try {
-    // 1. Generate PDF + auto-download to browser
-    const doc    = generarPDF(d, qn);
-    const pdfB64 = doc.output('datauristring').split(',')[1];
+    const doc = generarPDF(d, qn);
     doc.save(`${qn} - Fly Electric Solutions.pdf`);
+    console.log('[enviar] PDF downloaded:', qn);
+  } catch(pdfErr) {
+    console.error('[enviar] PDF generation failed:', pdfErr);
+  }
 
-    // Initialize EmailJS with public key
-    emailjs.init(window.EMAILJS_PUBLIC_KEY);
+  const expDate = new Date(); expDate.setDate(expDate.getDate()+15);
+  const expStr  = expDate.toLocaleDateString(es?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'});
 
-    // 2. Business alert → info@flyelectricsolution.com
-    await emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_BIZ, {
-      quote_number:   qn,
-      client_name:    name,
-      client_phone:   phone,
-      client_email:   email,
-      client_address: addr || (es ? 'No provista' : 'Not provided'),
-      service:        d.service,
-      option:         optLabel,
-      property_type:  d.propertyType,
-      zone:           d.zone,
-      sqft:           d.sqft,
-      rush:           d.rush === 'yes' ? 'YES (+25%)' : 'No',
-      price_min:      d.priceMin,
-      price_max:      d.priceMax,
-      includes_list:  svc.includes['en'].join(', '),
-    });
+  // 2. Business alert → info@flyelectricsolution.com
+  // NOTE: pdf_content intentionally omitted — base64 PDFs exceed EmailJS 50KB payload limit
+  const bizParams = {
+    to_email:       'info@flyelectricsolution.com',
+    quote_number:   qn,
+    client_name:    name,
+    client_phone:   phone,
+    client_email:   email,
+    client_address: addr || (es ? 'No provista' : 'Not provided'),
+    service:        d.service,
+    option:         optLabel,
+    property_type:  d.propertyType,
+    zone:           d.zone,
+    sqft:           d.sqft,
+    rush:           d.rush === 'yes' ? 'YES (+25%)' : 'No',
+    price_min:      d.priceMin,
+    price_max:      d.priceMax,
+    includes_list:  svc.includes['en'].join(', '),
+  };
 
-    // 3. Client email with PDF attachment
-    const expDate = new Date(); expDate.setDate(expDate.getDate()+15);
-    await emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_CLIENT, {
-      to_email:     email,
-      to_name:      name,
-      subject_line: es
-        ? `Tu Cotización ${qn} — ${d.service} — Fly Electric Solutions`
-        : `Your Quote ${qn} — ${d.service} — Fly Electric Solutions`,
-      quote_number: qn,
-      service:      d.service,
-      option:       optLabel,
-      price_min:    d.priceMin,
-      price_max:    d.priceMax,
-      property:     d.propertyType,
-      zone:         d.zone,
-      sqft:         d.sqft,
-      rush:         d.rush === 'yes' ? (es ? 'Sí (+25%)' : 'Yes (+25%)') : 'No',
-      valid_until:  expDate.toLocaleDateString(es?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'}),
-      pdf_name:     `${qn} - Fly Electric Solutions.pdf`,
-      pdf_content:  pdfB64,
-    });
+  // 3. Client confirmation
+  const clientParams = {
+    to_email:     email,
+    to_name:      name,
+    quote_number: qn,
+    service:      d.service,
+    option:       optLabel,
+    price_min:    d.priceMin,
+    price_max:    d.priceMax,
+    property:     d.propertyType,
+    zone:         d.zone,
+    sqft:         d.sqft,
+    rush:         d.rush === 'yes' ? (es ? 'Sí (+25%)' : 'Yes (+25%)') : 'No',
+    valid_until:  expStr,
+    phone:        '(571) 379-6040',
+    subject_line: es
+      ? `Tu Cotización ${qn} — ${d.service} — Fly Electric Solutions`
+      : `Your Quote ${qn} — ${d.service} — Fly Electric Solutions`,
+  };
 
-    // 4. Show success
+  let bizSent = false, clientSent = false;
+
+  try {
+    console.log('[enviar] Sending biz email…', bizParams);
+    const r1 = await emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_BIZ, bizParams);
+    console.log('[enviar] Biz email OK:', r1.status, r1.text);
+    bizSent = true;
+  } catch(e1) {
+    console.error('[enviar] Biz email FAILED:', e1);
+  }
+
+  try {
+    console.log('[enviar] Sending client email…', clientParams);
+    const r2 = await emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_CLIENT, clientParams);
+    console.log('[enviar] Client email OK:', r2.status, r2.text);
+    clientSent = true;
+  } catch(e2) {
+    console.error('[enviar] Client email FAILED:', e2);
+  }
+
+  btn.disabled = false;
+  document.getElementById('sending-msg').classList.remove('show');
+
+  if (bizSent || clientSent) {
     document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-success').classList.add('active');
     document.getElementById('stepsEl').style.display = 'none';
-
-  } catch(e) {
-    console.error('[enviar]', e);
+  } else {
     document.getElementById('err-4').classList.add('show');
     document.getElementById('err-4').textContent = S.lang === 'es'
       ? 'Error al enviar. Por favor llama al (571) 379-6040.'
       : 'Error sending. Please call (571) 379-6040.';
-  } finally {
-    btn.disabled = false;
-    document.getElementById('sending-msg').classList.remove('show');
   }
 }
 
@@ -1721,6 +1742,7 @@ function reiniciar() {
 }
 
 // Init
+emailjs.init(window.EMAILJS_PUBLIC_KEY);
 applyT();
 renderServices();
 </script>
