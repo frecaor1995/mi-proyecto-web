@@ -1630,41 +1630,70 @@ async function enviar() {
   const expStr  = expDate.toLocaleDateString(es?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'});
 
   // ── 1. SEND via Web3Forms ────────────────────────────────────────────────────
-  let sent = false;
-  try {
-    const payload = {
-      access_key:   '49fe2853-7628-4f89-ad16-d5bbfb1bc5c3',
-      subject:      `[${qn}] Quote — ${d.service} — ${name}`,
-      from_name:    'Fly Electric Solutions',
-      replyto:      email,
-      quote_number: qn,
-      client_name:  name,
-      client_phone: phone,
-      client_email: email,
-      client_address: addr || (es ? 'No provista' : 'Not provided'),
-      service:      d.service,
-      option:       optLabel,
-      property_type: d.propertyType,
-      zone:         d.zone,
-      sqft:         d.sqft,
-      rush:         d.rush === 'yes' ? 'YES (+25%)' : 'No',
-      price_min:    d.priceMin,
-      price_max:    d.priceMax,
-      valid_until:  expStr,
-      includes_list: svc.includes['en'].join(', '),
-    };
-    console.log('[enviar] Web3Forms payload:', payload);
+  const W3F_KEY = '49fe2853-7628-4f89-ad16-d5bbfb1bc5c3';
+  const bizMessage = [
+    `Quote #: ${qn}`,
+    `Name:     ${name}`,
+    `Phone:    ${phone}`,
+    `Email:    ${email}`,
+    `Address:  ${addr || 'Not provided'}`,
+    ``,
+    `Service:  ${d.service}`,
+    `Option:   ${optLabel}`,
+    `Property: ${d.propertyType}`,
+    `Zone:     ${d.zone}`,
+    `Sqft:     ${d.sqft}`,
+    `Rush:     ${d.rush === 'yes' ? 'YES (+25%)' : 'No'}`,
+    ``,
+    `Estimate: $${d.priceMin} – $${d.priceMax} USD`,
+    `Valid until: ${expStr}`,
+    ``,
+    `Includes: ${svc.includes['en'].join(', ')}`,
+  ].join('\n');
+
+  const clientMessage = es
+    ? `Hola ${name},\n\nGracias por contactar a Fly Electric Solutions. Hemos recibido tu solicitud de cotización.\n\nCotización: ${qn}\nServicio: ${d.service}\nEstimado: $${d.priceMin} – $${d.priceMax} USD\nVálida hasta: ${expStr}\n\nNos comunicaremos contigo pronto.\n\nFly Electric Solutions\n(571) 379-6040\ninfo@flyelectricsolution.com`
+    : `Hi ${name},\n\nThank you for contacting Fly Electric Solutions. We have received your quote request.\n\nQuote: ${qn}\nService: ${d.service}\nEstimate: $${d.priceMin} – $${d.priceMax} USD\nValid until: ${expStr}\n\nWe will be in touch shortly.\n\nFly Electric Solutions\n(571) 379-6040\ninfo@flyelectricsolution.com`;
+
+  async function w3fSend(payload) {
     const res  = await fetch('https://api.web3forms.com/submit', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body:    JSON.stringify(payload),
+      body:    JSON.stringify({ ...payload, access_key: W3F_KEY, botcheck: false }),
     });
     const data = await res.json();
-    console.log('[enviar] Web3Forms response:', data);
-    if (!data.success) throw new Error(data.message);
+    console.log('[w3f] response:', data);
+    if (!data.success) throw new Error(data.message || 'Web3Forms error');
+    return data;
+  }
+
+  let sent = false;
+  try {
+    // Business alert → info@flyelectricsolution.com
+    await w3fSend({
+      subject:   `[${qn}] New Quote — ${d.service} — ${name}`,
+      from_name: name,
+      replyto:   email,
+      message:   bizMessage,
+    });
     sent = true;
+    console.log('[enviar] Biz email sent OK');
   } catch(err) {
-    console.error('[enviar] Web3Forms FAILED:', err.message, err);
+    console.error('[enviar] Biz email FAILED:', err.message);
+  }
+
+  try {
+    // Client confirmation
+    await w3fSend({
+      subject:   es ? `Tu Cotización ${qn} — Fly Electric Solutions` : `Your Quote ${qn} — Fly Electric Solutions`,
+      from_name: 'Fly Electric Solutions',
+      replyto:   'info@flyelectricsolution.com',
+      to_email:  email,
+      message:   clientMessage,
+    });
+    console.log('[enviar] Client email sent OK');
+  } catch(err) {
+    console.error('[enviar] Client email FAILED:', err.message);
   }
 
   btn.disabled = false;
