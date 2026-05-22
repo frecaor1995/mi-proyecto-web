@@ -16,10 +16,10 @@
   // 2. Email Services → Add Service → Gmail → connect frecaor1995@gmail.com
   // 3. Create TWO templates (see comments in enviar() for required variables)
   // 4. Account → API Keys → copy Public Key
-  window.EMAILJS_PUBLIC_KEY      = 'YOUR_PUBLIC_KEY';
-  window.EMAILJS_SERVICE_ID      = 'YOUR_SERVICE_ID';
-  window.EMAILJS_TEMPLATE_BIZ    = 'template_biz';    // alert to info@flyelectricsolution.com
-  window.EMAILJS_TEMPLATE_CLIENT = 'template_client'; // PDF quote to the client
+  window.EMAILJS_PUBLIC_KEY      = 'RVOP08jayj5h5HTf-';
+  window.EMAILJS_SERVICE_ID      = 'service_c1rg6l8';
+  window.EMAILJS_TEMPLATE_BIZ    = 'r5izkxi';
+  window.EMAILJS_TEMPLATE_CLIENT = 'r5izkxi';
   // ────────────────────────────────────────────────────────────────────────
 })();
 </script>
@@ -1602,7 +1602,15 @@ function generarPDF(d, qn) {
 //          {{price_max}}, {{quote_number}}, {{valid_until}})
 //   Attachment name: {{pdf_name}}   Attachment content: {{pdf_content}}  ← base64
 //
-async function enviar() {
+function getQuoteNumber() {
+    const year = new Date().getFullYear();
+    const key  = `fes_qseq_${year}`;
+    const seq  = (parseInt(localStorage.getItem(key) || '0')) + 1;
+    localStorage.setItem(key, String(seq));
+    return `FES-${year}-${String(seq).padStart(6, '0')}`;
+  }
+
+  async function enviar() {
   const name      = document.getElementById('c-name').value.trim();
   const phone     = document.getElementById('c-phone').value.trim();
   const email     = document.getElementById('c-email').value.trim();
@@ -1618,7 +1626,7 @@ async function enviar() {
   const {min,max} = calcular();
   const optLabel  = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
   const es        = emailLang === 'es';
-  const qn        = 'FES-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Math.floor(Math.random()*900)+100);
+  const qn        = getQuoteNumber();
 
   const d = {
     name, phone, email,
