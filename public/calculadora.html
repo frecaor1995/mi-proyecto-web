@@ -1602,19 +1602,31 @@ function generarPDF(d, qn) {
 //   Attachment name: {{pdf_name}}   Attachment content: {{pdf_content}}  ← base64
 //
 // EmailJS REST API — bypasses SDK domain-whitelist restrictions entirely.
-// Docs: https://www.emailjs.com/docs/rest-api/send/
 async function sendEmailJS(templateId, params) {
-  const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      service_id:      window.EMAILJS_SERVICE_ID,
-      template_id:     templateId,
-      user_id:         window.EMAILJS_PUBLIC_KEY,
-      template_params: params,
-    }),
-  });
-  const text = await res.text();
+  const payload = {
+    service_id:      window.EMAILJS_SERVICE_ID,
+    template_id:     templateId,
+    user_id:         window.EMAILJS_PUBLIC_KEY,
+    template_params: params,
+  };
+  console.log('[sendEmailJS] → template:', templateId);
+  console.log('[sendEmailJS] → service:', window.EMAILJS_SERVICE_ID, '| key:', window.EMAILJS_PUBLIC_KEY);
+  console.log('[sendEmailJS] → params:', JSON.stringify(params));
+
+  let res, text;
+  try {
+    res  = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    text = await res.text();
+  } catch(networkErr) {
+    console.error('[sendEmailJS] ✗ Network/CORS error:', networkErr.message);
+    throw networkErr;
+  }
+
+  console.log('[sendEmailJS] ← HTTP', res.status, res.statusText, '| body:', text);
   if (!res.ok) throw new Error(`EmailJS ${res.status}: ${text}`);
   return text;
 }
