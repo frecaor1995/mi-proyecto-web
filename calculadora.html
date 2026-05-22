@@ -1683,9 +1683,19 @@ async function enviar() {
     console.error('[enviar] Biz email FAILED:', err.message);
   }
 
-  // Client confirmation is handled by Web3Forms auto-reply feature.
-  // Dashboard: web3forms.com → Settings → Confirmation Email → enable + set template.
-  // Web3Forms sends the auto-reply to the address in replyto (client's email above).
+  try {
+    // Client confirmation → client's email from the form
+    await w3fSend({
+      subject:   es ? `Tu Cotización ${qn} — Fly Electric Solutions` : `Your Quote ${qn} — Fly Electric Solutions`,
+      from_name: 'Fly Electric Solutions',
+      to_email:  email,
+      replyto:   'info@flyelectricsolution.com',
+      message:   clientMessage,
+    });
+    console.log('[enviar] Client email sent OK');
+  } catch(err) {
+    console.error('[enviar] Client email FAILED:', err.message);
+  }
 
   btn.disabled = false;
   document.getElementById('sending-msg').classList.remove('show');
