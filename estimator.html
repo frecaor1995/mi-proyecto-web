@@ -943,27 +943,6 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .spin { animation: spin 1s linear infinite; }
 
-  /* ── PRINT / PDF ── */
-  .print-header, .print-footer { display: none; }
-
-  @media print {
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { background: #fff !important; color: #111 !important; }
-    body::before { display: none !important; }
-    .top-bar, .header, .progress-wrapper,
-    #panel-1, #panel-2, #panel-4, #panel-success, .btn-row { display: none !important; }
-    #panel-3 { display: block !important; }
-    .wrapper { padding: 16px; max-width: 100%; }
-    .card { box-shadow: none !important; border: 1px solid #ddd !important; padding: 24px !important; }
-    .result-box { background: #fffce6 !important; border: 2px solid #ffe600 !important; }
-    .result-price, .result-price span { color: #0A0E27 !important; }
-    .inc-title, .disclaimer-title, .result-label, .step-title { color: #0A0E27 !important; }
-    .bd-item { background: #f5f5f5 !important; border: 1px solid #ddd !important; }
-    .includes { background: #f9f9f9 !important; border: 1px solid #ddd !important; }
-    .disclaimer-section { background: #f9f9f9 !important; border: 1px solid #ddd !important; }
-    .print-header, .print-footer { display: block !important; }
-  }
-
   /* ── RESPONSIVE ── */
   @media (max-width: 700px) {
     .wrapper { padding: 32px 18px 80px; }
@@ -992,8 +971,6 @@
     .btn-next { width: 100%; justify-content: center; }
   }
 </style>
-<!-- jsPDF — PDF generation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 <div class="wrapper">
@@ -1138,20 +1115,6 @@
 
     <!-- STEP 3: Result -->
     <div class="step-panel" id="panel-3">
-      <!-- Print-only header -->
-      <div class="print-header" style="margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #ffe600;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-          <div style="width:36px;height:36px;background:#ffe600;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0A0E27" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          </div>
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#0A0E27;">Fly Electric Solutions LLC</div>
-            <div style="font-size:12px;color:#555;">(571) 379-6040 &nbsp;·&nbsp; flyelectricsolution.com &nbsp;·&nbsp; info@flyelectricsolution.com</div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:#777;" id="print-date"></div>
-      </div>
-
       <div class="step-title" id="p3-title">Your Project Estimate</div>
       <div class="step-desc" id="p3-desc">This is a preliminary, non-binding estimate based on the information you provided. A licensed electrician will confirm final pricing after an on-site evaluation.</div>
       <div class="result-box">
@@ -1179,17 +1142,8 @@
         <p class="disclaimer" id="disc"></p>
       </div>
 
-      <!-- Print-only footer -->
-      <div class="print-footer" style="margin-top:20px;padding-top:12px;border-top:1px solid #ddd;font-size:11px;color:#777;text-align:center;">
-        Fly Electric Solutions LLC &nbsp;·&nbsp; Licensed &amp; Insured &nbsp;·&nbsp; TDLR Licensed Master Electrician &nbsp;·&nbsp; Houston, TX
-      </div>
-
       <div class="btn-row">
         <button class="btn btn-back" onclick="prevStep(3)" id="btn3b">← Recalculate</button>
-        <button class="btn btn-back" onclick="printEstimate()" id="btn-print" style="border-color:rgba(255,237,78,0.5);color:var(--primary-black);background:rgba(255,237,78,0.12);">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Save as PDF
-        </button>
         <button class="btn btn-next" onclick="nextStep(3)" id="btn3n">Get Licensed Quote →</button>
       </div>
     </div>
@@ -1198,7 +1152,7 @@
     <div class="step-panel" id="panel-4">
       <div class="step-title" id="p4-title">Request Your Licensed Quote</div>
       <div class="step-desc" id="p4-desc">A certified electrician will contact you within 2 business hours to schedule your inspection and provide a binding quote.</div>
-      <form id="web3form" class="contact-form" onsubmit="enviar(event)">
+      <form id="web3form" class="contact-form" onsubmit="return enviar(event)">
         <input type="text" name="name" id="c-name" placeholder="Full name *" required>
         <input type="tel" name="phone" id="c-phone" placeholder="Phone / WhatsApp *" required>
         <input type="email" name="email" id="c-email" placeholder="Email address *" required>
@@ -1250,7 +1204,6 @@
 </div>
 
 <script>
-
 // SVG icon map by service ID
 const SVG_ICONS = {
   outlets:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="10" r="1.2"/><circle cx="15" cy="10" r="1.2"/><path d="M9 14s.8 2 3 2 3-2 3-2"/></svg>`,
@@ -1586,253 +1539,80 @@ function updateDots(cur) {
 // ── SUBMIT ────────────────────────────────────────────────────────────────────
 function enviar(e) {
   e.preventDefault();
-
-  const name    = document.getElementById('c-name').value.trim();
-  const phone   = document.getElementById('c-phone').value.trim();
-  const email   = document.getElementById('c-email').value.trim();
+  
+  const name = document.getElementById('c-name').value.trim();
+  const phone = document.getElementById('c-phone').value.trim();
+  const email = document.getElementById('c-email').value.trim();
   const address = document.getElementById('c-address').value.trim();
-
-  const errEl = document.getElementById('err-4');
-  if (!name || !phone || !email) { errEl.classList.add('show'); return; }
-
-  const svc      = SERVICES.find(s => s.id === S.svcId);
+  const language = document.getElementById('emailLang').value;
+  
+  if (!name || !phone || !email) {
+    document.getElementById('err-4').classList.add('show');
+    return false;
+  }
+  
+  const svc = SERVICES.find(s => s.id === S.svcId);
   const { min, max } = calcular();
   const optLabel = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
-
-  const estimateNum  = 'FE-' + Date.now().toString().slice(-6);
-  const estimateDate = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-
-  const estData = {
-    number:       estimateNum,
-    date:         estimateDate,
-    service:      svc.name['en'],
-    option:       optLabel,
-    sqft:         S.sqft ? S.sqft.toLocaleString() + ' sq ft' : 'N/A',
-    propertyType: propName['en'][S.propiedad] || S.propiedad,
-    zone:         zonaName['en'][S.zona],
-    rush:         S.rush,
-    priceMin:     min.toLocaleString('en-US'),
-    priceMax:     max.toLocaleString('en-US'),
-    includes:     svc.includes['en'],
+  const includesList = svc.includes[S.lang].join('||');
+  
+  // Show sending message
+  const btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  document.getElementById('err-4').classList.remove('show');
+  document.getElementById('sending-msg').classList.add('show');
+  
+  // Prepare payload
+  const payload = {
+    name,
+    phone,
+    email,
+    address,
+    language,
+    service: svc.name[S.lang],
+    option: optLabel,
+    sqft: String(S.sqft || ''),
+    property_type: propName[S.lang][S.propiedad] || S.propiedad,
+    zone: zonaName[S.lang][S.zona],
+    rush_service: S.rush ? 'yes' : 'no',
+    price_min: min.toLocaleString('en-US'),
+    price_max: max.toLocaleString('en-US'),
+    includes: includesList
   };
-
-  // Generate and auto-download PDF
-  const doc = generatePDF({ name, phone, email, address }, estData);
-  doc.save('FlyElectric-Estimate-' + estimateNum + '.pdf');
-
-  // Show success screen
-  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-success').classList.add('active');
-  document.getElementById('stepsEl').style.display = 'none';
-}
-
-// ─── PDF GENERATION ───────────────────────────────────────────────────────────
-function generatePDF(customer, est) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const W = 210, M = 15, CW = W - M * 2;
-
-  // Helper setters
-  const fc = (...c) => doc.setFillColor(...c);
-  const dc = (...c) => doc.setDrawColor(...c);
-  const tc = (...c) => doc.setTextColor(...c);
-
-  // ── HEADER ──────────────────────────────────────────────────────
-  fc(10, 14, 39);
-  doc.rect(0, 0, W, 40, 'F');
-
-  // Yellow accent strip
-  fc(255, 230, 0);
-  doc.rect(0, 40, W, 2.5, 'F');
-
-  // Logo box
-  fc(255, 230, 0);
-  doc.roundedRect(M, 8, 11, 11, 2, 2, 'F');
-  tc(10, 14, 39);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('FE', M + 2.2, 15.5);
-
-  // Company name
-  tc(255, 255, 255);
-  doc.setFontSize(15);
-  doc.text('FLY ELECTRIC SOLUTIONS LLC', M + 15, 14);
-
-  // Sub-info
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  tc(170, 178, 200);
-  doc.text('(571) 379-6040   ·   info@flyelectricsolution.com   ·   flyelectricsolution.com', M + 15, 21);
-  doc.text('Licensed & Insured   ·   TDLR Licensed Master Electrician   ·   Houston, TX', M + 15, 27);
-
-  // Estimate badge (right)
-  tc(255, 230, 0);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('ESTIMATE', W - M, 12, { align: 'right' });
-  tc(190, 195, 215);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('#' + est.number, W - M, 19, { align: 'right' });
-  doc.text(est.date, W - M, 26, { align: 'right' });
-
-  let y = 51;
-
-  // ── CUSTOMER INFO ────────────────────────────────────────────────
-  fc(249, 250, 251);
-  dc(220, 222, 228);
-  doc.setLineWidth(0.3);
-  doc.rect(M, y, CW, 26, 'FD');
-
-  tc(10, 14, 39);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
-  doc.text('CUSTOMER INFORMATION', M + 4, y + 6);
-
-  const half = CW / 2;
-  doc.setFontSize(8.5);
-  tc(31, 41, 55);
-
-  [
-    ['Name:', customer.name, M + 4, y + 13],
-    ['Phone:', customer.phone, M + 4, y + 20],
-    ['Email:', customer.email, M + half + 4, y + 13],
-    ['Address:', customer.address || 'Not provided', M + half + 4, y + 20],
-  ].forEach(([lbl, val, x, yy]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(lbl, x, yy);
-    doc.setFont('helvetica', 'normal');
-    const lines = doc.splitTextToSize(val, half - 22);
-    doc.text(lines[0] || '', x + (lbl.length * 1.9 + 4), yy);
+  
+  // Submit to API
+  fetch('/api/v1/contact', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      // Show success screen
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-success').classList.add('active');
+      document.getElementById('stepsEl').style.display = 'none';
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  })
+  .catch(err => {
+    console.error('Submission error:', err);
+    document.getElementById('err-4').classList.add('show');
+    const errMsg = S.lang === 'es'
+      ? 'Error al enviar. Por favor intenta de nuevo o llama al (571) 379-6040.'
+      : 'Error sending. Please try again or call (571) 379-6040.';
+    document.getElementById('err-4').textContent = errMsg;
+  })
+  .finally(() => {
+    btn.disabled = false;
+    document.getElementById('sending-msg').classList.remove('show');
   });
-
-  y += 33;
-
-  // ── PROJECT DETAILS ──────────────────────────────────────────────
-  tc(10, 14, 39);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('PROJECT DETAILS', M, y);
-  dc(255, 230, 0);
-  doc.setLineWidth(0.8);
-  doc.line(M, y + 2.5, M + CW, y + 2.5);
-  y += 8;
-
-  const rows = [
-    ['SERVICE',        est.service],
-    ['OPTION',         est.option],
-    ['SQUARE FOOTAGE', est.sqft],
-    ['PROPERTY TYPE',  est.propertyType],
-    ['ZONE / AREA',    est.zone],
-    ['RUSH SERVICE',   est.rush ? 'Yes — Emergency +25%' : 'No'],
-  ];
-
-  rows.forEach(([lbl, val], i) => {
-    if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 8, 'F'); }
-    tc(107, 114, 128);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.text(lbl, M + 3, y + 1);
-    tc(31, 41, 55);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    const vLines = doc.splitTextToSize(String(val), CW - 62);
-    doc.text(vLines[0] || '', M + 62, y + 1);
-    y += 8;
-  });
-
-  y += 6;
-
-  // ── PRICE BOX ────────────────────────────────────────────────────
-  fc(10, 14, 39);
-  doc.rect(M, y, CW, 28, 'F');
-  fc(255, 230, 0);
-  doc.rect(M, y, 4, 28, 'F');
-
-  tc(170, 178, 200);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text('ESTIMATED PROJECT RANGE', M + 9, y + 8);
-
-  tc(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  doc.text('$' + est.priceMin + ' – $' + est.priceMax, M + 9, y + 21);
-
-  tc(170, 178, 200);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text('Labor + basic materials  ·  Preliminary, non-binding', W - M, y + 8, { align: 'right' });
-
-  y += 35;
-
-  // ── WHAT'S INCLUDED ──────────────────────────────────────────────
-  tc(10, 14, 39);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text("WHAT'S INCLUDED", M, y);
-  dc(255, 230, 0);
-  doc.setLineWidth(0.8);
-  doc.line(M, y + 2.5, M + CW, y + 2.5);
-  y += 8;
-
-  est.includes.forEach((item, i) => {
-    if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 7.5, 'F'); }
-    fc(255, 230, 0);
-    doc.circle(M + 4, y, 1.4, 'F');
-    tc(31, 41, 55);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.text(item, M + 9, y + 1);
-    y += 7.5;
-  });
-
-  y += 7;
-
-  // ── DISCLAIMER ───────────────────────────────────────────────────
-  if (y > 232) { doc.addPage(); y = 20; }
-
-  const discText = 'This is a preliminary automated estimate and is not binding. Final pricing depends on on-site inspection findings, material specifications, NEC code requirements, local permit fees, and labor complexity. A licensed electrician from Fly Electric Solutions will contact you within 2 business hours to schedule an inspection and issue a binding written quote before any work begins. This estimate expires 30 days from the date generated.';
-  const discLines = doc.splitTextToSize(discText, CW - 10);
-  const discH = discLines.length * 4.5 + 16;
-
-  fc(255, 251, 235);
-  dc(245, 158, 11);
-  doc.setLineWidth(0.5);
-  doc.rect(M, y, CW, discH, 'FD');
-
-  tc(146, 64, 14);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.text('! IMPORTANT - ESTIMATE TERMS & CONDITIONS', M + 5, y + 8);
-
-  tc(92, 45, 5);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text(discLines, M + 5, y + 14);
-
-  // ── FOOTER ───────────────────────────────────────────────────────
-  fc(10, 14, 39);
-  doc.rect(0, 283, W, 14, 'F');
-  tc(175, 182, 205);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.text(
-    'Fly Electric Solutions LLC   ·   (571) 379-6040   ·   flyelectricsolution.com   ·   TDLR Licensed Master Electrician',
-    W / 2, 289, { align: 'center' }
-  );
-  doc.text(
-    'This document was auto-generated. For questions reply to your confirmation email or call us.',
-    W / 2, 293, { align: 'center' }
-  );
-
-  return doc;
-}
-
-function printEstimate() {
-  const el = document.getElementById('print-date');
-  if (el) el.textContent = 'Generated: ' + new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
-  window.print();
+  
+  return false;
 }
 
 function reiniciar() {

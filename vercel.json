@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/estimator",
+      "destination": "/estimator.html"
+    },
+    {
+      "source": "/calculadora",
+      "destination": "/calculadora.html"
+    }
+  ]
+}
