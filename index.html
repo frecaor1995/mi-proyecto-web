@@ -949,6 +949,28 @@ body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{
 }
 .proj-card[style*="display:none"]{display:none!important}
 @media(max-width:600px){.projects-grid{grid-template-columns:1fr}}
+
+/* ─── MOBILE: DISABLE FULLSCREEN SLIDER, ENABLE NORMAL SCROLL ───────────── */
+@media(max-width:767px){
+  html,body{overflow-y:auto!important;height:auto!important}
+  #slider{position:static!important;height:auto!important}
+  .slide,.slide.prev{
+    position:relative!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+    height:auto!important;
+    min-height:100vh;
+    overflow:hidden;
+  }
+  .slide-bg{position:absolute!important}
+  #arrows,#swipe-hint{display:none!important}
+  /* WhatsApp: move to bottom-left so it never overlaps arrows */
+  #whatsapp-btn{
+    right:auto!important;
+    left:20px!important;
+    bottom:20px!important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1624,6 +1646,7 @@ document.addEventListener('keydown', e => {
 
 // ─── MOUSE SCROLL ─────────────────────────────────────────────────────────────
 window.addEventListener('wheel', e => {
+  if (window.innerWidth <= 767) return;
   e.preventDefault();
   if (scrollLock) return;
 
@@ -1653,6 +1676,7 @@ document.addEventListener('touchstart', e => {
 }, { passive: true });
 
 document.addEventListener('touchend', e => {
+  if (window.innerWidth <= 767) return;
   const dy = touchStartY - e.changedTouches[0].clientY;
   const dx = touchStartX - e.changedTouches[0].clientX;
   if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 50) {
