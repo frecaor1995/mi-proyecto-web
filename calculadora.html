@@ -1238,6 +1238,10 @@
         </div>
         <h2 id="suc-t">Request Sent!</h2>
         <p id="suc-p">A specialist from <strong>Fly Electric Solutions</strong> will contact you within 2 business hours.</p>
+        <div id="suc-est-num" style="display:inline-block;margin:0 auto 20px;background:linear-gradient(135deg,rgba(255,237,78,0.14) 0%,rgba(255,237,78,0.04) 100%);border:1.5px solid rgba(255,237,78,0.45);border-radius:10px;padding:14px 32px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6B7280;margin-bottom:5px;">Estimate Number</div>
+          <div id="suc-est-num-val" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#0A0E27;letter-spacing:0.06em;">—</div>
+        </div>
         <div class="email-confirm-box">
           <strong id="suc-email-t">Confirmation email sent</strong>
           <span id="suc-email-p">Check your inbox — we sent a summary of your estimate.</span>
@@ -1442,6 +1446,15 @@ const zonaName = {
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const S = { lang:'en', svcId:null, unitOptIdx:null, sqft:0, propiedad:'', zona:'houston', rush:false };
 
+// ── ESTIMATE COUNTER ─────────────────────────────────────────────────────────
+function nextEstimateNumber() {
+  const year = new Date().getFullYear();
+  const key  = 'fes_counter_' + year;
+  const n    = (parseInt(localStorage.getItem(key) || '0', 10)) + 1;
+  localStorage.setItem(key, n);
+  return 'FES-' + year + '-' + String(n).padStart(6, '0');
+}
+
 // ── RENDER SERVICES ───────────────────────────────────────────────────────────
 function renderServices() {
   const grid = document.getElementById('svcGrid');
@@ -1599,7 +1612,7 @@ function enviar(e) {
   const { min, max } = calcular();
   const optLabel = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
 
-  const estimateNum  = 'FE-' + Date.now().toString().slice(-6);
+  const estimateNum  = nextEstimateNumber();
   const estimateDate = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
 
   const estData = {
@@ -1624,6 +1637,7 @@ function enviar(e) {
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-success').classList.add('active');
   document.getElementById('stepsEl').style.display = 'none';
+  document.getElementById('suc-est-num-val').textContent = estimateNum;
 }
 
 // ─── PDF GENERATION ───────────────────────────────────────────────────────────
@@ -1833,6 +1847,7 @@ function printEstimate() {
   const el = document.getElementById('print-date');
   if (el) el.textContent = 'Generated: ' + new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
   window.print();
+
 }
 
 function reiniciar() {
