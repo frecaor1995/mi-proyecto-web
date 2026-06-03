@@ -3,8 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fly Electric Solutions — Licensed Electrical Contractor Texas</title>
-<meta name="description" content="Licensed electrical contractor in Texas. Residential & commercial electrical installations, panel upgrades, EV chargers, LED lighting, generators. TDLR licensed, bilingual team.">
+<title>Fly Electric Solutions LLC | Licensed Electrician Houston TX</title>
+<meta name="description" content="Licensed electrical contractor in Houston TX. Panel upgrades, outlets, LED lighting, EV chargers, commercial wiring. Free estimates. Bilingual service. Call (571) 379-6040">
+<meta name="keywords" content="electrician Houston TX, electrical contractor Houston, panel upgrade Houston, licensed electrician Houston, electricista Houston, EV charger installation Houston, commercial electrician Houston">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://flyelectricsolution.com">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Fly Electric Solutions LLC | Electrician Houston TX">
+<meta property="og:description" content="Licensed electrical contractor Houston TX. Free estimates. Bilingual EN/ES.">
+<meta property="og:url" content="https://flyelectricsolution.com">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Fly Electric Solutions LLC">
+
+<!-- Local Business Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ElectricalContractor",
+  "name": "Fly Electric Solutions LLC",
+  "url": "https://flyelectricsolution.com",
+  "telephone": "+15713796040",
+  "email": "info@flyelectricsolution.com",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Houston",
+    "addressRegion": "TX",
+    "addressCountry": "US"
+  },
+  "areaServed": "Houston TX",
+  "description": "Licensed electrical contractor in Houston TX specializing in panel upgrades, outlets, LED lighting, EV chargers and commercial wiring.",
+  "priceRange": "$$",
+  "openingHours": "Mo-Fr 07:00-18:00",
+  "hasMap": "https://maps.google.com/?q=Fly+Electric+Solutions+Houston+TX"
+}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ─── RESET & BASE ─────────────────────────────────────────────────────── */
@@ -954,52 +988,17 @@ body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{
 @media(max-width:767px){
   html,body{overflow-y:auto!important;height:auto!important}
   #slider{position:static!important;height:auto!important}
-
-  /* Every slide becomes a normal block — opacity:1, natural height */
   .slide,.slide.prev{
     position:relative!important;
     opacity:1!important;
     pointer-events:auto!important;
     height:auto!important;
     min-height:100vh;
-    overflow:visible!important;
+    overflow:hidden;
   }
-
-  /* slide-content must not depend on parent height:100% */
-  .slide-content{
-    height:auto!important;
-    min-height:100vh;
-  }
-
-  /* ── THE MAIN FIX: undo desktop animation-reset that forces opacity:0
-        on content inside non-active slides. On mobile ALL slides are
-        visible simultaneously so that rule kills slides 2,3,7,8 entirely. */
-  .slide:not(.active) .hero-tag,
-  .slide:not(.active) .hero-h1,
-  .slide:not(.active) .hero-sub,
-  .slide:not(.active) .hero-ctas,
-  .slide:not(.active) .hero-badges,
-  .slide:not(.active) .slide-label,
-  .slide:not(.active) .slide-h2,
-  .slide:not(.active) .services-grid,
-  .slide:not(.active) .about-text,
-  .slide:not(.active) .about-stats,
-  .slide:not(.active) .quote-intro,
-  .slide:not(.active) .quote-form-wrap,
-  .slide:not(.active) .contact-info,
-  .slide:not(.active) .contact-right{
-    animation:none!important;
-    opacity:1!important;
-    transform:none!important;
-  }
-
-  /* contact-right also has inline style="opacity:0" — override it */
-  .contact-right{opacity:1!important;animation:none!important}
-
-  /* Hide fullscreen-slider-only chrome */
+  .slide-bg{position:absolute!important}
   #arrows,#swipe-hint{display:none!important}
-
-  /* WhatsApp: move to bottom-left, away from any navigation chrome */
+  /* WhatsApp: move to bottom-left so it never overlaps arrows */
   #whatsapp-btn{
     right:auto!important;
     left:20px!important;
@@ -1328,28 +1327,28 @@ body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{
       </div>
       <div class="projects-grid" id="projects-grid">
         <div class="proj-card" data-cat="panels residential">
-          <img src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&auto=format&fit=crop" alt="Panel Upgrade" style="width:100%;height:100%;object-fit:cover">
+          <img src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&auto=format&fit=crop" alt="200A electrical panel upgrade by licensed electrician in Houston TX" style="width:100%;height:100%;object-fit:cover">
           <div class="proj-overlay">
             <div class="proj-name" data-i18n="s8-p1-name">Panel Upgrade 200A</div>
             <div class="proj-tag" data-i18n="s8-p1-tag">Residential · Sugar Land</div>
           </div>
         </div>
         <div class="proj-card" data-cat="commercial lighting">
-          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop" alt="LED Lighting Office" style="width:100%;height:100%;object-fit:cover">
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop" alt="Commercial LED lighting installation in Houston TX office building" style="width:100%;height:100%;object-fit:cover">
           <div class="proj-overlay">
             <div class="proj-name" data-i18n="s8-p2-name">LED Lighting Office</div>
             <div class="proj-tag" data-i18n="s8-p2-tag">Commercial · Houston Midtown</div>
           </div>
         </div>
         <div class="proj-card" data-cat="residential">
-          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop" alt="Outlet Installation" style="width:100%;height:100%;object-fit:cover">
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop" alt="Residential outlet and wiring installation by Fly Electric Solutions Houston TX" style="width:100%;height:100%;object-fit:cover">
           <div class="proj-overlay">
             <div class="proj-name" data-i18n="s8-p3-name">Outlet Installation Kitchen</div>
             <div class="proj-tag" data-i18n="s8-p3-tag">Residential · Pearland</div>
           </div>
         </div>
         <div class="proj-card" data-cat="residential">
-          <img src="https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&auto=format&fit=crop" alt="EV Charger" style="width:100%;height:100%;object-fit:cover">
+          <img src="https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&auto=format&fit=crop" alt="Level 2 EV charger installation at Houston TX home by licensed electrician" style="width:100%;height:100%;object-fit:cover">
           <div class="proj-overlay">
             <div class="proj-name" data-i18n="s8-p4-name">EV Charger Installation</div>
             <div class="proj-tag" data-i18n="s8-p4-tag">Residential · Katy</div>
