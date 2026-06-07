@@ -991,6 +991,33 @@
     .btn-back { width: 100%; justify-content: center; }
     .btn-next { width: 100%; justify-content: center; }
   }
+
+  /* ── LINE ITEMS TABLE ── */
+  .items-section { margin-bottom: 20px; }
+  .items-label { font-size: 12px; color: var(--primary-black); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 12px; }
+  .items-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .items-table thead th { background: var(--primary-black); color: var(--accent-yellow); padding: 9px 8px; text-align: left; font-family: 'Syne', sans-serif; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+  .items-table tbody tr { border-bottom: 1px solid var(--neutral-200); }
+  .items-table tbody tr:nth-child(even) { background: var(--neutral-50); }
+  .items-table td { padding: 7px 6px; vertical-align: middle; }
+  .item-input { width: 100%; border: 1.5px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 6px 9px; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--primary-black); background: var(--white); outline: none; transition: border-color 0.2s; }
+  .item-input:focus { border-color: var(--accent-yellow); }
+  .item-sub { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--primary-black); white-space: nowrap; min-width: 70px; display: inline-block; }
+  .btn-rm { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--neutral-300); background: transparent; color: var(--neutral-500); cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .btn-rm:hover { border-color: var(--error); color: var(--error); background: var(--error-light); }
+  .items-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; gap: 12px; }
+  .btn-add-item { display: inline-flex; align-items: center; gap: 7px; padding: 8px 18px; border: 1.5px dashed rgba(255,237,78,0.6); border-radius: var(--radius-md); background: rgba(255,237,78,0.06); color: var(--primary-black); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-add-item:hover { background: rgba(255,237,78,0.14); border-style: solid; }
+  .items-total-row { display: flex; align-items: center; gap: 14px; background: var(--primary-black); border-radius: var(--radius-md); padding: 11px 18px; }
+  .items-total-lbl { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; text-transform: uppercase; }
+  .items-total-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--accent-yellow); letter-spacing: -0.02em; }
+  @media (max-width: 640px) {
+    .items-table thead th { font-size: 9px; padding: 7px 5px; }
+    .items-table td { padding: 5px 4px; }
+    .item-input { font-size: 12px; padding: 5px 7px; }
+    .items-footer { flex-direction: column; align-items: stretch; }
+    .items-total-row { justify-content: space-between; }
+  }
 </style>
 <!-- jsPDF — PDF generation -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1170,7 +1197,36 @@
         <div class="inc-title" id="inc-t">What's Included in This Estimate</div>
         <div id="incList"></div>
       </div>
-      
+
+      <!-- LINE ITEMS TABLE -->
+      <div class="items-section">
+        <div class="items-label" id="items-title-lbl">Detailed Quote Items</div>
+        <div style="overflow-x:auto">
+          <table class="items-table" id="items-table">
+            <thead>
+              <tr>
+                <th style="width:40%" id="th-desc">Description</th>
+                <th style="width:10%;text-align:center" id="th-qty">Qty</th>
+                <th style="width:20%" id="th-unit">Unit Price</th>
+                <th style="width:20%" id="th-sub">Subtotal</th>
+                <th style="width:36px"></th>
+              </tr>
+            </thead>
+            <tbody id="items-tbody"></tbody>
+          </table>
+        </div>
+        <div class="items-footer">
+          <button class="btn-add-item" onclick="addItem()" id="btn-add-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span id="btn-add-item-lbl">Add Item</span>
+          </button>
+          <div class="items-total-row">
+            <span class="items-total-lbl" id="total-lbl">QUOTE TOTAL</span>
+            <span class="items-total-val" id="items-total">$0</span>
+          </div>
+        </div>
+      </div>
+
       <div class="disclaimer-section">
         <div class="disclaimer-title" id="disc-title">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -1302,6 +1358,8 @@ const T = {
     sucET:'Confirmation email sent', sucEP:'Check your inbox — we sent a summary of your preliminary estimate.',
     btnRestart:'Get another estimate',
     bdLabels:['Service','Property','Sq Ft','Area'],
+    itemsTitle:'Detailed Quote Items', thDesc:'Description', thQty:'Qty', thUnit:'Unit Price', thSub:'Subtotal',
+    addItemBtn:'Add Item', totalLbl:'QUOTE TOTAL', phItemDesc:'Description...',
   },
   es: {
     badge:'Estimador Eléctrico Rápido',
@@ -1336,6 +1394,8 @@ const T = {
     sucET:'Email de confirmación enviado', sucEP:'Revisa tu bandeja de entrada — te enviamos el resumen de tu estimado preliminar.',
     btnRestart:'Obtener otro estimado',
     bdLabels:['Servicio','Propiedad','Pies Cuad.','Área'],
+    itemsTitle:'Ítems de la Cotización', thDesc:'Descripción', thQty:'Cant.', thUnit:'Precio Unit.', thSub:'Subtotal',
+    addItemBtn:'Agregar Ítem', totalLbl:'TOTAL COTIZACIÓN', phItemDesc:'Descripción...',
   }
 };
 
@@ -1517,6 +1577,75 @@ function mostrarResultado() {
   document.getElementById('bdGrid').innerHTML = t.bdLabels.map((l,i)=>`<div class="bd-item"><div class="bd-val">${bdData[i]}</div><div class="bd-lbl">${l}</div></div>`).join('');
   const checkSVG = `<div class="inc-check"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
   document.getElementById('incList').innerHTML = svc.includes[S.lang].map(i=>`<div class="inc-item">${checkSVG}${i}</div>`).join('');
+
+  // Seed the line items table with the primary service at the midpoint price
+  document.getElementById('items-tbody').innerHTML = '';
+  _itemCounter = 0;
+  const optLabel0 = S.unitOptIdx !== null ? ' – ' + svc.unitOpts[S.lang][S.unitOptIdx] : '';
+  const midPrice = Math.round((min + max) / 2 / 25) * 25;
+  addItem(svc.name[S.lang] + optLabel0, 1, midPrice);
+}
+
+// ── LINE ITEMS ────────────────────────────────────────────────────────────────
+let _itemCounter = 0;
+
+function addItem(desc, qty, price) {
+  const tbody = document.getElementById('items-tbody');
+  const id = 'item' + (++_itemCounter);
+  const ph = (T[S.lang] && T[S.lang].phItemDesc) ? T[S.lang].phItemDesc : 'Description...';
+  const safeDesc = (desc || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const tr = document.createElement('tr');
+  tr.id = id;
+  tr.innerHTML =
+    '<td><input class="item-input" type="text" placeholder="' + ph + '" value="' + safeDesc + '" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
+    '<td style="text-align:center"><input class="item-input" type="number" min="1" value="' + (qty || 1) + '" style="width:58px;text-align:center" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
+    '<td><input class="item-input" type="number" min="0" step="25" value="' + (price || '') + '" placeholder="0" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
+    '<td><span class="item-sub" id="s' + id + '">$0</span></td>' +
+    '<td><button class="btn-rm" onclick="removeItem(\'' + id + '\')" title="Remove">&#215;</button></td>';
+  tbody.appendChild(tr);
+  calcLineTotal(id);
+}
+
+function removeItem(id) {
+  const tr = document.getElementById(id);
+  if (tr) tr.remove();
+  updateLineTotal();
+}
+
+function calcLineTotal(id) {
+  const tr = document.getElementById(id);
+  if (!tr) return;
+  const inputs = tr.querySelectorAll('input');
+  const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
+  const price = parseFloat(inputs[2] && inputs[2].value) || 0;
+  const sub   = qty * price;
+  const el = document.getElementById('s' + id);
+  if (el) el.textContent = '$' + sub.toLocaleString('en-US', {maximumFractionDigits:0});
+  updateLineTotal();
+}
+
+function updateLineTotal() {
+  let total = 0;
+  document.querySelectorAll('#items-tbody tr').forEach(function(tr) {
+    const inputs = tr.querySelectorAll('input');
+    const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
+    const price = parseFloat(inputs[2] && inputs[2].value) || 0;
+    total += qty * price;
+  });
+  const el = document.getElementById('items-total');
+  if (el) el.textContent = '$' + total.toLocaleString('en-US', {maximumFractionDigits:0});
+}
+
+function getLineItems() {
+  const items = [];
+  document.querySelectorAll('#items-tbody tr').forEach(function(tr) {
+    const inputs = tr.querySelectorAll('input');
+    const desc  = (inputs[0] && inputs[0].value.trim()) || '';
+    const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
+    const price = parseFloat(inputs[2] && inputs[2].value) || 0;
+    if (desc || price) items.push({ desc: desc, qty: qty, price: price, sub: qty * price });
+  });
+  return items;
 }
 
 // ── LANGUAGE ──────────────────────────────────────────────────────────────────
@@ -1542,7 +1671,9 @@ function applyT() {
     'lang-note':'langNote','err-4':'err4','sending-msg':'sending',
     'send-lbl':'sendLbl','btn4b':'btn4b',
     'suc-t':'sucT','suc-p':'sucP','suc-email-t':'sucET','suc-email-p':'sucEP',
-    'btn-restart':'btnRestart'
+    'btn-restart':'btnRestart',
+    'items-title-lbl':'itemsTitle','th-desc':'thDesc','th-qty':'thQty','th-unit':'thUnit','th-sub':'thSub',
+    'btn-add-item-lbl':'addItemBtn','total-lbl':'totalLbl'
   };
   Object.entries(ids).forEach(([id, key]) => {
     const el = document.getElementById(id);
@@ -1627,6 +1758,7 @@ function enviar(e) {
     priceMin:     min.toLocaleString('en-US'),
     priceMax:     max.toLocaleString('en-US'),
     includes:     svc.includes['en'],
+    lineItems:    getLineItems(),
   };
 
   // Generate and auto-download PDF
@@ -1802,6 +1934,65 @@ function generatePDF(customer, est) {
   });
 
   y += 7;
+
+  // ── LINE ITEMS TABLE ─────────────────────────────────────────────
+  if (est.lineItems && est.lineItems.length > 0) {
+    if (y > 220) { doc.addPage(); y = 20; }
+
+    tc(10, 14, 39);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('DETAILED QUOTE', M, y);
+    dc(255, 230, 0);
+    doc.setLineWidth(0.8);
+    doc.line(M, y + 2.5, M + CW, y + 2.5);
+    y += 8;
+
+    // Table header row
+    fc(10, 14, 39);
+    doc.rect(M, y - 3.5, CW, 8, 'F');
+    tc(255, 230, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('DESCRIPTION', M + 3, y + 1);
+    doc.text('QTY', M + CW * 0.60 + 4, y + 1, { align: 'center' });
+    doc.text('UNIT PRICE', M + CW * 0.73, y + 1);
+    doc.text('SUBTOTAL', M + CW, y + 1, { align: 'right' });
+    y += 8;
+
+    let lineTotal = 0;
+    est.lineItems.forEach((item, i) => {
+      if (y > 258) { doc.addPage(); y = 20; }
+      if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 7.5, 'F'); }
+      tc(55, 65, 81);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      const descTrimmed = doc.splitTextToSize(item.desc || '', CW * 0.55);
+      doc.text(descTrimmed[0] || '', M + 3, y + 1);
+      doc.text(String(item.qty), M + CW * 0.60 + 4, y + 1, { align: 'center' });
+      doc.text('$' + (item.price || 0).toLocaleString('en-US'), M + CW * 0.73, y + 1);
+      doc.setFont('helvetica', 'bold');
+      doc.text('$' + (item.sub || 0).toLocaleString('en-US'), M + CW, y + 1, { align: 'right' });
+      lineTotal += item.sub || 0;
+      y += 7.5;
+    });
+
+    // Total bar
+    y += 2;
+    if (y > 262) { doc.addPage(); y = 20; }
+    fc(10, 14, 39);
+    doc.rect(M, y, CW, 11, 'F');
+    tc(170, 178, 200);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('QUOTE TOTAL', M + 3, y + 7.5);
+    tc(255, 230, 0);
+    doc.setFontSize(13);
+    doc.text('$' + lineTotal.toLocaleString('en-US'), M + CW, y + 7.5, { align: 'right' });
+    y += 18;
+  }
+
+  y += 4;
 
   // ── DISCLAIMER ───────────────────────────────────────────────────
   if (y > 232) { doc.addPage(); y = 20; }
