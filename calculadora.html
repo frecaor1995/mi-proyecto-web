@@ -1,742 +1,722 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quote Calculator — Fly Electric Solutions</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+
+<title>Electrical Project Estimator — Fly Electric Solutions</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
   :root {
-    --blue-primary: #1A6FFF;
-    --blue-dark: #0D47CC;
-    --blue-light: #EEF4FF;
-    --blue-pale: #F0F5FF;
-    --neutral-50: #F8FAFC;
-    --neutral-100: #F1F5F9;
-    --neutral-200: #E2E8F0;
-    --neutral-300: #CBD5E1;
-    --neutral-500: #64748B;
-    --neutral-700: #334155;
-    --neutral-900: #0F172A;
+    --primary-black: #0A0E27;
+    --primary-dark: #1A1F3A;
+    --primary-medium: #2D3447;
+    --accent-yellow: #FFED4E;
+    --accent-yellow-dark: #FFE533;
+    --accent-yellow-light: #FFF8CC;
+    --success: #10B981;
+    --success-light: #ECFDF5;
+    --warning: #F59E0B;
+    --warning-light: #FFFBEB;
+    --error: #EF4444;
+    --error-light: #FEF2F2;
+    --neutral-50: #F9FAFB;
+    --neutral-100: #F3F4F6;
+    --neutral-200: #E5E7EB;
+    --neutral-300: #D1D5DB;
+    --neutral-400: #9CA3AF;
+    --neutral-500: #6B7280;
+    --neutral-600: #4B5563;
+    --neutral-700: #374151;
+    --neutral-800: #1F2937;
+    --neutral-900: #111827;
     --white: #FFFFFF;
-    --green: #10B981;
-    --green-light: #ECFDF5;
-    --red: #EF4444;
-    --red-light: #FEF2F2;
-    --amber: #F59E0B;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 20px rgba(26,111,255,0.08), 0 2px 8px rgba(0,0,0,0.05);
-    --shadow-lg: 0 8px 32px rgba(26,111,255,0.12), 0 4px 16px rgba(0,0,0,0.07);
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.08);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.12);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.15);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.2);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
     --radius-full: 9999px;
   }
-
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
-    background: var(--neutral-50);
-    color: var(--neutral-700);
-    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(135deg, var(--primary-black) 0%, var(--primary-dark) 100%);
+    color: var(--neutral-600);
+    font-family: 'Inter', sans-serif;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    position: relative;
   }
-
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse 800px 600px at 10% 40%, rgba(26,111,255,0.05) 0%, transparent 70%),
-      radial-gradient(ellipse 600px 400px at 90% 10%, rgba(26,111,255,0.04) 0%, transparent 60%);
+      radial-gradient(ellipse 1000px 800px at 15% 50%, rgba(255,237,78,0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 700px 600px at 85% 20%, rgba(255,237,78,0.03) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
-
   .wrapper {
     position: relative;
     z-index: 1;
-    max-width: 860px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 32px 20px 80px;
+    padding: 48px 24px 100px;
   }
-
-  /* ── TOP BAR ── */
+  /* ΓöÇΓöÇ TOP BAR ΓöÇΓöÇ */
   .top-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
+    margin-bottom: 48px;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
   }
-
   .brand {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 12px;
     font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--neutral-900);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--white);
     text-decoration: none;
+    letter-spacing: -0.02em;
   }
-
   .brand-icon {
-    width: 34px;
-    height: 34px;
-    background: linear-gradient(135deg, var(--blue-primary), var(--blue-dark));
-    border-radius: 9px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(26,111,255,0.35);
+    box-shadow: 0 4px 16px rgba(255,237,78,0.3);
   }
-
-  .brand-icon svg { width: 18px; height: 18px; color: white; }
-  .brand em { color: var(--blue-primary); font-style: normal; }
-
+  .brand-icon svg { width: 20px; height: 20px; color: var(--primary-black); }
+  .brand em { color: var(--accent-yellow); font-style: normal; font-weight: 800; }
   .lang-switch {
     display: flex;
-    background: var(--white);
-    border: 1.5px solid var(--neutral-200);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,237,78,0.2);
     border-radius: var(--radius-full);
-    padding: 3px;
+    padding: 4px;
     gap: 2px;
-    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(10px);
   }
-
   .lang-btn {
-    padding: 5px 16px;
+    padding: 6px 18px;
     border-radius: var(--radius-full);
     border: none;
     background: transparent;
-    color: var(--neutral-500);
+    color: rgba(255,255,255,0.6);
     font-family: 'Syne', sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.05em;
+    transition: all 0.3s;
+    letter-spacing: 0.08em;
   }
-
   .lang-btn.active {
-    background: var(--blue-primary);
-    color: var(--white);
-    box-shadow: 0 2px 8px rgba(26,111,255,0.3);
+    background: var(--accent-yellow);
+    color: var(--primary-black);
+    box-shadow: 0 4px 12px rgba(255,237,78,0.3);
   }
-
-  /* ── HEADER ── */
-  .header { text-align: center; margin-bottom: 36px; }
-
+  /* ΓöÇΓöÇ HEADER ΓöÇΓöÇ */
+  .header { text-align: center; margin-bottom: 56px; }
   .badge {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    background: var(--blue-light);
-    border: 1px solid rgba(26,111,255,0.22);
+    gap: 8px;
+    background: rgba(255,237,78,0.12);
+    border: 1px solid rgba(255,237,78,0.3);
     border-radius: var(--radius-full);
-    padding: 5px 14px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--blue-primary);
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-yellow);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
-
   .badge-dot {
     width: 6px; height: 6px;
-    background: var(--blue-primary);
+    background: var(--accent-yellow);
     border-radius: 50%;
     animation: pulse 2s infinite;
   }
-
   h1 {
     font-family: 'Syne', sans-serif;
-    font-size: clamp(1.75rem, 5vw, 2.7rem);
+    font-size: clamp(2rem, 6vw, 3.2rem);
     font-weight: 800;
-    color: var(--neutral-900);
-    line-height: 1.15;
-    letter-spacing: -0.025em;
+    color: var(--white);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
   }
-
-  h1 span { color: var(--blue-primary); }
-
+  h1 span { color: var(--accent-yellow); }
   .subtitle {
-    margin-top: 10px;
-    color: var(--neutral-500);
-    font-size: 15px;
+    margin-top: 12px;
+    color: rgba(255,255,255,0.7);
+    font-size: 16px;
     line-height: 1.6;
+    font-weight: 400;
   }
-
   .loc {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     font-size: 13px;
-    color: var(--neutral-500);
-    margin-top: 10px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 14px;
   }
-
-  .loc svg { flex-shrink: 0; color: var(--blue-primary); }
-
+  .loc svg { flex-shrink: 0; color: var(--accent-yellow); width: 14px; height: 14px; }
   /* Credibility badges */
   .cred-badges {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 28px;
   }
-
   .cred-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: var(--white);
-    border: 1.5px solid var(--neutral-200);
+    gap: 7px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,237,78,0.15);
     border-radius: var(--radius-full);
-    padding: 6px 13px;
+    padding: 8px 15px;
     font-size: 12px;
     font-weight: 500;
-    color: var(--neutral-700);
-    box-shadow: var(--shadow-sm);
+    color: rgba(255,255,255,0.8);
+    backdrop-filter: blur(8px);
   }
-
-  .cred-badge svg { width: 13px; height: 13px; color: var(--blue-primary); flex-shrink: 0; }
-
-  /* ── PROGRESS BAR ── */
-  .progress-wrapper { margin-bottom: 28px; }
-
+  .cred-badge svg { width: 14px; height: 14px; color: var(--accent-yellow); flex-shrink: 0; }
+  /* ΓöÇΓöÇ PROGRESS BAR ΓöÇΓöÇ */
+  .progress-wrapper { margin-bottom: 32px; }
   .progress-track {
     position: relative;
-    height: 4px;
-    background: var(--neutral-200);
+    height: 5px;
+    background: rgba(255,237,78,0.1);
     border-radius: var(--radius-full);
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+    overflow: hidden;
   }
-
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--blue-dark), var(--blue-primary));
+    background: linear-gradient(90deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
     border-radius: var(--radius-full);
     transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    box-shadow: 0 0 20px rgba(255,237,78,0.4);
   }
-
   .progress-fill::after {
     content: '';
     position: absolute;
     right: -1px;
     top: 50%;
     transform: translateY(-50%);
-    width: 10px;
-    height: 10px;
-    background: var(--blue-primary);
-    border: 2px solid var(--white);
+    width: 12px;
+    height: 12px;
+    background: var(--accent-yellow);
+    border: 2.5px solid var(--primary-black);
     border-radius: 50%;
-    box-shadow: 0 0 0 3px rgba(26,111,255,0.2);
+    box-shadow: 0 0 0 4px rgba(255,237,78,0.2);
     transition: opacity 0.3s;
   }
-
   .progress-steps {
     display: flex;
     justify-content: space-between;
+    gap: 0;
   }
-
-  /* step-dot keeps original IDs but styled as progress-step */
   .step-dot {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     flex: 1;
   }
-
   .step-dot .num {
-    width: 26px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: var(--neutral-200);
-    color: var(--neutral-500);
+    background: rgba(255,237,78,0.1);
+    border: 1.5px solid rgba(255,237,78,0.2);
+    color: rgba(255,255,255,0.5);
     font-family: 'Syne', sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
   }
-
   .step-dot .lbl {
-    font-size: 10px;
-    color: var(--neutral-500);
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
     font-weight: 500;
     transition: color 0.3s;
     white-space: nowrap;
   }
-
   .step-dot.active .num {
-    background: var(--blue-primary);
-    color: var(--white);
-    box-shadow: 0 0 0 3px rgba(26,111,255,0.2);
+    background: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    color: var(--primary-black);
+    box-shadow: 0 0 0 4px rgba(255,237,78,0.2);
+    font-weight: 800;
   }
-
-  .step-dot.active .lbl { color: var(--blue-primary); font-weight: 600; }
-
-  .step-dot.done .num { background: var(--green); color: var(--white); }
-  .step-dot.done .lbl { color: var(--green); }
-
-  /* ── MAIN CARD ── */
+  .step-dot.active .lbl { color: var(--accent-yellow); font-weight: 700; }
+  .step-dot.done .num { background: var(--success); border-color: var(--success); color: var(--white); }
+  .step-dot.done .lbl { color: var(--success); }
+  /* ΓöÇΓöÇ MAIN CARD ΓöÇΓöÇ */
   .card {
     background: var(--white);
-    border: 1px solid var(--neutral-200);
+    border: 1px solid rgba(0,0,0,0.08);
     border-radius: var(--radius-lg);
-    padding: 40px;
-    box-shadow: var(--shadow-md);
+    padding: 48px;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(20px);
   }
-
+  @media (max-width: 640px) {
+    .card { padding: 32px 24px; }
+  }
   .step-panel { display: none; }
-  .step-panel.active { display: block; }
-
+  .step-panel.active { display: block; animation: fadeIn 0.3s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .step-title {
     font-family: 'Syne', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--neutral-900);
-    margin-bottom: 4px;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary-black);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
   }
-
   .step-desc {
     color: var(--neutral-500);
-    font-size: 14px;
-    margin-bottom: 24px;
-    line-height: 1.55;
+    font-size: 15px;
+    margin-bottom: 32px;
+    line-height: 1.6;
   }
-
-  /* ── SERVICE GRID ── */
+  /* ΓöÇΓöÇ SERVICE GRID ΓöÇΓöÇ */
   .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
   }
-
   .svc-card {
-    border: 1.5px solid var(--neutral-200);
+    border: 2px solid var(--neutral-200);
     border-radius: var(--radius-md);
-    padding: 16px 12px;
+    padding: 20px 16px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--white);
     text-align: center;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-xs);
+    position: relative;
   }
-
   .svc-card:hover {
-    border-color: rgba(26,111,255,0.35);
-    box-shadow: 0 4px 16px rgba(26,111,255,0.1);
-    transform: translateY(-2px);
+    border-color: var(--accent-yellow);
+    box-shadow: 0 8px 24px rgba(255,237,78,0.15);
+    transform: translateY(-4px);
   }
-
   .svc-card.selected {
-    border-color: var(--blue-primary);
-    background: var(--blue-light);
-    box-shadow: 0 0 0 3px rgba(26,111,255,0.1), var(--shadow-md);
+    border-color: var(--accent-yellow);
+    background: linear-gradient(135deg, var(--accent-yellow-light) 0%, var(--white) 100%);
+    box-shadow: 0 12px 32px rgba(255,237,78,0.2);
+    transform: translateY(-4px);
   }
-
+  .svc-card.selected::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent-yellow), transparent);
+    border-radius: 50%;
+  }
   .svc-icon {
-    width: 42px;
-    height: 42px;
-    margin: 0 auto 10px;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--neutral-100);
-    border-radius: 11px;
-    transition: background 0.2s;
+    border-radius: 10px;
+    transition: all 0.3s;
   }
-
-  .svc-icon svg { width: 22px; height: 22px; color: var(--neutral-700); transition: color 0.2s; }
-
-  .svc-card.selected .svc-icon { background: rgba(26,111,255,0.12); }
-  .svc-card.selected .svc-icon svg { color: var(--blue-primary); }
-
+  .svc-icon svg { width: 24px; height: 24px; color: var(--primary-black); transition: color 0.3s; }
+  .svc-card.selected .svc-icon { background: var(--accent-yellow); }
+  .svc-card.selected .svc-icon svg { color: var(--primary-black); }
   .svc-name {
-    font-family: 'Syne', sans-serif;
-    font-size: 11.5px;
-    font-weight: 700;
-    color: var(--neutral-900);
-    line-height: 1.3;
-  }
-
-  .svc-from { font-size: 11px; color: var(--neutral-500); margin-top: 3px; }
-
-  .svc-desc {
-    font-size: 11px;
-    color: var(--neutral-500);
-    margin-top: 5px;
-    line-height: 1.4;
-    display: none;
-  }
-
-  .svc-card.selected .svc-desc { display: block; color: var(--blue-dark); }
-
-  /* ── SUB-QUESTIONS ── */
-  .subq {
-    background: var(--blue-pale);
-    border: 1px solid rgba(26,111,255,0.15);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    margin-top: 20px;
-  }
-
-  .subq-title {
     font-family: 'Syne', sans-serif;
     font-size: 13px;
     font-weight: 700;
-    color: var(--blue-dark);
-    margin-bottom: 12px;
+    color: var(--primary-black);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
   }
-
-  .options-row { display: flex; flex-wrap: wrap; gap: 8px; }
-
+  .svc-from { font-size: 12px; color: var(--accent-yellow); margin-top: 4px; font-weight: 600; }
+  .svc-desc {
+    font-size: 11px;
+    color: var(--neutral-500);
+    margin-top: 6px;
+    line-height: 1.4;
+    display: none;
+  }
+  .svc-card.selected .svc-desc { display: block; color: var(--primary-black); font-weight: 500; }
+  /* ΓöÇΓöÇ SUB-QUESTIONS ΓöÇΓöÇ */
+  .subq {
+    background: linear-gradient(135deg, rgba(255,237,78,0.08) 0%, rgba(255,237,78,0.04) 100%);
+    border: 1px solid rgba(255,237,78,0.2);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin-top: 24px;
+  }
+  .subq-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-black);
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+  }
+  .options-row { display: flex; flex-wrap: wrap; gap: 10px; }
   .opt-btn {
-    padding: 7px 15px;
+    padding: 10px 18px;
     border-radius: var(--radius-full);
     border: 1.5px solid var(--neutral-200);
     background: var(--white);
-    color: var(--neutral-700);
-    font-size: 12.5px;
+    color: var(--neutral-600);
+    font-size: 13px;
     cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
+    transition: all 0.3s;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
   }
-
-  .opt-btn:hover { border-color: var(--blue-primary); color: var(--blue-primary); }
-
+  .opt-btn:hover { 
+    border-color: var(--accent-yellow); 
+    color: var(--primary-black);
+    transform: translateY(-2px);
+  }
   .opt-btn.selected {
-    border-color: var(--blue-primary);
-    background: var(--blue-primary);
-    color: var(--white);
+    border-color: var(--accent-yellow);
+    background: var(--accent-yellow);
+    color: var(--primary-black);
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(255,237,78,0.3);
   }
-
-  /* ── FORM FIELDS ── */
-  .fields { display: flex; flex-direction: column; gap: 16px; }
-
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-  @media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } }
-
+  /* ΓöÇΓöÇ FORM FIELDS ΓöÇΓöÇ */
+  .fields { display: flex; flex-direction: column; gap: 18px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 540px) { .field-row { grid-template-columns: 1fr; } }
   .field label {
     display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--neutral-700);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary-black);
     text-transform: uppercase;
-    letter-spacing: 0.07em;
-    margin-bottom: 7px;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
   }
-
   .field input, .field select {
     width: 100%;
     background: var(--white);
     border: 1.5px solid var(--neutral-200);
-    border-radius: var(--radius-sm);
-    padding: 11px 14px;
-    color: var(--neutral-900);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14.5px;
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    color: var(--primary-black);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.3s;
     appearance: none;
   }
-
   .field input:focus, .field select:focus {
-    border-color: var(--blue-primary);
-    box-shadow: 0 0 0 3px rgba(26,111,255,0.12);
+    border-color: var(--accent-yellow);
+    box-shadow: 0 0 0 4px rgba(255,237,78,0.1);
+    background: var(--white);
   }
-
   .field select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 14px center;
+    background-position: right 16px center;
     cursor: pointer;
-    padding-right: 36px;
+    padding-right: 40px;
   }
-
-  .field-hint { font-size: 11px; color: var(--neutral-500); margin-top: 4px; }
-
-  /* ── TOGGLE ── */
+  .field-hint { font-size: 12px; color: var(--neutral-500); margin-top: 5px; font-weight: 500; }
+  /* ΓöÇΓöÇ TOGGLE ΓöÇΓöÇ */
   .toggle-field {
     display: flex;
     align-items: center;
     justify-content: space-between;
     background: var(--white);
     border: 1.5px solid var(--neutral-200);
-    border-radius: var(--radius-sm);
-    padding: 13px 16px;
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s;
   }
-
-  .toggle-field:hover { border-color: rgba(26,111,255,0.3); }
-  .toggle-field.on { border-color: var(--blue-primary); background: var(--blue-light); }
-
-  .toggle-info strong { font-size: 14px; color: var(--neutral-900); display: block; font-weight: 600; }
+  .toggle-field:hover { border-color: rgba(255,237,78,0.4); }
+  .toggle-field.on { border-color: var(--accent-yellow); background: var(--accent-yellow-light); }
+  .toggle-info strong { font-size: 14px; color: var(--primary-black); display: block; font-weight: 700; }
   .toggle-info span { font-size: 12px; color: var(--neutral-500); }
-
   .toggle-switch {
-    width: 44px;
-    height: 24px;
+    width: 48px;
+    height: 28px;
     background: var(--neutral-300);
     border-radius: var(--radius-full);
     position: relative;
     transition: background 0.3s;
     flex-shrink: 0;
   }
-
   .toggle-switch::after {
     content: '';
     position: absolute;
     top: 3px; left: 3px;
-    width: 18px; height: 18px;
+    width: 22px; height: 22px;
     background: var(--white);
     border-radius: 50%;
     transition: transform 0.3s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
-
-  .toggle-field.on .toggle-switch { background: var(--blue-primary); }
+  .toggle-field.on .toggle-switch { background: var(--accent-yellow); }
   .toggle-field.on .toggle-switch::after { transform: translateX(20px); }
-
-  /* ── RESULT ── */
+  /* ΓöÇΓöÇ RESULT ΓöÇΓöÇ */
   .result-box {
-    background: linear-gradient(135deg, var(--blue-light) 0%, rgba(238,244,255,0.4) 100%);
-    border: 1.5px solid rgba(26,111,255,0.25);
+    background: linear-gradient(135deg, var(--accent-yellow-light) 0%, var(--white) 100%);
+    border: 2px solid var(--accent-yellow);
     border-radius: var(--radius-md);
-    padding: 28px;
+    padding: 36px 32px;
     text-align: center;
-    margin-bottom: 18px;
+    margin-bottom: 24px;
     position: relative;
     overflow: hidden;
   }
-
   .result-box::before {
     content: '';
     position: absolute;
-    right: -30px; top: -30px;
-    width: 130px; height: 130px;
-    background: radial-gradient(circle, rgba(26,111,255,0.08) 0%, transparent 70%);
+    right: -60px; top: -60px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(255,237,78,0.1) 0%, transparent 70%);
     border-radius: 50%;
   }
-
   .result-label {
-    font-size: 11px;
-    color: var(--blue-primary);
+    font-size: 12px;
+    color: var(--primary-black);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    font-weight: 600;
-    margin-bottom: 8px;
+    font-weight: 700;
+    margin-bottom: 10px;
   }
-
   .result-price {
     font-family: 'Syne', sans-serif;
-    font-size: clamp(2rem, 6vw, 3rem);
+    font-size: clamp(2.2rem, 8vw, 3.5rem);
     font-weight: 800;
-    color: var(--neutral-900);
+    color: var(--primary-black);
     line-height: 1;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
   }
-
-  .result-price span { color: var(--blue-primary); }
-
-  .result-range { font-size: 13px; color: var(--neutral-500); }
-
+  .result-price span { color: var(--accent-yellow); }
+  .result-range { font-size: 14px; color: var(--neutral-600); font-weight: 500; }
   .rush-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: var(--red-light);
-    border: 1px solid rgba(239,68,68,0.2);
-    color: var(--red);
-    padding: 4px 12px;
+    gap: 7px;
+    background: var(--warning-light);
+    border: 1.5px solid var(--warning);
+    color: var(--warning);
+    padding: 8px 14px;
     border-radius: var(--radius-full);
     font-size: 12px;
-    font-weight: 500;
-    margin-top: 8px;
+    font-weight: 700;
+    margin-top: 12px;
   }
-
+  .rush-badge svg { width: 13px; height: 13px; }
   .breakdown {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 20px;
   }
-
   .bd-item {
     background: var(--neutral-50);
     border: 1px solid var(--neutral-200);
-    border-radius: var(--radius-sm);
-    padding: 12px 8px;
+    border-radius: var(--radius-md);
+    padding: 14px 10px;
     text-align: center;
   }
-
   .bd-val {
     font-family: 'Syne', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
-    color: var(--neutral-900);
+    color: var(--primary-black);
+    letter-spacing: -0.01em;
   }
-
   .bd-lbl {
     font-size: 10px;
     color: var(--neutral-500);
-    margin-top: 2px;
+    margin-top: 4px;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
+    font-weight: 600;
   }
-
   .includes {
     background: var(--neutral-50);
     border: 1px solid var(--neutral-200);
     border-radius: var(--radius-md);
-    padding: 16px;
-    margin-bottom: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
   }
-
   .inc-title {
-    font-size: 11px;
-    color: var(--neutral-500);
+    font-size: 12px;
+    color: var(--primary-black);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-bottom: 10px;
-    font-weight: 600;
+    margin-bottom: 14px;
+    font-weight: 700;
   }
-
   .inc-item {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
     color: var(--neutral-700);
-    padding: 4px 0;
+    padding: 6px 0;
+    line-height: 1.5;
   }
-
   .inc-check {
-    width: 18px; height: 18px;
-    background: var(--green-light);
+    width: 20px; height: 20px;
+    background: var(--success-light);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-top: 1px;
   }
-
-  .inc-check svg { width: 9px; height: 9px; color: var(--green); }
-
-  .disclaimer {
-    background: rgba(245,158,11,0.06);
-    border: 1px solid rgba(245,158,11,0.2);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
+  .inc-check svg { width: 10px; height: 10px; color: var(--success); }
+  /* ΓöÇΓöÇ DISCLAIMER SECTION ΓöÇΓöÇ */
+  .disclaimer-section {
+    background: linear-gradient(135deg, var(--neutral-50) 0%, var(--white) 100%);
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .disclaimer-title {
     font-size: 12px;
-    color: var(--neutral-700);
-    margin-bottom: 18px;
-    line-height: 1.6;
+    color: var(--primary-black);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    margin-bottom: 12px;
     display: flex;
-    gap: 10px;
-    align-items: flex-start;
+    align-items: center;
+    gap: 7px;
   }
-
-  .disclaimer svg { width: 15px; height: 15px; color: var(--amber); flex-shrink: 0; margin-top: 1px; }
-
-  /* ── CONTACT ── */
-  .contact-form { display: flex; flex-direction: column; gap: 12px; }
-
+  .disclaimer-title svg { width: 14px; height: 14px; color: var(--warning); flex-shrink: 0; }
+  .disclaimer {
+    font-size: 13px;
+    color: var(--neutral-700);
+    line-height: 1.7;
+    margin: 0;
+    display: block;
+  }
+  /* ΓöÇΓöÇ CONTACT ΓöÇΓöÇ */
+  .contact-form { display: flex; flex-direction: column; gap: 14px; }
   .contact-form input, .contact-form select {
     width: 100%;
     background: var(--white);
     border: 1.5px solid var(--neutral-200);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    color: var(--neutral-900);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14.5px;
+    border-radius: var(--radius-md);
+    padding: 13px 16px;
+    color: var(--primary-black);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.3s;
     appearance: none;
   }
-
   .contact-form input:focus, .contact-form select:focus {
-    border-color: var(--blue-primary);
-    box-shadow: 0 0 0 3px rgba(26,111,255,0.12);
+    border-color: var(--accent-yellow);
+    box-shadow: 0 0 0 4px rgba(255,237,78,0.1);
   }
-
   .contact-form input::placeholder { color: var(--neutral-500); }
-
   .contact-form select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 14px center;
+    background-position: right 16px center;
     cursor: pointer;
-    padding-right: 36px;
+    padding-right: 40px;
   }
-
   .email-lang-note {
-    background: var(--blue-light);
-    border: 1px solid rgba(26,111,255,0.2);
-    border-radius: var(--radius-sm);
-    padding: 11px 14px;
+    background: linear-gradient(135deg, rgba(255,237,78,0.08) 0%, transparent 100%);
+    border: 1px solid rgba(255,237,78,0.2);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
     font-size: 13px;
-    color: var(--blue-dark);
+    color: var(--primary-black);
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: flex-start;
   }
-
-  .email-lang-note svg { width: 14px; height: 14px; color: var(--blue-primary); flex-shrink: 0; margin-top: 1px; }
-
-  /* ── BUTTONS ── */
-  .btn-row { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
-
+  .email-lang-note svg { width: 15px; height: 15px; color: var(--accent-yellow); flex-shrink: 0; margin-top: 1px; }
+  /* ΓöÇΓöÇ BUTTONS ΓöÇΓöÇ */
+  .btn-row { display: flex; gap: 12px; margin-top: 28px; justify-content: flex-end; }
   .btn {
-    padding: 11px 22px;
-    border-radius: var(--radius-sm);
+    padding: 13px 24px;
+    border-radius: var(--radius-md);
     font-family: 'Syne', sans-serif;
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 700;
     border: none;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
+    letter-spacing: -0.01em;
   }
-
   .btn-back {
     background: transparent;
     border: 1.5px solid var(--neutral-200);
-    color: var(--neutral-700);
+    color: var(--neutral-600);
   }
-
-  .btn-back:hover { border-color: var(--neutral-700); color: var(--neutral-900); }
-
-  .btn-next { background: var(--blue-primary); color: var(--white); }
-
+  .btn-back:hover { 
+    border-color: var(--accent-yellow); 
+    color: var(--primary-black);
+    transform: translateY(-2px);
+  }
+  .btn-next { 
+    background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
+    color: var(--primary-black);
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(255,237,78,0.3);
+  }
   .btn-next:hover {
-    background: var(--blue-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(26,111,255,0.3);
+    box-shadow: 0 8px 24px rgba(255,237,78,0.4);
+    transform: translateY(-2px);
   }
-
   .btn-send {
-    background: var(--blue-primary);
-    color: var(--white);
+    background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
+    color: var(--primary-black);
     width: 100%;
-    padding: 14px;
+    padding: 16px;
     font-size: 15px;
     border-radius: var(--radius-md);
     display: flex;
@@ -746,132 +726,190 @@
     border: none;
     cursor: pointer;
     font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    transition: all 0.2s;
-    margin-top: 16px;
+    font-weight: 800;
+    transition: all 0.3s;
+    margin-top: 18px;
+    letter-spacing: -0.01em;
+    box-shadow: 0 4px 12px rgba(255,237,78,0.3);
   }
-
   .btn-send:hover {
-    background: var(--blue-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(26,111,255,0.3);
+    box-shadow: 0 8px 24px rgba(255,237,78,0.4);
+    transform: translateY(-2px);
   }
-
   .btn-send:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
-
-  /* ── SUCCESS ── */
-  .success-screen { text-align: center; padding: 20px 0; }
-
+  /* ΓöÇΓöÇ SUCCESS ΓöÇΓöÇ */
+  .success-screen { text-align: center; padding: 24px 0; }
   .success-icon {
-    width: 72px; height: 72px;
-    background: var(--green-light);
-    border: 2px solid rgba(16,185,129,0.2);
+    width: 80px; height: 80px;
+    background: var(--success-light);
+    border: 2.5px solid var(--success);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
+    margin: 0 auto 24px;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.2);
   }
-
-  .success-icon svg { width: 30px; height: 30px; color: var(--green); }
-
+  .success-icon svg { width: 36px; height: 36px; color: var(--success); }
   .success-screen h2 {
     font-family: 'Syne', sans-serif;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 800;
-    color: var(--neutral-900);
-    margin-bottom: 10px;
+    color: var(--primary-black);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
   }
-
   .success-screen p {
-    color: var(--neutral-500);
-    font-size: 14px;
+    color: var(--neutral-600);
+    font-size: 15px;
     line-height: 1.7;
-    max-width: 420px;
-    margin: 0 auto 24px;
+    max-width: 450px;
+    margin: 0 auto 28px;
   }
-
   .email-confirm-box {
     background: var(--neutral-50);
     border: 1px solid var(--neutral-200);
     border-radius: var(--radius-md);
-    padding: 16px;
-    margin: 0 auto 24px;
-    max-width: 380px;
+    padding: 18px;
+    margin: 0 auto 28px;
+    max-width: 420px;
     font-size: 13px;
-    color: var(--neutral-500);
+    color: var(--neutral-600);
   }
-
   .email-confirm-box strong {
-    color: var(--green);
+    color: var(--success);
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
     font-size: 14px;
+    font-weight: 700;
   }
-
   .btn-restart {
     background: transparent;
     border: 1.5px solid var(--neutral-200);
-    color: var(--neutral-700);
-    padding: 11px 22px;
-    border-radius: var(--radius-sm);
+    color: var(--neutral-600);
+    padding: 13px 24px;
+    border-radius: var(--radius-md);
     font-family: 'Syne', sans-serif;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s;
+    letter-spacing: -0.01em;
   }
-
-  .btn-restart:hover { border-color: var(--blue-primary); color: var(--blue-primary); }
-
-  /* ── MESSAGES ── */
+  .btn-restart:hover { 
+    border-color: var(--accent-yellow); 
+    color: var(--primary-black);
+    transform: translateY(-2px);
+  }
+  /* ΓöÇΓöÇ MESSAGES ΓöÇΓöÇ */
   .error-msg {
-    color: var(--red);
+    color: var(--error);
     font-size: 13px;
-    margin-top: 10px;
+    margin-top: 12px;
     display: none;
     align-items: center;
-    gap: 6px;
-    font-weight: 500;
+    gap: 7px;
+    font-weight: 600;
   }
-
   .error-msg.show { display: flex; }
-  .error-msg svg { width: 14px; height: 14px; flex-shrink: 0; }
-
+  .error-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
   .sending-msg {
-    color: var(--blue-primary);
+    color: var(--accent-yellow);
     font-size: 13px;
-    margin-top: 10px;
+    margin-top: 12px;
     display: none;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
+    font-weight: 600;
   }
-
   .sending-msg.show { display: flex; }
-
-  /* ── ANIMATIONS ── */
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  /* ΓöÇΓöÇ ANIMATIONS ΓöÇΓöÇ */
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   @keyframes spin { to { transform: rotate(360deg); } }
   .spin { animation: spin 1s linear infinite; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .wrapper { padding: 20px 14px 60px; }
-    .card { padding: 24px 18px; }
-    .breakdown { grid-template-columns: 1fr 1fr; }
-    h1 { font-size: 1.6rem; }
+  /* ΓöÇΓöÇ PRINT / PDF ΓöÇΓöÇ */
+  .print-header, .print-footer { display: none; }
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { background: #fff !important; color: #111 !important; }
+    body::before { display: none !important; }
+    .top-bar, .header, .progress-wrapper,
+    #panel-1, #panel-2, #panel-4, #panel-success, .btn-row { display: none !important; }
+    #panel-3 { display: block !important; }
+    .wrapper { padding: 16px; max-width: 100%; }
+    .card { box-shadow: none !important; border: 1px solid #ddd !important; padding: 24px !important; }
+    .result-box { background: #fffce6 !important; border: 2px solid #ffe600 !important; }
+    .result-price, .result-price span { color: #0A0E27 !important; }
+    .inc-title, .disclaimer-title, .result-label, .step-title { color: #0A0E27 !important; }
+    .bd-item { background: #f5f5f5 !important; border: 1px solid #ddd !important; }
+    .includes { background: #f9f9f9 !important; border: 1px solid #ddd !important; }
+    .disclaimer-section { background: #f9f9f9 !important; border: 1px solid #ddd !important; }
+    .print-header, .print-footer { display: block !important; }
   }
-
-  @media (max-width: 420px) {
-    .services-grid { grid-template-columns: repeat(2, 1fr); }
-    .cred-badge { font-size: 11px; padding: 5px 10px; }
+  /* ΓöÇΓöÇ RESPONSIVE ΓöÇΓöÇ */
+  @media (max-width: 700px) {
+    .wrapper { padding: 32px 18px 80px; }
+    .card { padding: 32px 20px; }
+    .breakdown { grid-template-columns: 1fr 1fr; gap: 8px; }
+    h1 { font-size: 1.8rem; }
+    .services-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .svc-card { padding: 16px 12px; }
+    .step-title { font-size: 20px; }
+  }
+  @media (max-width: 480px) {
+    .wrapper { padding: 24px 14px 70px; }
+    .card { padding: 24px 16px; }
+    .result-box { padding: 28px 20px; }
+    .services-grid { grid-template-columns: 1fr; }
+    .svc-card { padding: 14px 10px; }
+    .svc-icon { width: 40px; height: 40px; }
+    .svc-name { font-size: 12px; }
+    .bd-val { font-size: 12px; }
+    .breakdown { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .cred-badge { font-size: 11px; padding: 5px 11px; }
     .cred-badge svg { display: none; }
+    .btn-row { flex-direction: column-reverse; }
+    .btn-back { width: 100%; justify-content: center; }
+    .btn-next { width: 100%; justify-content: center; }
   }
-</style>
-</head>
-<body>
-<div class="wrapper">
+  /* ΓöÇΓöÇ LINE ITEMS TABLE ΓöÇΓöÇ */
+  .items-section { margin-bottom: 20px; }
+  .items-label { font-size: 12px; color: var(--primary-black); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 12px; }
+  .items-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .items-table thead th { background: var(--primary-black); color: var(--accent-yellow); padding: 9px 8px; text-align: left; font-family: 'Syne', sans-serif; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+  .items-table tbody tr { border-bottom: 1px solid var(--neutral-200); }
+  .items-table tbody tr:nth-child(even) { background: var(--neutral-50); }
+  .items-table td { padding: 7px 6px; vertical-align: middle; }
+  .item-input { width: 100%; border: 1.5px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 6px 9px; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--primary-black); background: var(--white); outline: none; transition: border-color 0.2s; }
+  .item-input:focus { border-color: var(--accent-yellow); }
+  .item-sub { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--primary-black); white-space: nowrap; min-width: 70px; display: inline-block; }
+  .btn-rm { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--neutral-300); background: transparent; color: var(--neutral-500); cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .btn-rm:hover { border-color: var(--error); color: var(--error); background: var(--error-light); }
+  .items-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; gap: 12px; }
+  .btn-add-item { display: inline-flex; align-items: center; gap: 7px; padding: 8px 18px; border: 1.5px dashed rgba(255,237,78,0.6); border-radius: var(--radius-md); background: rgba(255,237,78,0.06); color: var(--primary-black); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-add-item:hover { background: rgba(255,237,78,0.14); border-style: solid; }
+  .items-total-row { display: flex; align-items: center; gap: 14px; background: var(--primary-black); border-radius: var(--radius-md); padding: 11px 18px; }
+  .items-total-lbl { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; text-transform: uppercase; }
+  .items-total-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--accent-yellow); letter-spacing: -0.02em; }
+  @media (max-width: 640px) {
+    .items-table thead th { font-size: 9px; padding: 7px 5px; }
+    .items-table td { padding: 5px 4px; }
+    .item-input { font-size: 12px; padding: 5px 7px; }
+    .items-footer { flex-direction: column; align-items: stretch; }
+    .items-total-row { justify-content: space-between; }
+  }
 
+</style>
+
+<!-- jsPDF — PDF generation -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="wrapper">
   <!-- Top bar -->
   <div class="top-bar">
     <div class="brand">
@@ -885,15 +923,14 @@
       <button class="lang-btn" onclick="setLang('es')">ES</button>
     </div>
   </div>
-
   <!-- Header -->
   <div class="header">
     <div class="badge" id="h-badge">
       <span class="badge-dot"></span>
-      Instant Quote Calculator
+      Quick Electrical Estimate
     </div>
-    <h1 id="h-title">How much will your<br><span>electrical project cost?</span></h1>
-    <p class="subtitle" id="h-sub">Get a detailed estimate in under 2 minutes — no calls needed.</p>
+    <h1 id="h-title">What will your<br><span>electrical project cost?</span></h1>
+    <p class="subtitle" id="h-sub">Get an instant estimate based on your project details. No commitment required.</p>
     <p class="loc">
       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       <span id="h-loc">Houston, TX &amp; surrounding areas · Licensed &amp; Insured</span>
@@ -902,7 +939,7 @@
     <div class="cred-badges">
       <div class="cred-badge">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Licensed &amp; Insured
+        Licensed & Insured
       </div>
       <div class="cred-badge">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -918,7 +955,6 @@
       </div>
     </div>
   </div>
-
   <!-- Progress bar (step-dot IDs preserved for JS updateDots()) -->
   <div class="progress-wrapper">
     <div class="progress-track">
@@ -943,9 +979,7 @@
       </div>
     </div>
   </div>
-
   <div class="card">
-
     <!-- STEP 1: Service -->
     <div class="step-panel active" id="panel-1">
       <div class="step-title" id="p1-title">What service do you need?</div>
@@ -960,7 +994,6 @@
         <button class="btn btn-next" onclick="nextStep(1)" id="btn1">Continue →</button>
       </div>
     </div>
-
     <!-- STEP 2: Details -->
     <div class="step-panel" id="panel-2">
       <div class="step-title" id="p2-title">Project details</div>
@@ -1009,58 +1042,120 @@
         <button class="btn btn-next" onclick="nextStep(2)" id="btn2n">See Estimate →</button>
       </div>
     </div>
-
     <!-- STEP 3: Result -->
     <div class="step-panel" id="panel-3">
-      <div class="step-title" id="p3-title">Your Estimate</div>
-      <div class="step-desc" id="p3-desc">Based on Fly Electric's Houston-area rates. Final quote confirmed after site visit.</div>
+      <!-- Print-only header -->
+      <div class="print-header" style="margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #ffe600;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+          <div style="width:36px;height:36px;background:#ffe600;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0A0E27" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#0A0E27;">Fly Electric Solutions LLC</div>
+            <div style="font-size:12px;color:#555;">(571) 379-6040 &nbsp;·&nbsp; flyelectricsolution.com &nbsp;·&nbsp; info@flyelectricsolution.com</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#777;" id="print-date"></div>
+      </div>
+      <div class="step-title" id="p3-title">Your Project Estimate</div>
+      <div class="step-desc" id="p3-desc">This is a preliminary, non-binding estimate based on the information you provided. A licensed electrician will confirm final pricing after an on-site evaluation.</div>
       <div class="result-box">
-        <div class="result-label" id="rl">Estimated Project Cost</div>
+        <div class="result-label" id="rl">Estimated Project Range</div>
         <div class="result-price">$<span id="pMin">0</span> – $<span id="pMax">0</span></div>
-        <div class="result-range" id="rr">USD · Labor + basic materials</div>
+        <div class="result-range" id="rr">Labor + basic materials</div>
         <div id="rushBadge" style="display:none">
           <div class="rush-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            Rush +25% included
+            Rush Service +25%
           </div>
         </div>
       </div>
       <div class="breakdown" id="bdGrid"></div>
       <div class="includes">
-        <div class="inc-title" id="inc-t">What's included</div>
+        <div class="inc-title" id="inc-t">What's Included in This Estimate</div>
         <div id="incList"></div>
       </div>
-      <div class="disclaimer" id="disc">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        <span>This estimate is based on Fly Electric's standard Houston-area rates. Final price depends on site conditions, permit fees, and material availability. A licensed electrician will provide a binding quote after inspection.</span>
+      <!-- LINE ITEMS TABLE -->
+      <div class="items-section">
+        <div class="items-label" id="items-title-lbl">Detailed Quote Items</div>
+        <div style="overflow-x:auto">
+          <table class="items-table" id="items-table">
+            <thead>
+              <tr>
+                <th style="width:40%" id="th-desc">Description</th>
+                <th style="width:10%;text-align:center" id="th-qty">Qty</th>
+                <th style="width:20%" id="th-unit">Unit Price</th>
+                <th style="width:20%" id="th-sub">Subtotal</th>
+                <th style="width:36px"></th>
+              </tr>
+            </thead>
+            <tbody id="items-tbody"></tbody>
+          </table>
+        </div>
+        <!-- Service picker dropdown (hidden by default) -->
+        <div id="svc-picker" style="display:none;width:100%;background:var(--white);border:1.5px solid rgba(255,237,78,0.5);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;box-shadow:var(--shadow-md);">
+          <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--primary-black);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;" id="svc-picker-title">Select a service to add:</div>
+          <div id="svc-picker-list" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;"></div>
+          <button onclick="document.getElementById('svc-picker').style.display='none'" style="margin-top:10px;width:100%;padding:7px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-sm);background:transparent;color:var(--neutral-500);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;" id="svc-picker-cancel">Cancel</button>
+        </div>
+        <div class="items-footer">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-add-item" onclick="toggleSvcPicker()" id="btn-add-svc">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span id="btn-add-svc-lbl">Add Service</span>
+            </button>
+            <button class="btn-add-item" onclick="addItem()" id="btn-add-item" style="border-color:rgba(100,100,100,0.3);background:rgba(100,100,100,0.05);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span id="btn-add-item-lbl">Custom Item</span>
+            </button>
+          </div>
+          <div class="items-total-row">
+            <span class="items-total-lbl" id="total-lbl">QUOTE TOTAL</span>
+            <span class="items-total-val" id="items-total">$0</span>
+          </div>
+        </div><!-- end items-footer -->
+      </div>
+      <div class="disclaimer-section">
+        <div class="disclaimer-title" id="disc-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Important Estimate Terms
+        </div>
+        <p class="disclaimer" id="disc"></p>
+      </div>
+      <!-- Print-only footer -->
+      <div class="print-footer" style="margin-top:20px;padding-top:12px;border-top:1px solid #ddd;font-size:11px;color:#777;text-align:center;">
+        Fly Electric Solutions LLC &nbsp;·&nbsp; Licensed &amp; Insured &nbsp;·&nbsp; TDLR Licensed Master Electrician &nbsp;·&nbsp; Houston, TX
       </div>
       <div class="btn-row">
         <button class="btn btn-back" onclick="prevStep(3)" id="btn3b">← Recalculate</button>
-        <button class="btn btn-next" onclick="nextStep(3)" id="btn3n">Request Formal Quote →</button>
+        <button class="btn btn-back" onclick="printEstimate()" id="btn-print" style="border-color:rgba(255,237,78,0.5);color:var(--primary-black);background:rgba(255,237,78,0.12);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Save as PDF
+        </button>
+        <button class="btn btn-next" onclick="nextStep(3)" id="btn3n">Get Licensed Quote →</button>
       </div>
     </div>
-
     <!-- STEP 4: Contact -->
     <div class="step-panel" id="panel-4">
-      <div class="step-title" id="p4-title">Get your formal quote</div>
-      <div class="step-desc" id="p4-desc">A licensed electrician will contact you within 2 business hours.</div>
-      <div class="contact-form">
-        <input type="text" id="c-name" placeholder="Full name *">
-        <input type="tel" id="c-phone" placeholder="Phone / WhatsApp *">
-        <input type="email" id="c-email" placeholder="Email address *">
-        <input type="text" id="c-address" placeholder="Property address (optional)">
+      <div class="step-title" id="p4-title">Request Your Licensed Quote</div>
+      <div class="step-desc" id="p4-desc">A certified electrician will contact you within 2 business hours to schedule your inspection and provide a binding quote.</div>
+      <form id="web3form" class="contact-form" onsubmit="enviar(event)">
+        <input type="text" name="name" id="c-name" placeholder="Full name *" required>
+        <input type="tel" name="phone" id="c-phone" placeholder="Phone / WhatsApp *" required>
+        <input type="email" name="email" id="c-email" placeholder="Email address *" required>
+        <input type="text" name="address" id="c-address" placeholder="Property address (optional)">
         <div class="field">
-          <label id="lbl-emaillang">Confirmation email language / Idioma del email de confirmación</label>
-          <select id="emailLang">
+          <label id="lbl-emaillang">Confirmation Email Language / Idioma del Email</label>
+          <select name="language" id="emailLang">
             <option value="en">English</option>
             <option value="es">Español</option>
           </select>
         </div>
         <div class="email-lang-note" id="lang-note">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          You'll receive a confirmation email in your selected language with your estimate summary.
+          You'll receive a confirmation with your estimate summary and next steps.
         </div>
-      </div>
+      </form>
       <p class="error-msg" id="err-4">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         Please fill in name, phone and email.
@@ -1069,13 +1164,12 @@
         <svg class="spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
         Sending your request...
       </p>
-      <button class="btn btn-send" onclick="enviar()" id="btn-send">
+      <button type="submit" form="web3form" class="btn btn-send" id="btn-send">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         <span id="send-lbl">Submit Quote Request</span>
       </button>
-      <button class="btn btn-back" style="width:100%;margin-top:10px;justify-content:center;" onclick="prevStep(4)" id="btn4b">← Back</button>
+      <button class="btn btn-back" style="width:100%;margin-top:12px;justify-content:center;" onclick="prevStep(4)" id="btn4b">← Back</button>
     </div>
-
     <!-- SUCCESS -->
     <div class="step-panel" id="panel-success">
       <div class="success-screen">
@@ -1084,6 +1178,10 @@
         </div>
         <h2 id="suc-t">Request Sent!</h2>
         <p id="suc-p">A specialist from <strong>Fly Electric Solutions</strong> will contact you within 2 business hours.</p>
+        <div id="suc-est-num" style="display:inline-block;margin:0 auto 20px;background:linear-gradient(135deg,rgba(255,237,78,0.14) 0%,rgba(255,237,78,0.04) 100%);border:1.5px solid rgba(255,237,78,0.45);border-radius:10px;padding:14px 32px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6B7280;margin-bottom:5px;">Estimate Number</div>
+          <div id="suc-est-num-val" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#0A0E27;letter-spacing:0.06em;">—</div>
+        </div>
         <div class="email-confirm-box">
           <strong id="suc-email-t">Confirmation email sent</strong>
           <span id="suc-email-p">Check your inbox — we sent a summary of your estimate.</span>
@@ -1091,12 +1189,14 @@
         <button class="btn-restart" onclick="reiniciar()" id="btn-restart">Get another quote</button>
       </div>
     </div>
-
   </div>
+
 </div>
 
 <script>
+
 // SVG icon map by service ID
+
 const SVG_ICONS = {
   outlets:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="10" r="1.2"/><circle cx="15" cy="10" r="1.2"/><path d="M9 14s.8 2 3 2 3-2 3-2"/></svg>`,
   fans:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2C10 5 8 8 10 10c2 2 5 0 8-2a7 7 0 0 0-6 2z"/><path d="M22 12c-3 2-6 4-8 2-2-2 0-5 2-8a7 7 0 0 0-2 6z"/><path d="M12 22c2-3 4-6 2-8-2-2-5 0-8 2a7 7 0 0 0 6-2z"/><path d="M2 12c3-2 6-4 8-2 2 2 0 5-2 8a7 7 0 0 0 2-6z"/></svg>`,
@@ -1106,14 +1206,16 @@ const SVG_ICONS = {
   maintenance:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
   generator:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="22" height="13" rx="2"/><path d="M7 6V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2"/><line x1="12" y1="11" x2="12" y2="15"/><line x1="10" y1="13" x2="14" y2="13"/></svg>`,
   inspection:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+
 };
 
-// ── TRANSLATIONS ──────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ TRANSLATIONS ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 const T = {
   en: {
-    badge:'Instant Quote Calculator',
-    title:'How much will your<br><span>electrical project cost?</span>',
-    sub:'Get a detailed estimate in under 2 minutes — no calls needed.',
+    badge:'Quick Electrical Estimate',
+    title:'What will your<br><span>electrical project cost?</span>',
+    sub:'Get an instant estimate based on your project details. No commitment required.',
     loc:'Houston, TX &amp; surrounding areas · Licensed &amp; Insured',
     sl:['Service','Details','Estimate','Contact'],
     p1t:'What service do you need?', p1d:'Select a service to see specific options and pricing.',
@@ -1121,32 +1223,35 @@ const T = {
     lblSqft:'Square footage', hintSqft:'Enter in sq ft',
     lblProp:'Property type', prop0:'Select...', prop1:'Residential', prop2:'Commercial', prop3:'Industrial',
     lblZone:'Area / Zone',
-    tglT:'Emergency / Rush Service', tglS:'Response within 24h — +25% to base price',
+    tglT:'Emergency / Rush Service', tglS:'Response within 24h — +25% to estimated price',
     err1:'Please select a service.', err2:'Please fill in all fields.',
     btn1:'Continue →', btn2b:'← Back', btn2n:'See Estimate →',
-    p3t:'Your Estimate', p3d:"Based on Fly Electric's Houston-area rates. Final quote confirmed after site visit.",
-    rl:'Estimated Project Cost', rr:'USD · Labor + basic materials',
-    rushBadge:'Rush +25% included',
-    incT:"What's included",
-    disc:"This estimate is based on Fly Electric's standard Houston-area rates. Final price depends on site conditions, permit fees, and material availability. A licensed electrician will provide a binding quote after inspection.",
-    btn3b:'← Recalculate', btn3n:'Request Formal Quote →',
-    p4t:'Get your formal quote', p4d:'A licensed electrician will contact you within 2 business hours.',
+    p3t:'Your Project Estimate', p3d:'This is a preliminary, non-binding estimate based on the information you provided. A licensed electrician will confirm final pricing after an on-site evaluation.',
+    rl:'Estimated Project Range', rr:'Labor + basic materials',
+    rushBadge:'Rush Service +25%',
+    incT:"What's Included in This Estimate",
+    discTitle:'Important Estimate Terms',
+    disc:"This is a preliminary automated estimate prepared from the project information you submitted. It is not binding and does not constitute a contract or authorization to begin work. The final price depends on several factors including: (1) on-site inspection findings, (2) exact material specifications and availability, (3) NEC/electrical code requirements specific to your location, (4) local permit fees, (5) hidden or unforeseen conditions revealed during inspection, and (6) labor complexity upon detailed review. This estimate expires 30 days from generation. A licensed electrician from Fly Electric Solutions will contact you to schedule an inspection and issue a binding, final written quote before any work begins.",
+    btn3b:'← Recalculate', btn3n:'Get Licensed Quote →',
+    p4t:'Request Your Licensed Quote', p4d:'A certified electrician will contact you within 2 business hours to schedule your inspection and provide a binding quote.',
     phName:'Full name *', phPhone:'Phone / WhatsApp *', phEmail:'Email address *', phAddr:'Property address (optional)',
-    lblELang:'Confirmation email language',
-    langNote:"You'll receive a confirmation email in your selected language with your estimate summary.",
+    lblELang:'Confirmation Email Language',
+    langNote:"You'll receive a confirmation with your estimate summary and next steps.",
     err4:'Please fill in name, phone and email.',
     sending:'Sending your request...',
     sendLbl:'Submit Quote Request', btn4b:'← Back',
-    sucT:'Request Sent!',
-    sucP:'A specialist from <strong>Fly Electric Solutions</strong> will contact you within 2 business hours.',
-    sucET:'Confirmation email sent', sucEP:'Check your inbox — we sent a summary of your estimate.',
-    btnRestart:'Get another quote',
+    sucT:'Request Received!',
+    sucP:'A licensed electrician from <strong>Fly Electric Solutions</strong> will contact you within 2 business hours to schedule an on-site inspection and provide your binding quote.',
+    sucET:'Confirmation email sent', sucEP:'Check your inbox — we sent a summary of your preliminary estimate.',
+    btnRestart:'Get another estimate',
     bdLabels:['Service','Property','Sq Ft','Area'],
+    itemsTitle:'Detailed Quote Items', thDesc:'Description', thQty:'Qty', thUnit:'Unit Price', thSub:'Subtotal',
+    addItemBtn:'Custom Item', addSvcBtn:'Add Service', totalLbl:'QUOTE TOTAL', phItemDesc:'Description...',
   },
   es: {
-    badge:'Calculadora de Cotización',
+    badge:'Estimador Eléctrico Rápido',
     title:'¿Cuánto costará tu<br><span>proyecto eléctrico?</span>',
-    sub:'Obtén un estimado detallado en menos de 2 minutos, sin llamadas.',
+    sub:'Obtén un estimado instantáneo basado en tu proyecto. Sin compromiso.',
     loc:'Houston, TX y áreas cercanas · Licenciados y Asegurados',
     sl:['Servicio','Detalles','Estimado','Contacto'],
     p1t:'¿Qué servicio necesitas?', p1d:'Selecciona un servicio para ver opciones y precios.',
@@ -1154,31 +1259,36 @@ const T = {
     lblSqft:'Pies cuadrados', hintSqft:'Ingresa en sq ft (pies cuadrados)',
     lblProp:'Tipo de propiedad', prop0:'Seleccionar...', prop1:'Residencial', prop2:'Comercial', prop3:'Industrial',
     lblZone:'Área / Zona',
-    tglT:'Servicio de Emergencia / Urgente', tglS:'Atención en 24h — +25% al precio base',
+    tglT:'Servicio de Emergencia / Urgente', tglS:'Atención en 24h — +25% al precio estimado',
     err1:'Por favor selecciona un servicio.', err2:'Por favor completa todos los campos.',
     btn1:'Continuar →', btn2b:'← Atrás', btn2n:'Ver Estimado →',
-    p3t:'Tu Estimado', p3d:'Basado en las tarifas de Fly Electric en Houston. Cotización final confirmada tras visita.',
-    rl:'Costo Estimado del Proyecto', rr:'USD · Mano de obra + materiales básicos',
-    rushBadge:'Urgente +25% incluido',
-    incT:'Qué incluye esta cotización',
-    disc:'Este estimado está basado en las tarifas estándar de Fly Electric en Houston. El precio final depende de las condiciones del lugar, permisos y disponibilidad de materiales. Un electricista certificado dará la cotización final tras la visita.',
-    btn3b:'← Recalcular', btn3n:'Solicitar Cotización Formal →',
-    p4t:'Recibe tu cotización formal', p4d:'Un electricista certificado te contactará en menos de 2 horas hábiles.',
+    p3t:'Tu Estimado del Proyecto', p3d:'Este es un estimado preliminar no vinculante basado en la información que proporcionaste. Un electricista licenciado confirmará el precio final después de una evaluación en el sitio.',
+    rl:'Rango Estimado del Proyecto', rr:'Mano de obra + materiales básicos',
+    rushBadge:'Servicio Urgente +25%',
+    incT:'Qué Incluye Este Estimado',
+    discTitle:'Términos Importantes del Estimado',
+    disc:'Este es un estimado preliminar automatizado preparado según la información del proyecto que enviaste. No es vinculante y no constituye un contrato ni autorización para comenzar el trabajo. El precio final depende de varios factores incluyendo: (1) resultados de la inspección en el sitio, (2) especificaciones y disponibilidad exacta de materiales, (3) requisitos NEC/código eléctrico específicos de tu localidad, (4) permisos municipales, (5) condiciones ocultas o no previstas descubiertas durante la inspección, y (6) complejidad laboral tras revisión detallada. Este estimado vence 30 días después de su generación. Un electricista licenciado de Fly Electric Solutions te contactará para programar la inspección y emitir una cotización final vinculante por escrito antes de comenzar cualquier trabajo.',
+    btn3b:'← Recalcular', btn3n:'Obtener Cotización Licenciada →',
+    p4t:'Solicita Tu Cotización Licenciada', p4d:'Un electricista certificado te contactará en menos de 2 horas hábiles para programar la inspección y proporcionar tu cotización vinculante.',
     phName:'Nombre completo *', phPhone:'Teléfono / WhatsApp *', phEmail:'Correo electrónico *', phAddr:'Dirección de la propiedad (opcional)',
-    lblELang:'Idioma del email de confirmación',
-    langNote:'Recibirás un email de confirmación en el idioma seleccionado con el resumen de tu estimado.',
+    lblELang:'Idioma del Email de Confirmación',
+    langNote:'Recibirás un email de confirmación con el resumen de tu estimado y los próximos pasos.',
     err4:'Por favor completa nombre, teléfono y email.',
     sending:'Enviando tu solicitud...',
     sendLbl:'Enviar Solicitud de Cotización', btn4b:'← Atrás',
-    sucT:'¡Solicitud Enviada!',
-    sucP:'Un especialista de <strong>Fly Electric Solutions</strong> te contactará en menos de 2 horas hábiles.',
-    sucET:'Email de confirmación enviado', sucEP:'Revisa tu bandeja de entrada — te enviamos el resumen de tu estimado.',
-    btnRestart:'Hacer otra cotización',
+    sucT:'┬íSolicitud Recibida!',
+    sucP:'Un electricista licenciado de <strong>Fly Electric Solutions</strong> te contactará en menos de 2 horas hábiles para programar la inspección en el sitio y proporcionar tu cotización vinculante.',
+    sucET:'Email de confirmación enviado', sucEP:'Revisa tu bandeja de entrada — te enviamos el resumen de tu estimado preliminar.',
+    btnRestart:'Obtener otro estimado',
     bdLabels:['Servicio','Propiedad','Pies Cuad.','Área'],
+    itemsTitle:'Ítems de la Cotización', thDesc:'Descripción', thQty:'Cant.', thUnit:'Precio Unit.', thSub:'Subtotal',
+    addItemBtn:'Ítem Personalizado', addSvcBtn:'Agregar Servicio', totalLbl:'TOTAL COTIZACIÓN', phItemDesc:'Descripción...',
   }
+
 };
 
-// ── SERVICES DATA ─────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ SERVICES DATA ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 const SERVICES = [
   {
     id:'outlets', icon:'🔌',
@@ -1192,7 +1302,7 @@ const SERVICES = [
     includes:{ en:['Licensed labor','GFCI/AFCI outlets','Faceplate & hardware','Code-compliant wiring','30-day guarantee'], es:['Mano de obra certificada','Tomas GFCI/AFCI','Placas y accesorios','Cableado conforme al código','Garantía 30 días'] }
   },
   {
-    id:'fans', icon:'💡',
+    id:'fans', icon:'🌀',
     name:{ en:'Fans & Lighting', es:'Ventiladores y Luminarias' },
     from:'From $120',
     desc:{ en:'Ceiling fans, fixtures & decorative lighting', es:'Ventiladores, lámparas e iluminación decorativa' },
@@ -1203,7 +1313,7 @@ const SERVICES = [
     includes:{ en:['Fixture mounting','Wiring & junction box','Switch installation','Dimmer optional (+$45)','1-year labor warranty'], es:['Montaje de luminaria','Cableado y caja de conexiones','Instalación de interruptor','Dimmer opcional (+$45)','Garantía de mano de obra 1 año'] }
   },
   {
-    id:'panel', icon:'⚡',
+    id:'panel', icon:'ΓÜí',
     name:{ en:'Panel / Breaker Upgrade', es:'Panel / Actualización de Breakers' },
     from:'From $1,800',
     desc:{ en:'Main panel, sub-panels & breaker replacement', es:'Panel principal, subpaneles y reemplazo de breakers' },
@@ -1214,7 +1324,7 @@ const SERVICES = [
     includes:{ en:['New main panel or sub-panel','AFCI/GFCI breakers','Service entrance wiring','City permit & inspection','5-year parts warranty'], es:['Panel principal o subpanel nuevo','Breakers AFCI/GFCI','Cableado de acometida','Permiso municipal e inspección','Garantía de piezas 5 años'] }
   },
   {
-    id:'led', icon:'🌟',
+    id:'led', icon:'💡',
     name:{ en:'LED Lighting', es:'Iluminación LED' },
     from:'From $150',
     desc:{ en:'LED conversion, recessed lighting & commercial', es:'Conversión LED, luces empotradas y comercial' },
@@ -1268,24 +1378,44 @@ const SERVICES = [
     unitMult:[1, 1, 1.4, 1.2],
     includes:{ en:['Full electrical walkthrough','Written inspection report','Code violation list','Repair recommendations','Certificate of inspection'], es:['Revisión eléctrica completa','Reporte de inspección escrito','Lista de violaciones al código','Recomendaciones de reparación','Certificado de inspección'] }
   }
+
 ];
 
-// ── PRICING MULTIPLIERS ───────────────────────────────────────────────────────
+// ΓöÇΓöÇ PRICING MULTIPLIERS ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 const propMult = { residential:1.0, commercial:1.30, industrial:1.65 };
+
 const zonaMult = { houston:1.0, suburbs:0.93, galveston:1.06, conroe:0.90, baytown:0.95 };
+
 const propName = {
   en:{ residential:'Residential', commercial:'Commercial', industrial:'Industrial' },
   es:{ residential:'Residencial', commercial:'Comercial', industrial:'Industrial' }
+
 };
+
 const zonaName = {
   en:{ houston:'Houston', suburbs:'Suburbs', galveston:'Galveston', conroe:'Conroe', baytown:'Baytown' },
   es:{ houston:'Houston', suburbs:'Suburbios', galveston:'Galveston', conroe:'Conroe', baytown:'Baytown' }
+
 };
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ STATE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 const S = { lang:'en', svcId:null, unitOptIdx:null, sqft:0, propiedad:'', zona:'houston', rush:false };
 
-// ── RENDER SERVICES ───────────────────────────────────────────────────────────
+// ΓöÇΓöÇ ESTIMATE COUNTER ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+function nextEstimateNumber() {
+  const year = new Date().getFullYear();
+  const key  = 'fes_counter_' + year;
+  const n    = (parseInt(localStorage.getItem(key) || '0', 10)) + 1;
+  localStorage.setItem(key, n);
+  return 'FES-' + year + '-' + String(n).padStart(6, '0');
+
+}
+
+// ΓöÇΓöÇ RENDER SERVICES ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 function renderServices() {
   const grid = document.getElementById('svcGrid');
   grid.innerHTML = SERVICES.map(s => `
@@ -1297,12 +1427,14 @@ function renderServices() {
     </div>
   `).join('');
   renderSubQ();
+
 }
 
 function selectSvc(id) {
   S.svcId = id; S.unitOptIdx = null;
   document.getElementById('err-1').classList.remove('show');
   renderServices();
+
 }
 
 function renderSubQ() {
@@ -1318,11 +1450,13 @@ function renderSubQ() {
       </div>
     </div>
   `;
+
 }
 
 function selectOpt(i) { S.unitOptIdx = i; renderSubQ(); }
 
-// ── CALC ──────────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ CALC ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 function calcular() {
   const svc = SERVICES.find(s=>s.id===S.svcId);
   const pm = propMult[S.propiedad] || 1;
@@ -1334,6 +1468,7 @@ function calcular() {
   const min = Math.round(base * 0.88 / 25) * 25;
   const max = Math.round(base * 1.18 / 25) * 25;
   return { min, max };
+
 }
 
 function mostrarResultado() {
@@ -1347,14 +1482,117 @@ function mostrarResultado() {
   document.getElementById('bdGrid').innerHTML = t.bdLabels.map((l,i)=>`<div class="bd-item"><div class="bd-val">${bdData[i]}</div><div class="bd-lbl">${l}</div></div>`).join('');
   const checkSVG = `<div class="inc-check"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
   document.getElementById('incList').innerHTML = svc.includes[S.lang].map(i=>`<div class="inc-item">${checkSVG}${i}</div>`).join('');
+  // Seed the line items table with the primary service at the midpoint price
+  document.getElementById('items-tbody').innerHTML = '';
+  _itemCounter = 0;
+  const optLabel0 = S.unitOptIdx !== null ? ' – ' + svc.unitOpts[S.lang][S.unitOptIdx] : '';
+  const midPrice = Math.round((min + max) / 2 / 25) * 25;
+  addItem(svc.name[S.lang] + optLabel0, 1, midPrice);
+
 }
 
-// ── LANGUAGE ──────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ LINE ITEMS ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+let _itemCounter = 0;
+
+function toggleSvcPicker() {
+  const picker = document.getElementById('svc-picker');
+  const isVisible = picker.style.display !== 'none';
+  if (isVisible) { picker.style.display = 'none'; return; }
+  // Build service list
+  const t = T[S.lang];
+  document.getElementById('svc-picker-title').textContent = S.lang === 'es' ? 'Selecciona un servicio:' : 'Select a service to add:';
+  document.getElementById('svc-picker-cancel').textContent = S.lang === 'es' ? 'Cancelar' : 'Cancel';
+  const list = document.getElementById('svc-picker-list');
+  list.innerHTML = '';
+  SERVICES.forEach(function(svc) {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;text-align:left;padding:9px 12px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-sm);background:var(--white);cursor:pointer;font-family:Inter,sans-serif;font-size:13px;color:var(--primary-black);transition:all 0.2s;display:flex;justify-content:space-between;align-items:center;';
+    btn.innerHTML = '<span style="font-weight:600">' + svc.name[S.lang] + '</span><span style="color:var(--accent-yellow);font-size:12px;font-weight:700;">' + svc.from + '</span>';
+    btn.onmouseover = function(){ this.style.borderColor='rgba(255,237,78,0.6)'; this.style.background='rgba(255,237,78,0.06)'; };
+    btn.onmouseout = function(){ this.style.borderColor='var(--neutral-200)'; this.style.background='var(--white)'; };
+    btn.onclick = function() {
+      const base = svc.base || 0;
+      addItem(svc.name[S.lang], 1, base);
+      picker.style.display = 'none';
+    };
+    list.appendChild(btn);
+  });
+  picker.style.display = 'block';
+}
+
+function addItem(desc, qty, price) {
+  const tbody = document.getElementById('items-tbody');
+  const id = 'item' + (++_itemCounter);
+  const ph = (T[S.lang] && T[S.lang].phItemDesc) ? T[S.lang].phItemDesc : 'Description...';
+  const safeDesc = (desc || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const tr = document.createElement('tr');
+  tr.id = id;
+  tr.innerHTML =
+    '<td><input class="item-input" type="text" placeholder="' + ph + '" value="' + safeDesc + '" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
+    '<td style="text-align:center"><input class="item-input" type="number" min="1" value="' + (qty || 1) + '" style="width:58px;text-align:center" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
+    '<td><input class="item-input" type="number" min="0" step="25" value="' + (price || '') + '" placeholder="0" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
+    '<td><span class="item-sub" id="s' + id + '">$0</span></td>' +
+    '<td><button class="btn-rm" onclick="removeItem(\'' + id + '\')" title="Remove">&#215;</button></td>';
+  tbody.appendChild(tr);
+  calcLineTotal(id);
+
+}
+
+function removeItem(id) {
+  const tr = document.getElementById(id);
+  if (tr) tr.remove();
+  updateLineTotal();
+
+}
+
+function calcLineTotal(id) {
+  const tr = document.getElementById(id);
+  if (!tr) return;
+  const inputs = tr.querySelectorAll('input');
+  const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
+  const price = parseFloat(inputs[2] && inputs[2].value) || 0;
+  const sub   = qty * price;
+  const el = document.getElementById('s' + id);
+  if (el) el.textContent = '$' + sub.toLocaleString('en-US', {maximumFractionDigits:0});
+  updateLineTotal();
+
+}
+
+function updateLineTotal() {
+  let total = 0;
+  document.querySelectorAll('#items-tbody tr').forEach(function(tr) {
+    const inputs = tr.querySelectorAll('input');
+    const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
+    const price = parseFloat(inputs[2] && inputs[2].value) || 0;
+    total += qty * price;
+  });
+  const el = document.getElementById('items-total');
+  if (el) el.textContent = '$' + total.toLocaleString('en-US', {maximumFractionDigits:0});
+
+}
+
+function getLineItems() {
+  const items = [];
+  document.querySelectorAll('#items-tbody tr').forEach(function(tr) {
+    const inputs = tr.querySelectorAll('input');
+    const desc  = (inputs[0] && inputs[0].value.trim()) || '';
+    const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
+    const price = parseFloat(inputs[2] && inputs[2].value) || 0;
+    if (desc || price) items.push({ desc: desc, qty: qty, price: price, sub: qty * price });
+  });
+  return items;
+
+}
+
+// ΓöÇΓöÇ LANGUAGE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 function setLang(l) {
   S.lang = l;
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active', b.textContent===l.toUpperCase()));
   applyT();
   renderServices();
+
 }
 
 function applyT() {
@@ -1367,12 +1605,14 @@ function applyT() {
     'lbl-zone':'lblZone','tgl-t':'tglT','tgl-s':'tglS',
     'err-1':'err1','err-2':'err2','btn1':'btn1','btn2b':'btn2b','btn2n':'btn2n',
     'p3-title':'p3t','p3-desc':'p3d','rl':'rl','rr':'rr','inc-t':'incT',
-    'disc':'disc','btn3b':'btn3b','btn3n':'btn3n',
+    'disc-title':'discTitle','disc':'disc','btn3b':'btn3b','btn3n':'btn3n',
     'p4-title':'p4t','p4-desc':'p4d','lbl-emaillang':'lblELang',
     'lang-note':'langNote','err-4':'err4','sending-msg':'sending',
     'send-lbl':'sendLbl','btn4b':'btn4b',
     'suc-t':'sucT','suc-p':'sucP','suc-email-t':'sucET','suc-email-p':'sucEP',
-    'btn-restart':'btnRestart'
+    'btn-restart':'btnRestart',
+    'items-title-lbl':'itemsTitle','th-desc':'thDesc','th-qty':'thQty','th-unit':'thUnit','th-sub':'thSub',
+    'btn-add-item-lbl':'addItemBtn','btn-add-svc-lbl':'addSvcBtn','total-lbl':'totalLbl'
   };
   Object.entries(ids).forEach(([id, key]) => {
     const el = document.getElementById(id);
@@ -1381,15 +1621,19 @@ function applyT() {
   ['sl-1','sl-2','sl-3','sl-4'].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.textContent=t.sl[i]; });
   const ph = ['c-name','c-phone','c-email','c-addr'];
   ph.forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.placeholder=t[['phName','phPhone','phEmail','phAddr'][i]]; });
+
 }
 
-// ── TOGGLE ────────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ TOGGLE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 function toggleRush() {
   S.rush = !S.rush;
   document.getElementById('rushToggle').classList.toggle('on', S.rush);
+
 }
 
-// ── NAVIGATION ────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ NAVIGATION ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 function nextStep(from) {
   if (from===1) {
     if (!S.svcId) { document.getElementById('err-1').classList.add('show'); return; }
@@ -1404,6 +1648,7 @@ function nextStep(from) {
     mostrarResultado();
   }
   goTo(from+1);
+
 }
 
 function prevStep(from) { goTo(from-1); }
@@ -1413,6 +1658,7 @@ function goTo(n) {
   document.getElementById('panel-'+n).classList.add('active');
   updateDots(n);
   window.scrollTo({top:0,behavior:'smooth'});
+
 }
 
 function updateDots(cur) {
@@ -1424,66 +1670,280 @@ function updateDots(cur) {
   }
   const fill = document.getElementById('progressFill');
   if (fill) fill.style.width = (((cur-1)/3)*100) + '%';
+
 }
 
-// ── SUBMIT ────────────────────────────────────────────────────────────────────
-async function enviar() {
-  const name      = document.getElementById('c-name').value.trim();
-  const phone     = document.getElementById('c-phone').value.trim();
-  const email     = document.getElementById('c-email').value.trim();
-  const addr      = document.getElementById('c-address').value.trim();
-  const emailLang = document.getElementById('emailLang').value;
-  if (!name||!phone||!email) { document.getElementById('err-4').classList.add('show'); return; }
+// ΓöÇΓöÇ SUBMIT ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
-  const btn = document.getElementById('btn-send');
-  btn.disabled = true;
-  document.getElementById('sending-msg').classList.add('show');
-
-  const svc        = SERVICES.find(s => s.id === S.svcId);
+function enviar(e) {
+  e.preventDefault();
+  const name    = document.getElementById('c-name').value.trim();
+  const phone   = document.getElementById('c-phone').value.trim();
+  const email   = document.getElementById('c-email').value.trim();
+  const address = document.getElementById('c-address').value.trim();
+  const errEl = document.getElementById('err-4');
+  if (!name || !phone || !email) { errEl.classList.add('show'); return; }
+  const svc      = SERVICES.find(s => s.id === S.svcId);
   const { min, max } = calcular();
-  const optLabel      = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
-  const includesList  = svc.includes[S.lang].join('||');
-
-  const payload = {
-    name,
-    phone,
-    email,
-    address:      addr,
-    lang:         emailLang,
-    service:      svc.name[S.lang],
+  const optLabel = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
+  const estimateNum  = nextEstimateNumber();
+  const estimateDate = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const estData = {
+    number:       estimateNum,
+    date:         estimateDate,
+    service:      svc.name['en'],
     option:       optLabel,
-    sqft:         String(S.sqft || ''),
-    propertyType: propName[S.lang][S.propiedad] || S.propiedad,
-    zone:         zonaName[S.lang][S.zona],
-    rush:         S.rush ? 'yes' : 'no',
+    sqft:         S.sqft ? S.sqft.toLocaleString() + ' sq ft' : 'N/A',
+    propertyType: propName['en'][S.propiedad] || S.propiedad,
+    zone:         zonaName['en'][S.zona],
+    rush:         S.rush,
     priceMin:     min.toLocaleString('en-US'),
     priceMax:     max.toLocaleString('en-US'),
-    includes:     includesList,
+    includes:     svc.includes['en'],
+    lineItems:    getLineItems(),
   };
+  // Generate and auto-download PDF
+  const doc = generatePDF({ name, phone, email, address }, estData);
+  doc.save('FlyElectric-Estimate-' + estimateNum + '.pdf');
+  // Show success screen
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-success').classList.add('active');
+  document.getElementById('stepsEl').style.display = 'none';
+  document.getElementById('suc-est-num-val').textContent = estimateNum;
 
-  try {
-    const res  = await fetch('/api/quote', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
+}
+
+// ΓöÇΓöÇΓöÇ PDF GENERATION ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+function generatePDF(customer, est) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 15, CW = W - M * 2;
+  // Helper setters
+  const fc = (...c) => doc.setFillColor(...c);
+  const dc = (...c) => doc.setDrawColor(...c);
+  const tc = (...c) => doc.setTextColor(...c);
+  // ΓöÇΓöÇ HEADER ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  fc(10, 14, 39);
+  doc.rect(0, 0, W, 40, 'F');
+  // Yellow accent strip
+  fc(255, 230, 0);
+  doc.rect(0, 40, W, 2.5, 'F');
+  // Logo box
+  fc(255, 230, 0);
+  doc.roundedRect(M, 8, 11, 11, 2, 2, 'F');
+  tc(10, 14, 39);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('FE', M + 2.2, 15.5);
+  // Company name
+  tc(255, 255, 255);
+  doc.setFontSize(15);
+  doc.text('FLY ELECTRIC SOLUTIONS LLC', M + 15, 14);
+  // Sub-info
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  tc(170, 178, 200);
+  doc.text('(571) 379-6040   ·   info@flyelectricsolution.com   ·   flyelectricsolution.com', M + 15, 21);
+  doc.text('Licensed & Insured   ·   TDLR Licensed Master Electrician   ·   Houston, TX', M + 15, 27);
+  // Estimate badge (right)
+  tc(255, 230, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('ESTIMATE', W - M, 12, { align: 'right' });
+  tc(190, 195, 215);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text('#' + est.number, W - M, 19, { align: 'right' });
+  doc.text(est.date, W - M, 26, { align: 'right' });
+  let y = 51;
+  // ΓöÇΓöÇ CUSTOMER INFO ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  fc(249, 250, 251);
+  dc(220, 222, 228);
+  doc.setLineWidth(0.3);
+  doc.rect(M, y, CW, 26, 'FD');
+  tc(10, 14, 39);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.text('CUSTOMER INFORMATION', M + 4, y + 6);
+  const half = CW / 2;
+  doc.setFontSize(8.5);
+  tc(31, 41, 55);
+  [
+    ['Name:', customer.name, M + 4, y + 13],
+    ['Phone:', customer.phone, M + 4, y + 20],
+    ['Email:', customer.email, M + half + 4, y + 13],
+    ['Address:', customer.address || 'Not provided', M + half + 4, y + 20],
+  ].forEach(([lbl, val, x, yy]) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(lbl, x, yy);
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(val, half - 22);
+    doc.text(lines[0] || '', x + (lbl.length * 1.9 + 4), yy);
+  });
+  y += 33;
+  // ΓöÇΓöÇ PROJECT DETAILS ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  tc(10, 14, 39);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('PROJECT DETAILS', M, y);
+  dc(255, 230, 0);
+  doc.setLineWidth(0.8);
+  doc.line(M, y + 2.5, M + CW, y + 2.5);
+  y += 8;
+  const rows = [
+    ['SERVICE',        est.service],
+    ['OPTION',         est.option],
+    ['SQUARE FOOTAGE', est.sqft],
+    ['PROPERTY TYPE',  est.propertyType],
+    ['ZONE / AREA',    est.zone],
+    ['RUSH SERVICE',   est.rush ? 'Yes — Emergency +25%' : 'No'],
+  ];
+  rows.forEach(([lbl, val], i) => {
+    if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 8, 'F'); }
+    tc(107, 114, 128);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text(lbl, M + 3, y + 1);
+    tc(31, 41, 55);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    const vLines = doc.splitTextToSize(String(val), CW - 62);
+    doc.text(vLines[0] || '', M + 62, y + 1);
+    y += 8;
+  });
+  y += 6;
+  // ΓöÇΓöÇ PRICE BOX ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  fc(10, 14, 39);
+  doc.rect(M, y, CW, 28, 'F');
+  fc(255, 230, 0);
+  doc.rect(M, y, 4, 28, 'F');
+  tc(170, 178, 200);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text('ESTIMATED PROJECT RANGE', M + 9, y + 8);
+  tc(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text('$' + est.priceMin + ' – $' + est.priceMax, M + 9, y + 21);
+  tc(170, 178, 200);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text('Labor + basic materials  ·  Preliminary, non-binding', W - M, y + 8, { align: 'right' });
+  y += 35;
+  // ΓöÇΓöÇ WHAT'S INCLUDED ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  tc(10, 14, 39);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text("WHAT'S INCLUDED", M, y);
+  dc(255, 230, 0);
+  doc.setLineWidth(0.8);
+  doc.line(M, y + 2.5, M + CW, y + 2.5);
+  y += 8;
+  est.includes.forEach((item, i) => {
+    if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 7.5, 'F'); }
+    fc(255, 230, 0);
+    doc.circle(M + 4, y, 1.4, 'F');
+    tc(31, 41, 55);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.text(item, M + 9, y + 1);
+    y += 7.5;
+  });
+  y += 7;
+  // ΓöÇΓöÇ LINE ITEMS TABLE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  if (est.lineItems && est.lineItems.length > 0) {
+    if (y > 220) { doc.addPage(); y = 20; }
+    tc(10, 14, 39);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('DETAILED QUOTE', M, y);
+    dc(255, 230, 0);
+    doc.setLineWidth(0.8);
+    doc.line(M, y + 2.5, M + CW, y + 2.5);
+    y += 8;
+    // Table header row
+    fc(10, 14, 39);
+    doc.rect(M, y - 3.5, CW, 8, 'F');
+    tc(255, 230, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('DESCRIPTION', M + 3, y + 1);
+    doc.text('QTY', M + CW * 0.60 + 4, y + 1, { align: 'center' });
+    doc.text('UNIT PRICE', M + CW * 0.73, y + 1);
+    doc.text('SUBTOTAL', M + CW, y + 1, { align: 'right' });
+    y += 8;
+    let lineTotal = 0;
+    est.lineItems.forEach((item, i) => {
+      if (y > 258) { doc.addPage(); y = 20; }
+      if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 7.5, 'F'); }
+      tc(55, 65, 81);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      const descTrimmed = doc.splitTextToSize(item.desc || '', CW * 0.55);
+      doc.text(descTrimmed[0] || '', M + 3, y + 1);
+      doc.text(String(item.qty), M + CW * 0.60 + 4, y + 1, { align: 'center' });
+      doc.text('$' + (item.price || 0).toLocaleString('en-US'), M + CW * 0.73, y + 1);
+      doc.setFont('helvetica', 'bold');
+      doc.text('$' + (item.sub || 0).toLocaleString('en-US'), M + CW, y + 1, { align: 'right' });
+      lineTotal += item.sub || 0;
+      y += 7.5;
     });
-    const data = await res.json();
-    if (data.success) {
-      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('panel-success').classList.add('active');
-      document.getElementById('stepsEl').style.display = 'none';
-    } else {
-      throw new Error(data.message || 'Error');
-    }
-  } catch(e) {
-    document.getElementById('err-4').classList.add('show');
-    document.getElementById('err-4').textContent = S.lang === 'es'
-      ? 'Error al enviar. Por favor intenta de nuevo o llama al (571) 379-6040.'
-      : 'Error sending. Please try again or call (571) 379-6040.';
-  } finally {
-    btn.disabled = false;
-    document.getElementById('sending-msg').classList.remove('show');
+    // Total bar
+    y += 2;
+    if (y > 262) { doc.addPage(); y = 20; }
+    fc(10, 14, 39);
+    doc.rect(M, y, CW, 11, 'F');
+    tc(170, 178, 200);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('QUOTE TOTAL', M + 3, y + 7.5);
+    tc(255, 230, 0);
+    doc.setFontSize(13);
+    doc.text('$' + lineTotal.toLocaleString('en-US'), M + CW, y + 7.5, { align: 'right' });
+    y += 18;
   }
+  y += 4;
+  // ΓöÇΓöÇ DISCLAIMER ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  if (y > 232) { doc.addPage(); y = 20; }
+  const discText = 'This is a preliminary automated estimate and is not binding. Final pricing depends on on-site inspection findings, material specifications, NEC code requirements, local permit fees, and labor complexity. A licensed electrician from Fly Electric Solutions will contact you within 2 business hours to schedule an inspection and issue a binding written quote before any work begins. This estimate expires 30 days from the date generated.';
+  const discLines = doc.splitTextToSize(discText, CW - 10);
+  const discH = discLines.length * 4.5 + 16;
+  fc(255, 251, 235);
+  dc(245, 158, 11);
+  doc.setLineWidth(0.5);
+  doc.rect(M, y, CW, discH, 'FD');
+  tc(146, 64, 14);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('! IMPORTANT - ESTIMATE TERMS & CONDITIONS', M + 5, y + 8);
+  tc(92, 45, 5);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text(discLines, M + 5, y + 14);
+  // ΓöÇΓöÇ FOOTER ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  fc(10, 14, 39);
+  doc.rect(0, 283, W, 14, 'F');
+  tc(175, 182, 205);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.text(
+    'Fly Electric Solutions LLC   ·   (571) 379-6040   ·   flyelectricsolution.com   ·   TDLR Licensed Master Electrician',
+    W / 2, 289, { align: 'center' }
+  );
+  doc.text(
+    'This document was auto-generated. For questions reply to your confirmation email or call us.',
+    W / 2, 293, { align: 'center' }
+  );
+  return doc;
+
+}
+
+function printEstimate() {
+  const el = document.getElementById('print-date');
+  if (el) el.textContent = 'Generated: ' + new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+  window.print();
+
 }
 
 function reiniciar() {
@@ -1495,12 +1955,17 @@ function reiniciar() {
   document.getElementById('stepsEl').style.display='flex';
   renderServices();
   goTo(1);
+
 }
 
 // Init
+
 applyT();
+
 renderServices();
+
 </script>
 
 </body>
-</html>
+
+</html>.  
