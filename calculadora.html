@@ -1216,10 +1216,21 @@
           </table>
         </div>
         <div class="items-footer">
-          <button class="btn-add-item" onclick="addItem()" id="btn-add-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span id="btn-add-item-lbl">Add Item</span>
-          </button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;">
+            <div id="svc-picker" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--white);border:1.5px solid var(--neutral-200);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:8px;min-width:220px;z-index:100;">
+              <div style="font-size:10px;font-weight:700;color:var(--neutral-500);letter-spacing:0.08em;text-transform:uppercase;padding:4px 8px 8px;">Select service</div>
+              <div id="svc-picker-list" style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;"></div>
+              <button onclick="document.getElementById('svc-picker').style.display='none'" style="margin-top:8px;width:100%;padding:6px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-sm);background:transparent;color:var(--neutral-500);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;" id="svc-picker-cancel">Cancel</button>
+            </div>
+            <button class="btn-add-item" onclick="toggleSvcPicker()" id="btn-add-svc">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span id="btn-add-svc-lbl">Add Service</span>
+            </button>
+            <button class="btn-add-item" onclick="addItem()" id="btn-add-item" style="border-color:rgba(100,100,100,0.3);background:rgba(100,100,100,0.05);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span id="btn-add-item-lbl">Custom Item</span>
+            </button>
+          </div>
           <div class="items-total-row">
             <span class="items-total-lbl" id="total-lbl">QUOTE TOTAL</span>
             <span class="items-total-val" id="items-total">$0</span>
@@ -1359,7 +1370,7 @@ const T = {
     btnRestart:'Get another estimate',
     bdLabels:['Service','Property','Sq Ft','Area'],
     itemsTitle:'Detailed Quote Items', thDesc:'Description', thQty:'Qty', thUnit:'Unit Price', thSub:'Subtotal',
-    addItemBtn:'Add Item', totalLbl:'QUOTE TOTAL', phItemDesc:'Description...',
+    addSvcBtn:'Add Service', addItemBtn:'Custom Item', totalLbl:'QUOTE TOTAL', phItemDesc:'Description...',
   },
   es: {
     badge:'Estimador Eléctrico Rápido',
@@ -1395,7 +1406,7 @@ const T = {
     btnRestart:'Obtener otro estimado',
     bdLabels:['Servicio','Propiedad','Pies Cuad.','Área'],
     itemsTitle:'Ítems de la Cotización', thDesc:'Descripción', thQty:'Cant.', thUnit:'Precio Unit.', thSub:'Subtotal',
-    addItemBtn:'Agregar Ítem', totalLbl:'TOTAL COTIZACIÓN', phItemDesc:'Descripción...',
+    addSvcBtn:'Agregar Servicio', addItemBtn:'Ítem Personalizado', totalLbl:'TOTAL COTIZACIÓN', phItemDesc:'Descripción...',
   }
 };
 
@@ -1589,6 +1600,26 @@ function mostrarResultado() {
 // ── LINE ITEMS ────────────────────────────────────────────────────────────────
 let _itemCounter = 0;
 
+function toggleSvcPicker() {
+  const picker = document.getElementById('svc-picker');
+  if (picker.style.display !== 'none') { picker.style.display = 'none'; return; }
+  const list = document.getElementById('svc-picker-list');
+  list.innerHTML = '';
+  SERVICES.forEach(function(svc) {
+    const btn = document.createElement('button');
+    btn.textContent = svc.name[S.lang];
+    btn.style.cssText = 'width:100%;text-align:left;padding:8px 10px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-sm);background:var(--white);color:var(--primary-black);font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;';
+    btn.onmouseover = function(){ this.style.borderColor='var(--accent-yellow)'; this.style.background='var(--accent-yellow-light)'; };
+    btn.onmouseout  = function(){ this.style.borderColor='var(--neutral-200)'; this.style.background='var(--white)'; };
+    btn.onclick = function() {
+      addItem(svc.name[S.lang], 1, svc.base || 0);
+      picker.style.display = 'none';
+    };
+    list.appendChild(btn);
+  });
+  picker.style.display = 'block';
+}
+
 function addItem(desc, qty, price) {
   const tbody = document.getElementById('items-tbody');
   const id = 'item' + (++_itemCounter);
@@ -1673,7 +1704,7 @@ function applyT() {
     'suc-t':'sucT','suc-p':'sucP','suc-email-t':'sucET','suc-email-p':'sucEP',
     'btn-restart':'btnRestart',
     'items-title-lbl':'itemsTitle','th-desc':'thDesc','th-qty':'thQty','th-unit':'thUnit','th-sub':'thSub',
-    'btn-add-item-lbl':'addItemBtn','total-lbl':'totalLbl'
+    'btn-add-svc-lbl':'addSvcBtn','btn-add-item-lbl':'addItemBtn','total-lbl':'totalLbl'
   };
   Object.entries(ids).forEach(([id, key]) => {
     const el = document.getElementById(id);
@@ -1898,17 +1929,18 @@ function generatePDF(customer, est) {
   tc(170, 178, 200);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  doc.text('ESTIMATED PROJECT RANGE', M + 9, y + 8);
+  doc.text('QUOTE TOTAL', M + 9, y + 8);
 
   tc(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(20);
-  doc.text('$' + est.priceMin + ' – $' + est.priceMax, M + 9, y + 21);
+  const itemsTotal = (est.lineItems || []).reduce((s, it) => s + (it.sub || 0), 0);
+  doc.text('$' + itemsTotal.toLocaleString('en-US'), M + 9, y + 21);
 
   tc(170, 178, 200);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  doc.text('Labor + basic materials  ·  Preliminary, non-binding', W - M, y + 8, { align: 'right' });
+  doc.text('Based on itemized quote below  ·  Preliminary, non-binding', W - M, y + 8, { align: 'right' });
 
   y += 35;
 
