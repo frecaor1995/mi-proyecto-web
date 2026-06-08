@@ -1821,15 +1821,16 @@ function generatePDF(customer, est) {
   tc(170, 178, 200);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  doc.text('ESTIMATED PROJECT RANGE', M + 9, y + 8);
+  doc.text('QUOTE TOTAL', M + 9, y + 8);
   tc(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(20);
-  doc.text('$' + est.priceMin + ' – $' + est.priceMax, M + 9, y + 21);
+  const itemsTotal = (est.lineItems || []).reduce((s, it) => s + (it.sub || 0), 0);
+  doc.text('$' + itemsTotal.toLocaleString('en-US'), M + 9, y + 21);
   tc(170, 178, 200);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  doc.text('Labor + basic materials  ·  Preliminary, non-binding', W - M, y + 8, { align: 'right' });
+  doc.text('Based on itemized quote below  ·  Preliminary, non-binding', W - M, y + 8, { align: 'right' });
   y += 35;
   // ΓöÇΓöÇ WHAT'S INCLUDED ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   tc(10, 14, 39);
