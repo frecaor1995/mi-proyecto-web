@@ -994,12 +994,30 @@ body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{
     opacity:1!important;
     pointer-events:auto!important;
     height:auto!important;
-    min-height:100vh;
-    overflow:hidden;
+    min-height:0!important;
+    overflow:visible!important;
   }
-  .slide-bg{position:absolute!important}
+  .slide-content{height:auto!important}
+  .slide-bg{position:absolute!important;min-height:100%!important}
+  .slide-footer{position:relative!important;bottom:auto!important}
+  /* Un-hide content inside non-active slides */
+  .slide:not(.active) .hero-tag,
+  .slide:not(.active) .hero-h1,
+  .slide:not(.active) .hero-sub,
+  .slide:not(.active) .hero-ctas,
+  .slide:not(.active) .hero-badges,
+  .slide:not(.active) .slide-label,
+  .slide:not(.active) .slide-h2,
+  .slide:not(.active) .services-grid,
+  .slide:not(.active) .about-text,
+  .slide:not(.active) .about-stats,
+  .slide:not(.active) .quote-intro,
+  .slide:not(.active) .quote-form-wrap,
+  .slide:not(.active) .contact-info,
+  .slide:not(.active) .contact-right{
+    opacity:1!important;transform:none!important;animation:none!important;
+  }
   #arrows,#swipe-hint{display:none!important}
-  /* WhatsApp: move to bottom-left so it never overlaps arrows */
   #whatsapp-btn{
     right:auto!important;
     left:20px!important;
