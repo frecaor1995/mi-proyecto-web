@@ -209,7 +209,6 @@ footer a{color:var(--gold);text-decoration:none;}
 </footer>
 
 <script>
-var quoteCount=1;
 var lang='en';
 var rowCount=0;
 
@@ -223,7 +222,7 @@ var TXT={
     ttlSum:'Estimate Summary',lSub:'Subtotal (Labor + Materials)',lMat:'Materials est. (15% of subtotal)',
     lLabor:'Labor est. (85% of subtotal)',lTax:'Sales Tax 8.25% (materials only — TX law)',lTotal:'TOTAL',
     btnPdf:'Generate PDF Estimate',btnWa:'Send via WhatsApp',btnNew:'New Estimate',
-    legal:'⚠️ This estimate is for reference only. Final pricing may vary based on on-site conditions, materials needed, and permit requirements. Sales Tax (8.25%) applies to materials only per Texas law. A licensed electrician will confirm final pricing after inspection. Fly Electric Solutions LLC · TDLR Licensed · Fully Insured.',
+    legal:'⚠️ This estimate is for reference only. Final pricing may vary based on on-site conditions, materials needed, and permit requirements. Sales Tax (8.25%) applies to materials only per Texas law. A licensed electrician will confirm final pricing after inspection. Fly Electric Solutions LLC · Insured & Professional · Fully Insured.',
     confirmNew:'Start a new estimate? Current data will be lost.',
     pdfTitle:'ELECTRICAL ESTIMATE',descHeader:'Description',qtyHeader:'Qty',unitHeader:'Unit Price',totalHeader:'Total',
     legalPdf:'This is a reference estimate only. Final price may vary based on site conditions. TX Sales Tax applies to materials only.',
@@ -324,7 +323,7 @@ function genQNum(){
   var yy=String(d.getFullYear()).slice(-2);
   var mm=String(d.getMonth()+1).padStart(2,'0');
   var dd=String(d.getDate()).padStart(2,'0');
-  var rnd=String(quoteCount).padStart(3,'0'); quoteCount++;
+  var rnd=Math.floor(Math.random()*900)+100;
   return 'FES-'+yy+mm+dd+'-'+rnd;
 }
 
@@ -519,7 +518,7 @@ function makePDF(){
   doc.setFontSize(8);
   doc.setFont('helvetica','normal');
   doc.setTextColor(170,170,170);
-  doc.text('TDLR Licensed · Fully Insured · Houston TX',14,33);
+  doc.text('Insured & Professional · Fully Insured · Houston TX',14,33);
   doc.text('(571) 379-6040  ·  flyelectricsolution.com',14,38.5);
 
   // Estimate info (right)
