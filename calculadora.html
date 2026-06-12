@@ -3,2091 +3,720 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Electrical Project Estimator — Fly Electric Solutions</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --primary-black: #0A0E27;
-    --primary-dark: #1A1F3A;
-    --primary-medium: #2D3447;
-    --accent-yellow: #FFED4E;
-    --accent-yellow-dark: #FFE533;
-    --accent-yellow-light: #FFF8CC;
-    --success: #10B981;
-    --success-light: #ECFDF5;
-    --warning: #F59E0B;
-    --warning-light: #FFFBEB;
-    --error: #EF4444;
-    --error-light: #FEF2F2;
-    --neutral-50: #F9FAFB;
-    --neutral-100: #F3F4F6;
-    --neutral-200: #E5E7EB;
-    --neutral-300: #D1D5DB;
-    --neutral-400: #9CA3AF;
-    --neutral-500: #6B7280;
-    --neutral-600: #4B5563;
-    --neutral-700: #374151;
-    --neutral-800: #1F2937;
-    --neutral-900: #111827;
-    --white: #FFFFFF;
-    --shadow-xs: 0 1px 2px rgba(0,0,0,0.08);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.12);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.15);
-    --shadow-lg: 0 16px 48px rgba(0,0,0,0.2);
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-    --radius-full: 9999px;
-  }
-
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: linear-gradient(135deg, var(--primary-black) 0%, var(--primary-dark) 100%);
-    color: var(--neutral-600);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    position: relative;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 1000px 800px at 15% 50%, rgba(255,237,78,0.04) 0%, transparent 70%),
-      radial-gradient(ellipse 700px 600px at 85% 20%, rgba(255,237,78,0.03) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 48px 24px 100px;
-  }
-
-  /* ── TOP BAR ── */
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 48px;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: 'Syne', sans-serif;
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--white);
-    text-decoration: none;
-    letter-spacing: -0.02em;
-  }
-
-  .brand-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 16px rgba(255,237,78,0.3);
-  }
-
-  .brand-icon svg { width: 20px; height: 20px; color: var(--primary-black); }
-  .brand em { color: var(--accent-yellow); font-style: normal; font-weight: 800; }
-
-  .lang-switch {
-    display: flex;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,237,78,0.2);
-    border-radius: var(--radius-full);
-    padding: 4px;
-    gap: 2px;
-    backdrop-filter: blur(10px);
-  }
-
-  .lang-btn {
-    padding: 6px 18px;
-    border-radius: var(--radius-full);
-    border: none;
-    background: transparent;
-    color: rgba(255,255,255,0.6);
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-    letter-spacing: 0.08em;
-  }
-
-  .lang-btn.active {
-    background: var(--accent-yellow);
-    color: var(--primary-black);
-    box-shadow: 0 4px 12px rgba(255,237,78,0.3);
-  }
-
-  /* ── HEADER ── */
-  .header { text-align: center; margin-bottom: 56px; }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255,237,78,0.12);
-    border: 1px solid rgba(255,237,78,0.3);
-    border-radius: var(--radius-full);
-    padding: 8px 16px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--accent-yellow);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
-
-  .badge-dot {
-    width: 6px; height: 6px;
-    background: var(--accent-yellow);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2rem, 6vw, 3.2rem);
-    font-weight: 800;
-    color: var(--white);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    margin-bottom: 16px;
-  }
-
-  h1 span { color: var(--accent-yellow); }
-
-  .subtitle {
-    margin-top: 12px;
-    color: rgba(255,255,255,0.7);
-    font-size: 16px;
-    line-height: 1.6;
-    font-weight: 400;
-  }
-
-  .loc {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: rgba(255,255,255,0.6);
-    margin-top: 14px;
-  }
-
-  .loc svg { flex-shrink: 0; color: var(--accent-yellow); width: 14px; height: 14px; }
-
-  /* Credibility badges */
-  .cred-badges {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 28px;
-  }
-
-  .cred-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,237,78,0.15);
-    border-radius: var(--radius-full);
-    padding: 8px 15px;
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.8);
-    backdrop-filter: blur(8px);
-  }
-
-  .cred-badge svg { width: 14px; height: 14px; color: var(--accent-yellow); flex-shrink: 0; }
-
-  /* ── PROGRESS BAR ── */
-  .progress-wrapper { margin-bottom: 32px; }
-
-  .progress-track {
-    position: relative;
-    height: 5px;
-    background: rgba(255,237,78,0.1);
-    border-radius: var(--radius-full);
-    margin-bottom: 16px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
-    border-radius: var(--radius-full);
-    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    box-shadow: 0 0 20px rgba(255,237,78,0.4);
-  }
-
-  .progress-fill::after {
-    content: '';
-    position: absolute;
-    right: -1px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    background: var(--accent-yellow);
-    border: 2.5px solid var(--primary-black);
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(255,237,78,0.2);
-    transition: opacity 0.3s;
-  }
-
-  .progress-steps {
-    display: flex;
-    justify-content: space-between;
-    gap: 0;
-  }
-
-  .step-dot {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-  }
-
-  .step-dot .num {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255,237,78,0.1);
-    border: 1.5px solid rgba(255,237,78,0.2);
-    color: rgba(255,255,255,0.5);
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-  }
-
-  .step-dot .lbl {
-    font-size: 11px;
-    color: rgba(255,255,255,0.5);
-    font-weight: 500;
-    transition: color 0.3s;
-    white-space: nowrap;
-  }
-
-  .step-dot.active .num {
-    background: var(--accent-yellow);
-    border-color: var(--accent-yellow);
-    color: var(--primary-black);
-    box-shadow: 0 0 0 4px rgba(255,237,78,0.2);
-    font-weight: 800;
-  }
-
-  .step-dot.active .lbl { color: var(--accent-yellow); font-weight: 700; }
-
-  .step-dot.done .num { background: var(--success); border-color: var(--success); color: var(--white); }
-  .step-dot.done .lbl { color: var(--success); }
-
-  /* ── MAIN CARD ── */
-  .card {
-    background: var(--white);
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: var(--radius-lg);
-    padding: 48px;
-    box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(20px);
-  }
-
-  @media (max-width: 640px) {
-    .card { padding: 32px 24px; }
-  }
-
-  .step-panel { display: none; }
-  .step-panel.active { display: block; animation: fadeIn 0.3s ease-out; }
-
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-  .step-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--primary-black);
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
-  }
-
-  .step-desc {
-    color: var(--neutral-500);
-    font-size: 15px;
-    margin-bottom: 32px;
-    line-height: 1.6;
-  }
-
-  /* ── SERVICE GRID ── */
-  .services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .svc-card {
-    border: 2px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    padding: 20px 16px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--white);
-    text-align: center;
-    box-shadow: var(--shadow-xs);
-    position: relative;
-  }
-
-  .svc-card:hover {
-    border-color: var(--accent-yellow);
-    box-shadow: 0 8px 24px rgba(255,237,78,0.15);
-    transform: translateY(-4px);
-  }
-
-  .svc-card.selected {
-    border-color: var(--accent-yellow);
-    background: linear-gradient(135deg, var(--accent-yellow-light) 0%, var(--white) 100%);
-    box-shadow: 0 12px 32px rgba(255,237,78,0.2);
-    transform: translateY(-4px);
-  }
-
-  .svc-card.selected::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40%;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--accent-yellow), transparent);
-    border-radius: 50%;
-  }
-
-  .svc-icon {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--neutral-100);
-    border-radius: 10px;
-    transition: all 0.3s;
-  }
-
-  .svc-icon svg { width: 24px; height: 24px; color: var(--primary-black); transition: color 0.3s; }
-
-  .svc-card.selected .svc-icon { background: var(--accent-yellow); }
-  .svc-card.selected .svc-icon svg { color: var(--primary-black); }
-
-  .svc-name {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--primary-black);
-    line-height: 1.3;
-    letter-spacing: -0.01em;
-  }
-
-  .svc-from { font-size: 12px; color: var(--accent-yellow); margin-top: 4px; font-weight: 600; }
-
-  .svc-desc {
-    font-size: 11px;
-    color: var(--neutral-500);
-    margin-top: 6px;
-    line-height: 1.4;
-    display: none;
-  }
-
-  .svc-card.selected .svc-desc { display: block; color: var(--primary-black); font-weight: 500; }
-
-  /* ── SUB-QUESTIONS ── */
-  .subq {
-    background: linear-gradient(135deg, rgba(255,237,78,0.08) 0%, rgba(255,237,78,0.04) 100%);
-    border: 1px solid rgba(255,237,78,0.2);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    margin-top: 24px;
-  }
-
-  .subq-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--primary-black);
-    margin-bottom: 14px;
-    letter-spacing: -0.01em;
-  }
-
-  .options-row { display: flex; flex-wrap: wrap; gap: 10px; }
-
-  .opt-btn {
-    padding: 10px 18px;
-    border-radius: var(--radius-full);
-    border: 1.5px solid var(--neutral-200);
-    background: var(--white);
-    color: var(--neutral-600);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-  }
-
-  .opt-btn:hover { 
-    border-color: var(--accent-yellow); 
-    color: var(--primary-black);
-    transform: translateY(-2px);
-  }
-
-  .opt-btn.selected {
-    border-color: var(--accent-yellow);
-    background: var(--accent-yellow);
-    color: var(--primary-black);
-    font-weight: 700;
-    box-shadow: 0 4px 12px rgba(255,237,78,0.3);
-  }
-
-  /* ── FORM FIELDS ── */
-  .fields { display: flex; flex-direction: column; gap: 18px; }
-
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-  @media (max-width: 540px) { .field-row { grid-template-columns: 1fr; } }
-
-  .field label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--primary-black);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 8px;
-  }
-
-  .field input, .field select {
-    width: 100%;
-    background: var(--white);
-    border: 1.5px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    padding: 12px 16px;
-    color: var(--primary-black);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s;
-    appearance: none;
-  }
-
-  .field input:focus, .field select:focus {
-    border-color: var(--accent-yellow);
-    box-shadow: 0 0 0 4px rgba(255,237,78,0.1);
-    background: var(--white);
-  }
-
-  .field select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    cursor: pointer;
-    padding-right: 40px;
-  }
-
-  .field-hint { font-size: 12px; color: var(--neutral-500); margin-top: 5px; font-weight: 500; }
-
-  /* ── TOGGLE ── */
-  .toggle-field {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--white);
-    border: 1.5px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    padding: 16px 18px;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-
-  .toggle-field:hover { border-color: rgba(255,237,78,0.4); }
-  .toggle-field.on { border-color: var(--accent-yellow); background: var(--accent-yellow-light); }
-
-  .toggle-info strong { font-size: 14px; color: var(--primary-black); display: block; font-weight: 700; }
-  .toggle-info span { font-size: 12px; color: var(--neutral-500); }
-
-  .toggle-switch {
-    width: 48px;
-    height: 28px;
-    background: var(--neutral-300);
-    border-radius: var(--radius-full);
-    position: relative;
-    transition: background 0.3s;
-    flex-shrink: 0;
-  }
-
-  .toggle-switch::after {
-    content: '';
-    position: absolute;
-    top: 3px; left: 3px;
-    width: 22px; height: 22px;
-    background: var(--white);
-    border-radius: 50%;
-    transition: transform 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-
-  .toggle-field.on .toggle-switch { background: var(--accent-yellow); }
-  .toggle-field.on .toggle-switch::after { transform: translateX(20px); }
-
-  /* ── RESULT ── */
-  .result-box {
-    background: linear-gradient(135deg, var(--accent-yellow-light) 0%, var(--white) 100%);
-    border: 2px solid var(--accent-yellow);
-    border-radius: var(--radius-md);
-    padding: 36px 32px;
-    text-align: center;
-    margin-bottom: 24px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .result-box::before {
-    content: '';
-    position: absolute;
-    right: -60px; top: -60px;
-    width: 180px; height: 180px;
-    background: radial-gradient(circle, rgba(255,237,78,0.1) 0%, transparent 70%);
-    border-radius: 50%;
-  }
-
-  .result-label {
-    font-size: 12px;
-    color: var(--primary-black);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .result-price {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2.2rem, 8vw, 3.5rem);
-    font-weight: 800;
-    color: var(--primary-black);
-    line-height: 1;
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
-  }
-
-  .result-price span { color: var(--accent-yellow); }
-
-  .result-range { font-size: 14px; color: var(--neutral-600); font-weight: 500; }
-
-  .rush-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: var(--warning-light);
-    border: 1.5px solid var(--warning);
-    color: var(--warning);
-    padding: 8px 14px;
-    border-radius: var(--radius-full);
-    font-size: 12px;
-    font-weight: 700;
-    margin-top: 12px;
-  }
-
-  .rush-badge svg { width: 13px; height: 13px; }
-
-  .breakdown {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .bd-item {
-    background: var(--neutral-50);
-    border: 1px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    padding: 14px 10px;
-    text-align: center;
-  }
-
-  .bd-val {
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--primary-black);
-    letter-spacing: -0.01em;
-  }
-
-  .bd-lbl {
-    font-size: 10px;
-    color: var(--neutral-500);
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-  }
-
-  .includes {
-    background: var(--neutral-50);
-    border: 1px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-
-  .inc-title {
-    font-size: 12px;
-    color: var(--primary-black);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 14px;
-    font-weight: 700;
-  }
-
-  .inc-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 14px;
-    color: var(--neutral-700);
-    padding: 6px 0;
-    line-height: 1.5;
-  }
-
-  .inc-check {
-    width: 20px; height: 20px;
-    background: var(--success-light);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .inc-check svg { width: 10px; height: 10px; color: var(--success); }
-
-  /* ── DISCLAIMER SECTION ── */
-  .disclaimer-section {
-    background: linear-gradient(135deg, var(--neutral-50) 0%, var(--white) 100%);
-    border: 1px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    margin-bottom: 24px;
-  }
-
-  .disclaimer-title {
-    font-size: 12px;
-    color: var(--primary-black);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .disclaimer-title svg { width: 14px; height: 14px; color: var(--warning); flex-shrink: 0; }
-
-  .disclaimer {
-    font-size: 13px;
-    color: var(--neutral-700);
-    line-height: 1.7;
-    margin: 0;
-    display: block;
-  }
-
-  /* ── CONTACT ── */
-  .contact-form { display: flex; flex-direction: column; gap: 14px; }
-
-  .contact-form input, .contact-form select {
-    width: 100%;
-    background: var(--white);
-    border: 1.5px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    padding: 13px 16px;
-    color: var(--primary-black);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s;
-    appearance: none;
-  }
-
-  .contact-form input:focus, .contact-form select:focus {
-    border-color: var(--accent-yellow);
-    box-shadow: 0 0 0 4px rgba(255,237,78,0.1);
-  }
-
-  .contact-form input::placeholder { color: var(--neutral-500); }
-
-  .contact-form select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    cursor: pointer;
-    padding-right: 40px;
-  }
-
-  .email-lang-note {
-    background: linear-gradient(135deg, rgba(255,237,78,0.08) 0%, transparent 100%);
-    border: 1px solid rgba(255,237,78,0.2);
-    border-radius: var(--radius-md);
-    padding: 14px 16px;
-    font-size: 13px;
-    color: var(--primary-black);
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-
-  .email-lang-note svg { width: 15px; height: 15px; color: var(--accent-yellow); flex-shrink: 0; margin-top: 1px; }
-
-  /* ── BUTTONS ── */
-  .btn-row { display: flex; gap: 12px; margin-top: 28px; justify-content: flex-end; }
-
-  .btn {
-    padding: 13px 24px;
-    border-radius: var(--radius-md);
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    letter-spacing: -0.01em;
-  }
-
-  .btn-back {
-    background: transparent;
-    border: 1.5px solid var(--neutral-200);
-    color: var(--neutral-600);
-  }
-
-  .btn-back:hover { 
-    border-color: var(--accent-yellow); 
-    color: var(--primary-black);
-    transform: translateY(-2px);
-  }
-
-  .btn-next { 
-    background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
-    color: var(--primary-black);
-    font-weight: 800;
-    box-shadow: 0 4px 12px rgba(255,237,78,0.3);
-  }
-
-  .btn-next:hover {
-    box-shadow: 0 8px 24px rgba(255,237,78,0.4);
-    transform: translateY(-2px);
-  }
-
-  .btn-send {
-    background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-yellow-dark) 100%);
-    color: var(--primary-black);
-    width: 100%;
-    padding: 16px;
-    font-size: 15px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border: none;
-    cursor: pointer;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    transition: all 0.3s;
-    margin-top: 18px;
-    letter-spacing: -0.01em;
-    box-shadow: 0 4px 12px rgba(255,237,78,0.3);
-  }
-
-  .btn-send:hover {
-    box-shadow: 0 8px 24px rgba(255,237,78,0.4);
-    transform: translateY(-2px);
-  }
-
-  .btn-send:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
-
-  /* ── SUCCESS ── */
-  .success-screen { text-align: center; padding: 24px 0; }
-
-  .success-icon {
-    width: 80px; height: 80px;
-    background: var(--success-light);
-    border: 2.5px solid var(--success);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 24px;
-    box-shadow: 0 4px 12px rgba(16,185,129,0.2);
-  }
-
-  .success-icon svg { width: 36px; height: 36px; color: var(--success); }
-
-  .success-screen h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--primary-black);
-    margin-bottom: 12px;
-    letter-spacing: -0.02em;
-  }
-
-  .success-screen p {
-    color: var(--neutral-600);
-    font-size: 15px;
-    line-height: 1.7;
-    max-width: 450px;
-    margin: 0 auto 28px;
-  }
-
-  .email-confirm-box {
-    background: var(--neutral-50);
-    border: 1px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    padding: 18px;
-    margin: 0 auto 28px;
-    max-width: 420px;
-    font-size: 13px;
-    color: var(--neutral-600);
-  }
-
-  .email-confirm-box strong {
-    color: var(--success);
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: 700;
-  }
-
-  .btn-restart {
-    background: transparent;
-    border: 1.5px solid var(--neutral-200);
-    color: var(--neutral-600);
-    padding: 13px 24px;
-    border-radius: var(--radius-md);
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s;
-    letter-spacing: -0.01em;
-  }
-
-  .btn-restart:hover { 
-    border-color: var(--accent-yellow); 
-    color: var(--primary-black);
-    transform: translateY(-2px);
-  }
-
-  /* ── MESSAGES ── */
-  .error-msg {
-    color: var(--error);
-    font-size: 13px;
-    margin-top: 12px;
-    display: none;
-    align-items: center;
-    gap: 7px;
-    font-weight: 600;
-  }
-
-  .error-msg.show { display: flex; }
-  .error-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
-
-  .sending-msg {
-    color: var(--accent-yellow);
-    font-size: 13px;
-    margin-top: 12px;
-    display: none;
-    align-items: center;
-    gap: 7px;
-    font-weight: 600;
-  }
-
-  .sending-msg.show { display: flex; }
-
-  /* ── ANIMATIONS ── */
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spin { animation: spin 1s linear infinite; }
-
-  /* ── PRINT / PDF ── */
-  .print-header, .print-footer { display: none; }
-
-  @media print {
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { background: #fff !important; color: #111 !important; }
-    body::before { display: none !important; }
-    .top-bar, .header, .progress-wrapper,
-    #panel-1, #panel-2, #panel-4, #panel-success, .btn-row { display: none !important; }
-    #panel-3 { display: block !important; }
-    .wrapper { padding: 16px; max-width: 100%; }
-    .card { box-shadow: none !important; border: 1px solid #ddd !important; padding: 24px !important; }
-    .result-box { background: #fffce6 !important; border: 2px solid #ffe600 !important; }
-    .result-price, .result-price span { color: #0A0E27 !important; }
-    .inc-title, .disclaimer-title, .result-label, .step-title { color: #0A0E27 !important; }
-    .bd-item { background: #f5f5f5 !important; border: 1px solid #ddd !important; }
-    .includes { background: #f9f9f9 !important; border: 1px solid #ddd !important; }
-    .disclaimer-section { background: #f9f9f9 !important; border: 1px solid #ddd !important; }
-    .print-header, .print-footer { display: block !important; }
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 700px) {
-    .wrapper { padding: 32px 18px 80px; }
-    .card { padding: 32px 20px; }
-    .breakdown { grid-template-columns: 1fr 1fr; gap: 8px; }
-    h1 { font-size: 1.8rem; }
-    .services-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .svc-card { padding: 16px 12px; }
-    .step-title { font-size: 20px; }
-  }
-
-  @media (max-width: 480px) {
-    .wrapper { padding: 24px 14px 70px; }
-    .card { padding: 24px 16px; }
-    .result-box { padding: 28px 20px; }
-    .services-grid { grid-template-columns: 1fr; }
-    .svc-card { padding: 14px 10px; }
-    .svc-icon { width: 40px; height: 40px; }
-    .svc-name { font-size: 12px; }
-    .bd-val { font-size: 12px; }
-    .breakdown { grid-template-columns: 1fr 1fr; gap: 6px; }
-    .cred-badge { font-size: 11px; padding: 5px 11px; }
-    .cred-badge svg { display: none; }
-    .btn-row { flex-direction: column-reverse; }
-    .btn-back { width: 100%; justify-content: center; }
-    .btn-next { width: 100%; justify-content: center; }
-  }
-
-  /* ── LINE ITEMS TABLE ── */
-  .items-section { margin-bottom: 20px; }
-  .items-label { font-size: 12px; color: var(--primary-black); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 12px; }
-  .items-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .items-table thead th { background: var(--primary-black); color: var(--accent-yellow); padding: 9px 8px; text-align: left; font-family: 'Syne', sans-serif; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
-  .items-table tbody tr { border-bottom: 1px solid var(--neutral-200); }
-  .items-table tbody tr:nth-child(even) { background: var(--neutral-50); }
-  .items-table td { padding: 7px 6px; vertical-align: middle; }
-  .item-input { width: 100%; border: 1.5px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 6px 9px; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--primary-black); background: var(--white); outline: none; transition: border-color 0.2s; }
-  .item-input:focus { border-color: var(--accent-yellow); }
-  .item-sub { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--primary-black); white-space: nowrap; min-width: 70px; display: inline-block; }
-  .btn-rm { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--neutral-300); background: transparent; color: var(--neutral-500); cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
-  .btn-rm:hover { border-color: var(--error); color: var(--error); background: var(--error-light); }
-  .items-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; gap: 12px; }
-  .btn-add-item { display: inline-flex; align-items: center; gap: 7px; padding: 8px 18px; border: 1.5px dashed rgba(255,237,78,0.6); border-radius: var(--radius-md); background: rgba(255,237,78,0.06); color: var(--primary-black); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-  .btn-add-item:hover { background: rgba(255,237,78,0.14); border-style: solid; }
-  .items-total-row { display: flex; align-items: center; gap: 14px; background: var(--primary-black); border-radius: var(--radius-md); padding: 11px 18px; }
-  .items-total-lbl { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; text-transform: uppercase; }
-  .items-total-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--accent-yellow); letter-spacing: -0.02em; }
-  @media (max-width: 640px) {
-    .items-table thead th { font-size: 9px; padding: 7px 5px; }
-    .items-table td { padding: 5px 4px; }
-    .item-input { font-size: 12px; padding: 5px 7px; }
-    .items-footer { flex-direction: column; align-items: stretch; }
-    .items-total-row { justify-content: space-between; }
-  }
-</style>
-<!-- jsPDF — PDF generation -->
+<title>Estimado Eléctrico — Fly Electric Solutions LLC</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{--bg:#1a1a1a;--bg2:#222;--bg3:#2a2a2a;--bg4:#333;--gold:#FFD700;--gold2:#e6c200;--text:#fff;--text2:#bbb;--text3:#888;--border:#3a3a3a;--border2:#444;--red:#e55;--radius:8px;--radius-lg:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;min-height:100vh;}
+nav{background:#111;border-bottom:1px solid var(--border);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{font-size:18px;font-weight:700;}.logo span{color:var(--gold);}
+.nav-r{display:flex;align-items:center;gap:10px;}
+.lang-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;}
+.lang-btn:hover{border-color:var(--gold);color:var(--gold);}
+.btn-cta{background:var(--gold);color:#111;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;border:none;cursor:pointer;}
+.btn-cta:hover{background:var(--gold2);}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 60px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:20px;}
+.card-title{font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.07em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'';display:inline-block;width:3px;height:15px;background:var(--gold);border-radius:2px;}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:580px){.fields-grid{grid-template-columns:1fr;}}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;}
+.field input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:var(--radius);font-size:14px;font-family:inherit;outline:none;}
+.field input:focus{border-color:var(--gold);}
+.field input::placeholder{color:var(--text3);}
+.field.full{grid-column:1/-1;}
+.qbadge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,215,0,.1);border:1px solid var(--gold);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--gold);margin-bottom:14px;}
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.btn{padding:9px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
+.btn-out{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.btn-out:hover{border-color:var(--gold);color:var(--gold);}
+.btn-gold{background:var(--gold);color:#111;}
+.btn-gold:hover{background:var(--gold2);}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
+table{width:100%;border-collapse:collapse;min-width:520px;}
+thead th{background:var(--bg3);padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);}
+thead th.r{text-align:right;}
+tbody td{padding:0;border-bottom:1px solid var(--border);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:rgba(255,215,0,.025);}
+.td-in{width:100%;background:transparent;border:none;color:var(--text);padding:11px 12px;font-size:13px;font-family:inherit;outline:none;}
+.td-in:focus{background:rgba(255,215,0,.05);}
+.rt{text-align:right;}
+.rtotal{font-weight:600;color:var(--gold);font-size:13px;padding:11px 12px;text-align:right;min-width:90px;white-space:nowrap;}
+.delbtn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:8px;line-height:1;width:40px;display:block;}
+.delbtn:hover{color:var(--red);}
+.emptyrow td{text-align:center;padding:28px;color:var(--text3);font-size:13px;font-style:italic;}
+.totbox{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px;}
+.trow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:14px;border-bottom:1px solid var(--border);}
+.trow:last-child{border-bottom:none;}
+.trow span:first-child{color:var(--text2);}
+.trow span:last-child{font-weight:600;}
+.grand{margin-top:14px;background:var(--bg4);border:2px solid var(--gold);border-radius:var(--radius-lg);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;}
+.grand .gl{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;}
+.grand .ga{font-size:30px;font-weight:800;color:var(--gold);}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.abtn{flex:1;min-width:150px;padding:13px 18px;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;}
+.apdf{background:var(--gold);color:#111;}
+.apdf:hover{background:var(--gold2);}
+.awa{background:#25d366;color:#fff;}
+.awa:hover{background:#1ebe5a;}
+.anew{background:var(--bg3);color:var(--text2);border:1px solid var(--border2);}
+.anew:hover{border-color:var(--red);color:var(--red);}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal-ov.hide{display:none;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:680px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
+.mhead{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.mhead h2{font-size:16px;font-weight:700;}
+.mclose{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer;line-height:1;padding:2px 8px;}
+.mclose:hover{color:var(--red);}
+.mbody{overflow-y:auto;padding:16px 20px;flex:1;}
+.cgroup{margin-bottom:18px;}
+.clabel{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.slist{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+@media(max-width:480px){.slist{grid-template-columns:1fr;}}
+.sitem{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .15s;}
+.sitem:hover{border-color:var(--gold);background:rgba(255,215,0,.07);}
+.sname{font-size:13px;font-weight:500;}
+.sprice{font-size:13px;font-weight:700;color:var(--gold);}
+.legal{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-size:11px;color:var(--text3);line-height:1.6;margin-top:20px;}
+footer{border-top:1px solid var(--border);padding:20px;text-align:center;font-size:12px;color:var(--text3);}
+footer a{color:var(--gold);text-decoration:none;}
+.fname{color:var(--text2);font-weight:600;margin-bottom:4px;}
+
+.counter-bar{background:#111;border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;}
+.counter-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);}
+.counter-num{font-size:20px;font-weight:800;color:var(--gold);font-family:'Segoe UI',monospace;min-width:28px;text-align:center;}
+.counter-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+.pdf-success{position:fixed;bottom:24px;right:24px;background:#1a1a1a;border:1px solid var(--gold);border-radius:var(--radius-lg);padding:14px 20px;font-size:13px;color:var(--text);z-index:9999;display:flex;align-items:center;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,.5);transform:translateY(100px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);}
+.pdf-success.show{transform:translateY(0);opacity:1;}
+.pdf-success .check{font-size:20px;}
+
+</style>
 </head>
 <body>
-<div class="wrapper">
+<nav>
+  <div class="logo"><span>Fly</span> Electric Solutions</div>
+  <div class="nav-r">
+    <button class="lang-btn" onclick="toggleLang()">ES / EN</button>
+    <a href="https://flyelectricsolution.com#quote" class="btn-cta" id="cta-btn">Free Estimate</a>
+  </div>
+</nav>
 
-  <!-- Top bar -->
-  <div class="top-bar">
-    <div class="brand">
-      <div class="brand-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      </div>
-      <em>Fly Electric</em>&nbsp;Solutions
-    </div>
-    <div class="lang-switch">
-      <button class="lang-btn active" onclick="setLang('en')">EN</button>
-      <button class="lang-btn" onclick="setLang('es')">ES</button>
+<div class="counter-bar" id="counter-bar">
+  <div class="counter-item">
+    <div>
+      <div class="counter-num" id="cnt-total">0</div>
+      <div class="counter-label" id="cnt-lbl-total">Estimados Generados</div>
     </div>
   </div>
-
-  <!-- Header -->
-  <div class="header">
-    <div class="badge" id="h-badge">
-      <span class="badge-dot"></span>
-      Quick Electrical Estimate
-    </div>
-    <h1 id="h-title">What will your<br><span>electrical project cost?</span></h1>
-    <p class="subtitle" id="h-sub">Get an instant estimate based on your project details. No commitment required.</p>
-    <p class="loc">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      <span id="h-loc">Houston, TX &amp; surrounding areas · Licensed &amp; Insured</span>
-    </p>
-    <!-- Credibility badges -->
-    <div class="cred-badges">
-      <div class="cred-badge">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Licensed & Insured
-      </div>
-      <div class="cred-badge">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        5-Star Rated
-      </div>
-      <div class="cred-badge">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Free Estimates
-      </div>
-      <div class="cred-badge">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        NEC Certified
-      </div>
+  <div style="width:1px;height:32px;background:var(--border);"></div>
+  <div class="counter-item">
+    <div>
+      <div class="counter-num" id="cnt-month">0</div>
+      <div class="counter-label" id="cnt-lbl-month">Este Mes</div>
     </div>
   </div>
-
-  <!-- Progress bar (step-dot IDs preserved for JS updateDots()) -->
-  <div class="progress-wrapper">
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  <div style="width:1px;height:32px;background:var(--border);"></div>
+  <div class="counter-item">
+    <div>
+      <div class="counter-num" id="cnt-revenue">$0</div>
+      <div class="counter-label" id="cnt-lbl-revenue">Valor Total Estimado</div>
     </div>
-    <div class="progress-steps" id="stepsEl">
-      <div class="step-dot active" id="dot-1">
-        <div class="num">1</div>
-        <div class="lbl" id="sl-1">Service</div>
-      </div>
-      <div class="step-dot" id="dot-2">
-        <div class="num">2</div>
-        <div class="lbl" id="sl-2">Details</div>
-      </div>
-      <div class="step-dot" id="dot-3">
-        <div class="num">3</div>
-        <div class="lbl" id="sl-3">Estimate</div>
-      </div>
-      <div class="step-dot" id="dot-4">
-        <div class="num">4</div>
-        <div class="lbl" id="sl-4">Contact</div>
-      </div>
+  </div>
+</div>
+<div class="pdf-success" id="pdf-toast">
+  <span class="check">✅</span>
+  <span id="pdf-toast-msg">PDF generado exitosamente</span>
+</div>
+
+<div class="modal-ov hide" id="modal">
+  <div class="modal">
+    <div class="mhead">
+      <h2 id="modal-title">Select from Catalog</h2>
+      <button class="mclose" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="mbody" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="card-title" id="ttl-client">Estimate Information</div>
+    <div class="qbadge"><span id="qlabel">Estimado #</span>&nbsp;<span id="qnum">—</span></div>
+    <div class="fields-grid">
+      <div class="field full"><label id="lbl-name">Client Full Name</label><input type="text" id="f-name" placeholder="John Smith"></div>
+      <div class="field full"><label id="lbl-addr">Property Address</label><input type="text" id="f-addr" placeholder="1234 Main St, Houston TX 77001"></div>
+      <div class="field"><label id="lbl-phone">Phone</label><input type="tel" id="f-phone" placeholder="(713) 555-0000"></div>
+      <div class="field"><label id="lbl-date">Date</label><input type="text" id="f-date" readonly></div>
     </div>
   </div>
 
   <div class="card">
-
-    <!-- STEP 1: Service -->
-    <div class="step-panel active" id="panel-1">
-      <div class="step-title" id="p1-title">What service do you need?</div>
-      <div class="step-desc" id="p1-desc">Select a service to see specific options and pricing.</div>
-      <div class="services-grid" id="svcGrid"></div>
-      <div id="subQuestions"></div>
-      <p class="error-msg" id="err-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Please select a service.
-      </p>
-      <div class="btn-row">
-        <button class="btn btn-next" onclick="nextStep(1)" id="btn1">Continue →</button>
-      </div>
+    <div class="card-title" id="ttl-svc">Services / Work Items</div>
+    <div class="toolbar">
+      <button class="btn btn-out" onclick="addRow()"><span>&#43;</span>&nbsp;<span id="btn-add">Add Row</span></button>
+      <button class="btn btn-gold" onclick="openModal()"><span>&#128203;</span>&nbsp;<span id="btn-cat">Select from Catalog</span></button>
     </div>
-
-    <!-- STEP 2: Details -->
-    <div class="step-panel" id="panel-2">
-      <div class="step-title" id="p2-title">Project details</div>
-      <div class="step-desc" id="p2-desc">The more precise, the better the estimate.</div>
-      <div class="fields">
-        <div class="field-row">
-          <div class="field">
-            <label id="lbl-sqft">Square footage</label>
-            <input type="number" id="sqft" placeholder="e.g. 1,500" min="1">
-            <div class="field-hint" id="hint-sqft">Enter in sq ft</div>
-          </div>
-          <div class="field">
-            <label id="lbl-prop">Property type</label>
-            <select id="propiedad">
-              <option value="" id="prop0">Select...</option>
-              <option value="residential" id="prop1">Residential</option>
-              <option value="commercial" id="prop2">Commercial</option>
-              <option value="industrial" id="prop3">Industrial</option>
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label id="lbl-zone">Area / Zone</label>
-          <select id="zona">
-            <option value="houston">Houston (Inner Loop / Midtown)</option>
-            <option value="suburbs">Sugar Land · Pearland · Katy · The Woodlands</option>
-            <option value="galveston">Galveston County</option>
-            <option value="conroe">Conroe / Montgomery County</option>
-            <option value="baytown">Baytown · Pasadena · Deer Park</option>
-          </select>
-        </div>
-        <div class="toggle-field" id="rushToggle" onclick="toggleRush()">
-          <div class="toggle-info">
-            <strong id="tgl-t">Emergency / Rush Service</strong>
-            <span id="tgl-s">Response within 24h — +25% to base price</span>
-          </div>
-          <div class="toggle-switch"></div>
-        </div>
-      </div>
-      <p class="error-msg" id="err-2">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Please fill in all fields.
-      </p>
-      <div class="btn-row">
-        <button class="btn btn-back" onclick="prevStep(2)" id="btn2b">← Back</button>
-        <button class="btn btn-next" onclick="nextStep(2)" id="btn2n">See Estimate →</button>
-      </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th id="th-desc">Description</th>
+            <th class="r" style="width:75px;" id="th-qty">Qty</th>
+            <th class="r" style="width:110px;" id="th-unit">Unit Price</th>
+            <th class="r" style="width:100px;" id="th-total">Total</th>
+            <th style="width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody id="svc-body">
+          <tr class="emptyrow" id="empty-msg"><td colspan="5" id="empty-txt">No items added yet. Use the buttons above to add work items.</td></tr>
+        </tbody>
+      </table>
     </div>
+  </div>
 
-    <!-- STEP 3: Result -->
-    <div class="step-panel" id="panel-3">
-      <!-- Print-only header -->
-      <div class="print-header" style="margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #ffe600;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-          <div style="width:36px;height:36px;background:#ffe600;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0A0E27" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          </div>
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#0A0E27;">Fly Electric Solutions LLC</div>
-            <div style="font-size:12px;color:#555;">(571) 379-6040 &nbsp;·&nbsp; flyelectricsolution.com &nbsp;·&nbsp; info@flyelectricsolution.com</div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:#777;" id="print-date"></div>
-      </div>
-
-      <div class="step-title" id="p3-title">Your Project Estimate</div>
-      <div class="step-desc" id="p3-desc">This is a preliminary, non-binding estimate based on the information you provided. A licensed electrician will confirm final pricing after an on-site evaluation.</div>
-      <div class="result-box">
-        <div class="result-label" id="rl">Estimated Project Range</div>
-        <div class="result-price">$<span id="pMin">0</span> – $<span id="pMax">0</span></div>
-        <div class="result-range" id="rr">Labor + basic materials</div>
-        <div id="rushBadge" style="display:none">
-          <div class="rush-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            Rush Service +25%
-          </div>
-        </div>
-      </div>
-      <div class="breakdown" id="bdGrid"></div>
-      <div class="includes">
-        <div class="inc-title" id="inc-t">What's Included in This Estimate</div>
-        <div id="incList"></div>
-      </div>
-
-      <!-- LINE ITEMS TABLE -->
-      <div class="items-section">
-        <div class="items-label" id="items-title-lbl">Detailed Quote Items</div>
-        <div style="overflow-x:auto">
-          <table class="items-table" id="items-table">
-            <thead>
-              <tr>
-                <th style="width:40%" id="th-desc">Description</th>
-                <th style="width:10%;text-align:center" id="th-qty">Qty</th>
-                <th style="width:20%" id="th-unit">Unit Price</th>
-                <th style="width:20%" id="th-sub">Subtotal</th>
-                <th style="width:36px"></th>
-              </tr>
-            </thead>
-            <tbody id="items-tbody"></tbody>
-          </table>
-        </div>
-        <div class="items-footer">
-          <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;">
-            <div id="svc-picker" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--white);border:1.5px solid var(--neutral-200);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:8px;min-width:220px;z-index:100;">
-              <div style="font-size:10px;font-weight:700;color:var(--neutral-500);letter-spacing:0.08em;text-transform:uppercase;padding:4px 8px 8px;">Select service</div>
-              <div id="svc-picker-list" style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;"></div>
-              <button onclick="document.getElementById('svc-picker').style.display='none'" style="margin-top:8px;width:100%;padding:6px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-sm);background:transparent;color:var(--neutral-500);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;" id="svc-picker-cancel">Cancel</button>
-            </div>
-            <button class="btn-add-item" onclick="toggleSvcPicker()" id="btn-add-svc">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span id="btn-add-svc-lbl">Add Service</span>
-            </button>
-            <button class="btn-add-item" onclick="addItem()" id="btn-add-item" style="border-color:rgba(100,100,100,0.3);background:rgba(100,100,100,0.05);">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span id="btn-add-item-lbl">Custom Item</span>
-            </button>
-          </div>
-          <div class="items-total-row">
-            <span class="items-total-lbl" id="total-lbl">QUOTE TOTAL</span>
-            <span class="items-total-val" id="items-total">$0</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="disclaimer-section">
-        <div class="disclaimer-title" id="disc-title">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Important Estimate Terms
-        </div>
-        <p class="disclaimer" id="disc"></p>
-      </div>
-
-      <!-- Print-only footer -->
-      <div class="print-footer" style="margin-top:20px;padding-top:12px;border-top:1px solid #ddd;font-size:11px;color:#777;text-align:center;">
-        Fly Electric Solutions LLC &nbsp;·&nbsp; Licensed &amp; Insured &nbsp;·&nbsp; TDLR Licensed Master Electrician &nbsp;·&nbsp; Houston, TX
-      </div>
-
-      <div class="btn-row">
-        <button class="btn btn-back" onclick="prevStep(3)" id="btn3b">← Recalculate</button>
-        <button class="btn btn-back" onclick="printEstimate()" id="btn-print" style="border-color:rgba(255,237,78,0.5);color:var(--primary-black);background:rgba(255,237,78,0.12);">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Save as PDF
-        </button>
-        <button class="btn btn-next" onclick="nextStep(3)" id="btn3n">Get Licensed Quote →</button>
-      </div>
+  <div class="card">
+    <div class="card-title" id="ttl-sum">Estimate Summary</div>
+    <div class="totbox">
+      <div class="trow"><span id="lbl-sub">Subtotal (Labor + Materials)</span><span id="t-sub">$0.00</span></div>
+      <div class="trow"><span id="lbl-mat">Materials est. (15%)</span><span id="t-mat">$0.00</span></div>
+      <div class="trow"><span id="lbl-labor">Labor est. (85%)</span><span id="t-labor">$0.00</span></div>
+      <div class="trow"><span id="lbl-tax">Sales Tax 8.25% (materials only — TX law)</span><span id="t-tax">$0.00</span></div>
     </div>
+    <div class="grand"><span class="gl" id="lbl-total">TOTAL</span><span class="ga" id="t-total">$0.00</span></div>
+  </div>
 
-    <!-- STEP 4: Contact -->
-    <div class="step-panel" id="panel-4">
-      <div class="step-title" id="p4-title">Request Your Licensed Quote</div>
-      <div class="step-desc" id="p4-desc">A certified electrician will contact you within 2 business hours to schedule your inspection and provide a binding quote.</div>
-      <form id="web3form" class="contact-form" onsubmit="enviar(event)">
-        <input type="text" name="name" id="c-name" placeholder="Full name *" required>
-        <input type="tel" name="phone" id="c-phone" placeholder="Phone / WhatsApp *" required>
-        <input type="email" name="email" id="c-email" placeholder="Email address *" required>
-        <input type="text" name="address" id="c-address" placeholder="Property address (optional)">
-        <div class="field">
-          <label id="lbl-emaillang">Confirmation Email Language / Idioma del Email</label>
-          <select name="language" id="emailLang">
-            <option value="en">English</option>
-            <option value="es">Español</option>
-          </select>
-        </div>
-        <div class="email-lang-note" id="lang-note">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          You'll receive a confirmation with your estimate summary and next steps.
-        </div>
-      </form>
-      <p class="error-msg" id="err-4">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Please fill in name, phone and email.
-      </p>
-      <p class="sending-msg" id="sending-msg">
-        <svg class="spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-        Sending your request...
-      </p>
-      <button type="submit" form="web3form" class="btn btn-send" id="btn-send">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        <span id="send-lbl">Submit Quote Request</span>
-      </button>
-      <button class="btn btn-back" style="width:100%;margin-top:12px;justify-content:center;" onclick="prevStep(4)" id="btn4b">← Back</button>
-    </div>
+  <div class="actions">
+    <button class="abtn apdf" onclick="makePDF()">&#x1F5A8;&#xFE0F;&nbsp;<span id="btn-pdf">Generate PDF</span></button>
+    <button class="abtn awa" onclick="sendWA()">&#x1F4F1;&nbsp;<span id="btn-wa">Send via WhatsApp</span></button>
+    <button class="abtn anew" onclick="resetQ()">&#x1F504;&nbsp;<span id="btn-new">New Quote</span></button>
+  </div>
 
-    <!-- SUCCESS -->
-    <div class="step-panel" id="panel-success">
-      <div class="success-screen">
-        <div class="success-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <h2 id="suc-t">Request Sent!</h2>
-        <p id="suc-p">A specialist from <strong>Fly Electric Solutions</strong> will contact you within 2 business hours.</p>
-        <div id="suc-est-num" style="display:inline-block;margin:0 auto 20px;background:linear-gradient(135deg,rgba(255,237,78,0.14) 0%,rgba(255,237,78,0.04) 100%);border:1.5px solid rgba(255,237,78,0.45);border-radius:10px;padding:14px 32px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6B7280;margin-bottom:5px;">Estimate Number</div>
-          <div id="suc-est-num-val" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#0A0E27;letter-spacing:0.06em;">—</div>
-        </div>
-        <div class="email-confirm-box">
-          <strong id="suc-email-t">Confirmation email sent</strong>
-          <span id="suc-email-p">Check your inbox — we sent a summary of your estimate.</span>
-        </div>
-        <button class="btn-restart" onclick="reiniciar()" id="btn-restart">Get another quote</button>
-      </div>
-    </div>
-
+  <div class="legal" id="legal-txt">
+    &#9888;&#65039; This estimate is for reference only. Final pricing may vary based on on-site conditions, materials needed, and permit requirements.
+    Sales Tax (8.25%) applies to materials only per Texas law. A licensed electrician will confirm final pricing after inspection.
+    Fly Electric Solutions LLC &middot; TDLR Licensed &middot; Fully Insured.
   </div>
 </div>
 
+<footer>
+  <div class="fname">Fly Electric Solutions LLC &middot; Insured &amp; Professional &middot; Houston TX</div>
+  <div><a href="tel:+15713796040">(571) 379-6040</a> &middot; <a href="mailto:info@flyelectricsolution.com">info@flyelectricsolution.com</a> &middot; <a href="https://flyelectricsolution.com">flyelectricsolution.com</a></div>
+</footer>
+
 <script>
+var lang='en';
+var rowCount=0;
 
-// SVG icon map by service ID
-const SVG_ICONS = {
-  outlets:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="10" r="1.2"/><circle cx="15" cy="10" r="1.2"/><path d="M9 14s.8 2 3 2 3-2 3-2"/></svg>`,
-  fans:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2C10 5 8 8 10 10c2 2 5 0 8-2a7 7 0 0 0-6 2z"/><path d="M22 12c-3 2-6 4-8 2-2-2 0-5 2-8a7 7 0 0 0-2 6z"/><path d="M12 22c2-3 4-6 2-8-2-2-5 0-8 2a7 7 0 0 0 6-2z"/><path d="M2 12c3-2 6-4 8-2 2 2 0 5-2 8a7 7 0 0 0 2-6z"/></svg>`,
-  panel:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="12" y1="8" x2="16" y2="8"/><line x1="12" y1="12" x2="16" y2="12"/><line x1="12" y1="16" x2="16" y2="16"/><circle cx="5" cy="9" r="1"/><circle cx="5" cy="14" r="1"/></svg>`,
-  led:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg>`,
-  ev:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M10 7h4l1.5 3H8.5L10 7z"/><line x1="13" y1="2" x2="13" y2="5"/></svg>`,
-  maintenance:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
-  generator:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="22" height="13" rx="2"/><path d="M7 6V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2"/><line x1="12" y1="11" x2="12" y2="15"/><line x1="10" y1="13" x2="14" y2="13"/></svg>`,
-  inspection:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
-};
-
-// ── TRANSLATIONS ──────────────────────────────────────────────────────────────
-const T = {
-  en: {
-    badge:'Quick Electrical Estimate',
-    title:'What will your<br><span>electrical project cost?</span>',
-    sub:'Get an instant estimate based on your project details. No commitment required.',
-    loc:'Houston, TX &amp; surrounding areas · Licensed &amp; Insured',
-    sl:['Service','Details','Estimate','Contact'],
-    p1t:'What service do you need?', p1d:'Select a service to see specific options and pricing.',
-    p2t:'Project details', p2d:'The more precise, the better the estimate.',
-    lblSqft:'Square footage', hintSqft:'Enter in sq ft',
-    lblProp:'Property type', prop0:'Select...', prop1:'Residential', prop2:'Commercial', prop3:'Industrial',
-    lblZone:'Area / Zone',
-    tglT:'Emergency / Rush Service', tglS:'Response within 24h — +25% to estimated price',
-    err1:'Please select a service.', err2:'Please fill in all fields.',
-    btn1:'Continue →', btn2b:'← Back', btn2n:'See Estimate →',
-    p3t:'Your Project Estimate', p3d:'This is a preliminary, non-binding estimate based on the information you provided. A licensed electrician will confirm final pricing after an on-site evaluation.',
-    rl:'Estimated Project Range', rr:'Labor + basic materials',
-    rushBadge:'Rush Service +25%',
-    incT:"What's Included in This Estimate",
-    discTitle:'Important Estimate Terms',
-    disc:"This is a preliminary automated estimate prepared from the project information you submitted. It is not binding and does not constitute a contract or authorization to begin work. The final price depends on several factors including: (1) on-site inspection findings, (2) exact material specifications and availability, (3) NEC/electrical code requirements specific to your location, (4) local permit fees, (5) hidden or unforeseen conditions revealed during inspection, and (6) labor complexity upon detailed review. This estimate expires 30 days from generation. A licensed electrician from Fly Electric Solutions will contact you to schedule an inspection and issue a binding, final written quote before any work begins.",
-    btn3b:'← Recalculate', btn3n:'Get Licensed Quote →',
-    p4t:'Request Your Licensed Quote', p4d:'A certified electrician will contact you within 2 business hours to schedule your inspection and provide a binding quote.',
-    phName:'Full name *', phPhone:'Phone / WhatsApp *', phEmail:'Email address *', phAddr:'Property address (optional)',
-    lblELang:'Confirmation Email Language',
-    langNote:"You'll receive a confirmation with your estimate summary and next steps.",
-    err4:'Please fill in name, phone and email.',
-    sending:'Sending your request...',
-    sendLbl:'Submit Quote Request', btn4b:'← Back',
-    sucT:'Request Received!',
-    sucP:'A licensed electrician from <strong>Fly Electric Solutions</strong> will contact you within 2 business hours to schedule an on-site inspection and provide your binding quote.',
-    sucET:'Confirmation email sent', sucEP:'Check your inbox — we sent a summary of your preliminary estimate.',
-    btnRestart:'Get another estimate',
-    bdLabels:['Service','Property','Sq Ft','Area'],
-    itemsTitle:'Detailed Quote Items', thDesc:'Description', thQty:'Qty', thUnit:'Unit Price', thSub:'Subtotal',
-    addSvcBtn:'Add Service', addItemBtn:'Custom Item', totalLbl:'QUOTE TOTAL', phItemDesc:'Description...',
+var TXT={
+  en:{
+    cta:'Free Estimate',modalTitle:'Select from Catalog',ttlClient:'Estimate Information',qlabel:'Estimate #',
+    lname:'Client Full Name',laddr:'Property Address',lphone:'Phone',ldate:'Date',
+    ttlSvc:'Services / Work Items',btnAdd:'Add Row',btnCat:'Select from Catalog',
+    thDesc:'Description',thQty:'Qty',thUnit:'Unit Price',thTotal:'Total',
+    emptyTxt:'No items added yet. Use the buttons above to add work items.',
+    ttlSum:'Estimate Summary',lSub:'Subtotal (Labor + Materials)',lMat:'Materials est. (15% of subtotal)',
+    lLabor:'Labor est. (85% of subtotal)',lTax:'Sales Tax 8.25% (materials only — TX law)',lTotal:'TOTAL',
+    btnPdf:'Generate PDF Estimate',btnWa:'Send via WhatsApp',btnNew:'New Estimate',
+    legal:'⚠️ This estimate is for reference only. Final pricing may vary based on on-site conditions, materials needed, and permit requirements. Sales Tax (8.25%) applies to materials only per Texas law. A licensed electrician will confirm final pricing after inspection. Fly Electric Solutions LLC · TDLR Licensed · Fully Insured.',
+    confirmNew:'Start a new estimate? Current data will be lost.',
+    pdfTitle:'ELECTRICAL ESTIMATE',descHeader:'Description',qtyHeader:'Qty',unitHeader:'Unit Price',totalHeader:'Total',
+    legalPdf:'This is a reference estimate only. Final price may vary based on site conditions. TX Sales Tax applies to materials only.',
+    waMsgFn:function(qn,name,addr,items,total){
+      return '*Fly Electric Solutions LLC*\nEstimate '+qn+'\n\nClient: '+name+'\nAddress: '+addr+'\n\n*Work Items:*\n'+items+'\n\n*TOTAL: '+total+'*\n\n_Reference estimate only. Final price may vary._';
+    }
   },
-  es: {
-    badge:'Estimador Eléctrico Rápido',
-    title:'¿Cuánto costará tu<br><span>proyecto eléctrico?</span>',
-    sub:'Obtén un estimado instantáneo basado en tu proyecto. Sin compromiso.',
-    loc:'Houston, TX y áreas cercanas · Licenciados y Asegurados',
-    sl:['Servicio','Detalles','Estimado','Contacto'],
-    p1t:'¿Qué servicio necesitas?', p1d:'Selecciona un servicio para ver opciones y precios.',
-    p2t:'Detalles del proyecto', p2d:'Entre más preciso, mejor será el estimado.',
-    lblSqft:'Pies cuadrados', hintSqft:'Ingresa en sq ft (pies cuadrados)',
-    lblProp:'Tipo de propiedad', prop0:'Seleccionar...', prop1:'Residencial', prop2:'Comercial', prop3:'Industrial',
-    lblZone:'Área / Zona',
-    tglT:'Servicio de Emergencia / Urgente', tglS:'Atención en 24h — +25% al precio estimado',
-    err1:'Por favor selecciona un servicio.', err2:'Por favor completa todos los campos.',
-    btn1:'Continuar →', btn2b:'← Atrás', btn2n:'Ver Estimado →',
-    p3t:'Tu Estimado del Proyecto', p3d:'Este es un estimado preliminar no vinculante basado en la información que proporcionaste. Un electricista licenciado confirmará el precio final después de una evaluación en el sitio.',
-    rl:'Rango Estimado del Proyecto', rr:'Mano de obra + materiales básicos',
-    rushBadge:'Servicio Urgente +25%',
-    incT:'Qué Incluye Este Estimado',
-    discTitle:'Términos Importantes del Estimado',
-    disc:'Este es un estimado preliminar automatizado preparado según la información del proyecto que enviaste. No es vinculante y no constituye un contrato ni autorización para comenzar el trabajo. El precio final depende de varios factores incluyendo: (1) resultados de la inspección en el sitio, (2) especificaciones y disponibilidad exacta de materiales, (3) requisitos NEC/código eléctrico específicos de tu localidad, (4) permisos municipales, (5) condiciones ocultas o no previstas descubiertas durante la inspección, y (6) complejidad laboral tras revisión detallada. Este estimado vence 30 días después de su generación. Un electricista licenciado de Fly Electric Solutions te contactará para programar la inspección y emitir una cotización final vinculante por escrito antes de comenzar cualquier trabajo.',
-    btn3b:'← Recalcular', btn3n:'Obtener Cotización Licenciada →',
-    p4t:'Solicita Tu Cotización Licenciada', p4d:'Un electricista certificado te contactará en menos de 2 horas hábiles para programar la inspección y proporcionar tu cotización vinculante.',
-    phName:'Nombre completo *', phPhone:'Teléfono / WhatsApp *', phEmail:'Correo electrónico *', phAddr:'Dirección de la propiedad (opcional)',
-    lblELang:'Idioma del Email de Confirmación',
-    langNote:'Recibirás un email de confirmación con el resumen de tu estimado y los próximos pasos.',
-    err4:'Por favor completa nombre, teléfono y email.',
-    sending:'Enviando tu solicitud...',
-    sendLbl:'Enviar Solicitud de Cotización', btn4b:'← Atrás',
-    sucT:'¡Solicitud Recibida!',
-    sucP:'Un electricista licenciado de <strong>Fly Electric Solutions</strong> te contactará en menos de 2 horas hábiles para programar la inspección en el sitio y proporcionar tu cotización vinculante.',
-    sucET:'Email de confirmación enviado', sucEP:'Revisa tu bandeja de entrada — te enviamos el resumen de tu estimado preliminar.',
-    btnRestart:'Obtener otro estimado',
-    bdLabels:['Servicio','Propiedad','Pies Cuad.','Área'],
-    itemsTitle:'Ítems de la Cotización', thDesc:'Descripción', thQty:'Cant.', thUnit:'Precio Unit.', thSub:'Subtotal',
-    addSvcBtn:'Agregar Servicio', addItemBtn:'Ítem Personalizado', totalLbl:'TOTAL COTIZACIÓN', phItemDesc:'Descripción...',
+  es:{
+    cta:'Estimado Gratis',modalTitle:'Seleccionar del Catálogo',ttlClient:'Información del Estimado',qlabel:'Estimado #',
+    lname:'Nombre Completo del Cliente',laddr:'Dirección de la Propiedad',lphone:'Teléfono',ldate:'Fecha',
+    ttlSvc:'Servicios / Trabajos',btnAdd:'Agregar Fila',btnCat:'Seleccionar del Catálogo',
+    thDesc:'Descripción',thQty:'Cant.',thUnit:'P. Unitario',thTotal:'Total',
+    emptyTxt:'Sin ítems aún. Usa los botones de arriba para agregar trabajos.',
+    ttlSum:'Resumen del Estimado',lSub:'Subtotal (Labor + Materiales)',lMat:'Materiales est. (15% del subtotal)',
+    lLabor:'Mano de obra est. (85% del subtotal)',lTax:'Sales Tax 8.25% (solo materiales — ley TX)',lTotal:'TOTAL',
+    btnPdf:'Generar PDF del Estimado',btnWa:'Enviar por WhatsApp',btnNew:'Nuevo Estimado',
+    legal:'⚠️ Este estimado es referencial. El precio final puede variar según condiciones en sitio, materiales requeridos y permisos. El Sales Tax (8.25%) aplica solo sobre materiales según la ley de Texas. Un electricista licenciado confirmará el precio final tras la inspección. Fly Electric Solutions LLC · Licencia TDLR · Totalmente Asegurada.',
+    confirmNew:'¿Iniciar un nuevo estimado? Se perderán los datos actuales.',
+    pdfTitle:'ESTIMADO ELÉCTRICO',descHeader:'Descripción',qtyHeader:'Cant.',unitHeader:'P. Unitario',totalHeader:'Total',
+    legalPdf:'Este estimado es referencial. El precio final puede variar. Sales Tax aplica solo sobre materiales (ley TX).',
+    waMsgFn:function(qn,name,addr,items,total){
+      return '*Fly Electric Solutions LLC*\nEstimado '+qn+'\n\nCliente: '+name+'\nDirección: '+addr+'\n\n*Trabajos:*\n'+items+'\n\n*TOTAL: '+total+'*\n\n_Estimado referencial. El precio final puede variar._';
+    }
   }
 };
 
-// ── SERVICES DATA ─────────────────────────────────────────────────────────────
-const SERVICES = [
-  {
-    id:'outlets', icon:'🔌',
-    name:{ en:'Outlets & Switches', es:'Tomacorrientes y Switches' },
-    from:'From $85',
-    desc:{ en:'Installation, replacement & GFCI outlets', es:'Instalación, reemplazo y tomas GFCI' },
-    base:85, perSqft:0, perUnit:65,
-    unitQ:{ en:'How many outlets/switches?', es:'¿Cuántas tomas/switches?' },
-    unitOpts:{ en:['1–2','3–5','6–10','10+'], es:['1–2','3–5','6–10','10+'] },
-    unitMult:[1, 3.5, 7, 12],
-    includes:{ en:['Licensed labor','GFCI/AFCI outlets','Faceplate & hardware','Code-compliant wiring','30-day guarantee'], es:['Mano de obra certificada','Tomas GFCI/AFCI','Placas y accesorios','Cableado conforme al código','Garantía 30 días'] }
-  },
-  {
-    id:'fans', icon:'💡',
-    name:{ en:'Fans & Lighting', es:'Ventiladores y Luminarias' },
-    from:'From $120',
-    desc:{ en:'Ceiling fans, fixtures & decorative lighting', es:'Ventiladores, lámparas e iluminación decorativa' },
-    base:120, perSqft:1.2, perUnit:110,
-    unitQ:{ en:'How many units to install?', es:'¿Cuántas unidades instalar?' },
-    unitOpts:{ en:['1','2–3','4–6','7+'], es:['1','2–3','4–6','7+'] },
-    unitMult:[1, 2.5, 5, 8],
-    includes:{ en:['Fixture mounting','Wiring & junction box','Switch installation','Dimmer optional (+$45)','1-year labor warranty'], es:['Montaje de luminaria','Cableado y caja de conexiones','Instalación de interruptor','Dimmer opcional (+$45)','Garantía de mano de obra 1 año'] }
-  },
-  {
-    id:'panel', icon:'⚡',
-    name:{ en:'Panel / Breaker Upgrade', es:'Panel / Actualización de Breakers' },
-    from:'From $1,800',
-    desc:{ en:'Main panel, sub-panels & breaker replacement', es:'Panel principal, subpaneles y reemplazo de breakers' },
-    base:1800, perSqft:0, perUnit:0,
-    unitQ:{ en:'Panel amperage needed?', es:'¿Amperaje del panel?' },
-    unitOpts:{ en:['100A (small home)','150A (medium home)','200A (large home/commercial)','400A (heavy commercial)'], es:['100A (casa pequeña)','150A (casa mediana)','200A (casa grande/comercial)','400A (comercial pesado)'] },
-    unitMult:[1, 1.2, 1.55, 2.4],
-    includes:{ en:['New main panel or sub-panel','AFCI/GFCI breakers','Service entrance wiring','City permit & inspection','5-year parts warranty'], es:['Panel principal o subpanel nuevo','Breakers AFCI/GFCI','Cableado de acometida','Permiso municipal e inspección','Garantía de piezas 5 años'] }
-  },
-  {
-    id:'led', icon:'🌟',
-    name:{ en:'LED Lighting', es:'Iluminación LED' },
-    from:'From $150',
-    desc:{ en:'LED conversion, recessed lighting & commercial', es:'Conversión LED, luces empotradas y comercial' },
-    base:150, perSqft:1.5, perUnit:0,
-    unitQ:{ en:'Type of LED project?', es:'¿Tipo de proyecto LED?' },
-    unitOpts:{ en:['Residential (home/apartment)','Retail / Restaurant','Office / Corporate','Warehouse / Industrial'], es:['Residencial (casa/apartamento)','Retail / Restaurante','Oficina / Corporativo','Bodega / Industrial'] },
-    unitMult:[1, 1.4, 1.6, 2.0],
-    includes:{ en:['Certified LED fixtures','Wiring & switches','Dimmer controls','Energy savings report','Manufacturer warranty'], es:['Luminarias LED certificadas','Cableado e interruptores','Controles dimmer','Reporte de ahorro energético','Garantía del fabricante'] }
-  },
-  {
-    id:'ev', icon:'🚗',
-    name:{ en:'EV Charger', es:'Cargador EV' },
-    from:'From $1,200',
-    desc:{ en:'Level 2 home & commercial EV charging stations', es:'Estaciones de carga EV nivel 2 residencial y comercial' },
-    base:1200, perSqft:0, perUnit:0,
-    unitQ:{ en:'How many charging ports?', es:'¿Cuántos puertos de carga?' },
-    unitOpts:{ en:['1 port (home)','2 ports','3–4 ports (small fleet)','5+ ports (commercial)'], es:['1 puerto (casa)','2 puertos','3–4 puertos (flota pequeña)','5+ puertos (comercial)'] },
-    unitMult:[1, 1.7, 2.8, 4.5],
-    includes:{ en:['Level 2 charger (240V)','Dedicated 50A circuit','GFCI breaker protection','Compatible with all EVs','Permit & inspection included'], es:['Cargador nivel 2 (240V)','Circuito dedicado 50A','Protección GFCI','Compatible con todos los EVs','Permiso e inspección incluidos'] }
-  },
-  {
-    id:'maintenance', icon:'🔧',
-    name:{ en:'Maintenance / Repair', es:'Mantenimiento / Reparación' },
-    from:'From $175',
-    desc:{ en:'Diagnostics, fault repair & preventive plans', es:'Diagnóstico, reparación de fallas y planes preventivos' },
-    base:175, perSqft:0.4, perUnit:0,
-    unitQ:{ en:'Type of service?', es:'¿Tipo de servicio?' },
-    unitOpts:{ en:['Diagnostic only','Single repair','Multiple repairs','Monthly maintenance plan'], es:['Solo diagnóstico','Reparación sencilla','Reparaciones múltiples','Plan mensual de mantenimiento'] },
-    unitMult:[1, 1.5, 2.5, 4],
-    includes:{ en:['Full diagnostic inspection','Fault repair & parts','Safety & GFCI check','Written technical report','30-day workmanship guarantee'], es:['Inspección de diagnóstico completa','Reparación de fallas y piezas','Revisión de seguridad y GFCI','Reporte técnico escrito','Garantía de trabajo 30 días'] }
-  },
-  {
-    id:'generator', icon:'🔋',
-    name:{ en:'Generator / Backup', es:'Generador / Respaldo' },
-    from:'From $3,500',
-    desc:{ en:'Whole-home & commercial generator installation', es:'Instalación de generador residencial y comercial' },
-    base:3500, perSqft:0, perUnit:0,
-    unitQ:{ en:'Generator size needed?', es:'¿Tamaño del generador?' },
-    unitOpts:{ en:['10–14kW (small home)','16–20kW (medium home)','22–30kW (large home)','40kW+ (commercial)'], es:['10–14kW (casa pequeña)','16–20kW (casa mediana)','22–30kW (casa grande)','40kW+ (comercial)'] },
-    unitMult:[1, 1.35, 1.8, 3.2],
-    includes:{ en:['Automatic transfer switch','Full system installation','Load bank testing','Owner training & manual','Annual service plan available'], es:['Transferencia automática','Instalación completa del sistema','Prueba de carga','Capacitación al propietario','Plan de servicio anual disponible'] }
-  },
-  {
-    id:'inspection', icon:'📋',
-    name:{ en:'Inspection / NEC', es:'Inspección / NEC' },
-    from:'From $180',
-    desc:{ en:'Full electrical inspection & NEC code compliance', es:'Inspección eléctrica completa y cumplimiento NEC' },
-    base:180, perSqft:0.25, perUnit:0,
-    unitQ:{ en:'Purpose of inspection?', es:'¿Propósito de la inspección?' },
-    unitOpts:{ en:['Home purchase/sale','Insurance requirement','NEC compliance audit','Pre-renovation'], es:['Compra/venta de propiedad','Requisito de seguro','Auditoría de cumplimiento NEC','Pre-remodelación'] },
-    unitMult:[1, 1, 1.4, 1.2],
-    includes:{ en:['Full electrical walkthrough','Written inspection report','Code violation list','Repair recommendations','Certificate of inspection'], es:['Revisión eléctrica completa','Reporte de inspección escrito','Lista de violaciones al código','Recomendaciones de reparación','Certificado de inspección'] }
-  }
+var CATALOG=[
+  {cat:'Outlets & Switches',cat_es:'Tomas y Apagadores',items:[
+    {name:'Outlet 15A – Replacement',name_es:'Toma 15A – Reemplazo',price:85},
+    {name:'Outlet 20A – New install',name_es:'Toma 20A – Instalación nueva',price:110},
+    {name:'GFCI Outlet – Install/Replace',name_es:'Toma GFCI – Instalar/Reemplazar',price:120},
+    {name:'Switch – Replacement',name_es:'Switch/Apagador – Reemplazo',price:75},
+    {name:'Dimmer switch – Install',name_es:'Dimmer – Instalación',price:75}
+  ]},
+  {cat:'Panels & Breakers',cat_es:'Tableros y Breakers',items:[
+    {name:'Breaker – Replacement',name_es:'Breaker – Reemplazo',price:95},
+    {name:'Panel upgrade 100A',name_es:'Upgrade tablero 100A',price:1200},
+    {name:'Panel upgrade 200A',name_es:'Upgrade tablero 200A',price:2500},
+    {name:'New 20A circuit',name_es:'Circuito nuevo 20A',price:350}
+  ]},
+  {cat:'Lighting',cat_es:'Iluminación',items:[
+    {name:'Ceiling fan – Install',name_es:'Ventilador de techo – Instalar',price:150},
+    {name:'Recessed LED – Install',name_es:'Luminaria LED recessed – Instalar',price:95},
+    {name:'Bathroom exhaust fan',name_es:'Ventilador de baño',price:185},
+    {name:'LED upgrade (per fixture)',name_es:'Upgrade LED (por luminaria)',price:85}
+  ]},
+  {cat:'EV & Solar',cat_es:'EV y Solar',items:[
+    {name:'EV Charger Level 2 – Install',name_es:'Cargador EV Nivel 2 – Instalación',price:850},
+    {name:'Solar disconnect – Install',name_es:'Desconector solar – Instalación',price:320},
+    {name:'NEMA 14-50 outlet (EV ready)',name_es:'Toma NEMA 14-50 (lista para EV)',price:420}
+  ]},
+  {cat:'Miscellaneous',cat_es:'Misceláneos',items:[
+    {name:'Smoke detector – Install',name_es:'Detector de humo – Instalación',price:65},
+    {name:'Whole-house surge protector',name_es:'Protector contra sobretensión total',price:350},
+    {name:'Conduit run (per foot)',name_es:'Corrida de conduit (por pie)',price:12},
+    {name:'Electrical inspection / NEC',name_es:'Inspección eléctrica / NEC',price:180},
+    {name:'Generator hookup',name_es:'Conexión de generador',price:450}
+  ]}
 ];
 
-// ── PRICING MULTIPLIERS ───────────────────────────────────────────────────────
-const propMult = { residential:1.0, commercial:1.30, industrial:1.65 };
-const zonaMult = { houston:1.0, suburbs:0.93, galveston:1.06, conroe:0.90, baytown:0.95 };
-const propName = {
-  en:{ residential:'Residential', commercial:'Commercial', industrial:'Industrial' },
-  es:{ residential:'Residencial', commercial:'Comercial', industrial:'Industrial' }
-};
-const zonaName = {
-  en:{ houston:'Houston', suburbs:'Suburbs', galveston:'Galveston', conroe:'Conroe', baytown:'Baytown' },
-  es:{ houston:'Houston', suburbs:'Suburbios', galveston:'Galveston', conroe:'Conroe', baytown:'Baytown' }
-};
+function t(){return TXT[lang];}
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
-const S = { lang:'en', svcId:null, unitOptIdx:null, sqft:0, propiedad:'', zona:'houston', rush:false };
-
-// ── ESTIMATE COUNTER ─────────────────────────────────────────────────────────
-function nextEstimateNumber() {
-  const year = new Date().getFullYear();
-  const key  = 'fes_counter_' + year;
-  const n    = (parseInt(localStorage.getItem(key) || '0', 10)) + 1;
-  localStorage.setItem(key, n);
-  return 'FES-' + year + '-' + String(n).padStart(6, '0');
+function applyLang(){
+  var T=t();
+  document.getElementById('cta-btn').textContent=T.cta;
+  document.getElementById('modal-title').textContent=T.modalTitle;
+  document.getElementById('ttl-client').childNodes[document.getElementById('ttl-client').childNodes.length-1].textContent=' '+T.ttlClient;
+  document.getElementById('qlabel').textContent=T.qlabel;
+  document.getElementById('lbl-name').textContent=T.lname;
+  document.getElementById('lbl-addr').textContent=T.laddr;
+  document.getElementById('lbl-phone').textContent=T.lphone;
+  document.getElementById('lbl-date').textContent=T.ldate;
+  document.getElementById('ttl-svc').childNodes[document.getElementById('ttl-svc').childNodes.length-1].textContent=' '+T.ttlSvc;
+  document.getElementById('btn-add').textContent=T.btnAdd;
+  document.getElementById('btn-cat').textContent=T.btnCat;
+  document.getElementById('th-desc').textContent=T.thDesc;
+  document.getElementById('th-qty').textContent=T.thQty;
+  document.getElementById('th-unit').textContent=T.thUnit;
+  document.getElementById('th-total').textContent=T.thTotal;
+  var em=document.getElementById('empty-txt');
+  if(em)em.textContent=T.emptyTxt;
+  document.getElementById('ttl-sum').childNodes[document.getElementById('ttl-sum').childNodes.length-1].textContent=' '+T.ttlSum;
+  document.getElementById('lbl-sub').textContent=T.lSub;
+  document.getElementById('lbl-mat').textContent=T.lMat;
+  document.getElementById('lbl-labor').textContent=T.lLabor;
+  document.getElementById('lbl-tax').textContent=T.lTax;
+  document.getElementById('lbl-total').textContent=T.lTotal;
+  document.getElementById('btn-pdf').textContent=T.btnPdf;
+  document.getElementById('btn-wa').textContent=T.btnWa;
+  document.getElementById('btn-new').textContent=T.btnNew;
+  document.getElementById('legal-txt').textContent=T.legal;
 }
 
-// ── RENDER SERVICES ───────────────────────────────────────────────────────────
-function renderServices() {
-  const grid = document.getElementById('svcGrid');
-  grid.innerHTML = SERVICES.map(s => `
-    <div class="svc-card ${S.svcId===s.id?'selected':''}" onclick="selectSvc('${s.id}')">
-      <div class="svc-icon">${SVG_ICONS[s.id] || s.icon}</div>
-      <div class="svc-name">${s.name[S.lang]}</div>
-      <div class="svc-from">${s.from}</div>
-      <div class="svc-desc">${s.desc[S.lang]}</div>
-    </div>
-  `).join('');
-  renderSubQ();
+function toggleLang(){lang=lang==='en'?'es':'en';applyLang();updateCounterLabels();}
+
+function genQNum(){
+  var d=new Date();
+  var yy=String(d.getFullYear()).slice(-2);
+  var mm=String(d.getMonth()+1).padStart(2,'0');
+  var dd=String(d.getDate()).padStart(2,'0');
+  var rnd=Math.floor(Math.random()*900)+100;
+  return 'FES-'+yy+mm+dd+'-'+rnd;
 }
 
-function selectSvc(id) {
-  S.svcId = id; S.unitOptIdx = null;
-  document.getElementById('err-1').classList.remove('show');
-  renderServices();
+function initQuote(){
+  document.getElementById('qnum').textContent=genQNum();
+  var now=new Date();
+  document.getElementById('f-date').value=now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 }
 
-function renderSubQ() {
-  const el = document.getElementById('subQuestions');
-  if (!S.svcId) { el.innerHTML=''; return; }
-  const svc = SERVICES.find(s=>s.id===S.svcId);
-  const opts = svc.unitOpts[S.lang];
-  el.innerHTML = `
-    <div class="subq">
-      <div class="subq-title">${svc.unitQ[S.lang]}</div>
-      <div class="options-row">
-        ${opts.map((o,i)=>`<button class="opt-btn ${S.unitOptIdx===i?'selected':''}" onclick="selectOpt(${i})">${o}</button>`).join('')}
-      </div>
-    </div>
-  `;
-}
+function fmt(n){return n.toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2});}
 
-function selectOpt(i) { S.unitOptIdx = i; renderSubQ(); }
-
-// ── CALC ──────────────────────────────────────────────────────────────────────
-function calcular() {
-  const svc = SERVICES.find(s=>s.id===S.svcId);
-  const pm = propMult[S.propiedad] || 1;
-  const zm = zonaMult[S.zona] || 1;
-  const um = S.unitOptIdx !== null ? svc.unitMult[S.unitOptIdx] : 1;
-  let base = svc.base * um + (svc.perSqft * S.sqft);
-  base = base * pm * zm;
-  if (S.rush) base *= 1.25;
-  const min = Math.round(base * 0.88 / 25) * 25;
-  const max = Math.round(base * 1.18 / 25) * 25;
-  return { min, max };
-}
-
-function mostrarResultado() {
-  const { min, max } = calcular();
-  document.getElementById('pMin').textContent = min.toLocaleString('en-US');
-  document.getElementById('pMax').textContent = max.toLocaleString('en-US');
-  document.getElementById('rushBadge').style.display = S.rush ? 'block' : 'none';
-  const t = T[S.lang];
-  const svc = SERVICES.find(s=>s.id===S.svcId);
-  const bdData = [svc.name[S.lang], propName[S.lang][S.propiedad]||'—', S.sqft?S.sqft.toLocaleString()+' sq ft':'—', zonaName[S.lang][S.zona]||'—'];
-  document.getElementById('bdGrid').innerHTML = t.bdLabels.map((l,i)=>`<div class="bd-item"><div class="bd-val">${bdData[i]}</div><div class="bd-lbl">${l}</div></div>`).join('');
-  const checkSVG = `<div class="inc-check"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
-  document.getElementById('incList').innerHTML = svc.includes[S.lang].map(i=>`<div class="inc-item">${checkSVG}${i}</div>`).join('');
-
-  // Seed the line items table with the primary service at the midpoint price
-  document.getElementById('items-tbody').innerHTML = '';
-  _itemCounter = 0;
-  const optLabel0 = S.unitOptIdx !== null ? ' – ' + svc.unitOpts[S.lang][S.unitOptIdx] : '';
-  const midPrice = Math.round((min + max) / 2 / 25) * 25;
-  addItem(svc.name[S.lang] + optLabel0, 1, midPrice);
-}
-
-// ── LINE ITEMS ────────────────────────────────────────────────────────────────
-let _itemCounter = 0;
-
-function toggleSvcPicker() {
-  const picker = document.getElementById('svc-picker');
-  if (picker.style.display !== 'none') { picker.style.display = 'none'; return; }
-  const list = document.getElementById('svc-picker-list');
-  list.innerHTML = '';
-  SERVICES.forEach(function(svc) {
-    const btn = document.createElement('button');
-    btn.textContent = svc.name[S.lang];
-    btn.style.cssText = 'width:100%;text-align:left;padding:8px 10px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-sm);background:var(--white);color:var(--primary-black);font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;';
-    btn.onmouseover = function(){ this.style.borderColor='var(--accent-yellow)'; this.style.background='var(--accent-yellow-light)'; };
-    btn.onmouseout  = function(){ this.style.borderColor='var(--neutral-200)'; this.style.background='var(--white)'; };
-    btn.onclick = function() {
-      addItem(svc.name[S.lang], 1, svc.base || 0);
-      picker.style.display = 'none';
-    };
-    list.appendChild(btn);
+function getSubtotal(){
+  var sub=0;
+  document.querySelectorAll('#svc-body tr[data-rid]').forEach(function(row){
+    var ins=row.querySelectorAll('input[type=number]');
+    var q=parseFloat(ins[0]?ins[0].value:0)||0;
+    var p=parseFloat(ins[1]?ins[1].value:0)||0;
+    sub+=q*p;
   });
-  picker.style.display = 'block';
+  return sub;
 }
 
-function addItem(desc, qty, price) {
-  const tbody = document.getElementById('items-tbody');
-  const id = 'item' + (++_itemCounter);
-  const ph = (T[S.lang] && T[S.lang].phItemDesc) ? T[S.lang].phItemDesc : 'Description...';
-  const safeDesc = (desc || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-  const tr = document.createElement('tr');
-  tr.id = id;
-  tr.innerHTML =
-    '<td><input class="item-input" type="text" placeholder="' + ph + '" value="' + safeDesc + '" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
-    '<td style="text-align:center"><input class="item-input" type="number" min="1" value="' + (qty || 1) + '" style="width:58px;text-align:center" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
-    '<td><input class="item-input" type="number" min="0" step="25" value="' + (price || '') + '" placeholder="0" oninput="calcLineTotal(\'' + id + '\')" /></td>' +
-    '<td><span class="item-sub" id="s' + id + '">$0</span></td>' +
-    '<td><button class="btn-rm" onclick="removeItem(\'' + id + '\')" title="Remove">&#215;</button></td>';
-  tbody.appendChild(tr);
-  calcLineTotal(id);
+function recalc(){
+  var sub=getSubtotal();
+  var mat=sub*0.15;
+  var labor=sub*0.85;
+  var tax=mat*0.0825;
+  var total=sub+tax;
+  document.getElementById('t-sub').textContent=fmt(sub);
+  document.getElementById('t-mat').textContent=fmt(mat);
+  document.getElementById('t-labor').textContent=fmt(labor);
+  document.getElementById('t-tax').textContent=fmt(tax);
+  document.getElementById('t-total').textContent=fmt(total);
 }
 
-function removeItem(id) {
-  const tr = document.getElementById(id);
-  if (tr) tr.remove();
-  updateLineTotal();
+function addRow(desc,qty,price){
+  var em=document.getElementById('empty-msg');
+  if(em)em.parentNode.removeChild(em);
+  rowCount++;
+  var rid='r'+rowCount;
+  var tr=document.createElement('tr');
+  tr.setAttribute('data-rid',rid);
+  var descVal=desc||'';
+  var qtyVal=qty!=null?qty:1;
+  var priceVal=price!=null?price:'';
+  var ph=lang==='es'?'Descripción del trabajo...':'Work description...';
+  tr.innerHTML='<td><input class="td-in" type="text" placeholder="'+ph+'" value="'+escHtml(descVal)+'" oninput="recalc()"></td>'+
+    '<td class="rt"><input class="td-in" type="number" value="'+qtyVal+'" min="0.01" step="any" style="text-align:right;max-width:70px;" oninput="rowRecalc(\''+rid+'\')"></td>'+
+    '<td class="rt"><input class="td-in" type="number" value="'+priceVal+'" min="0" step="any" placeholder="0.00" style="text-align:right;" oninput="rowRecalc(\''+rid+'\')"></td>'+
+    '<td><div class="rtotal" id="tot-'+rid+'">$0.00</div></td>'+
+    '<td style="text-align:center;"><button class="delbtn" onclick="delRow(\''+rid+'\')">&#x2715;</button></td>';
+  document.getElementById('svc-body').appendChild(tr);
+  if(price>0)rowRecalc(rid);
+  else recalc();
 }
 
-function calcLineTotal(id) {
-  const tr = document.getElementById(id);
-  if (!tr) return;
-  const inputs = tr.querySelectorAll('input');
-  const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
-  const price = parseFloat(inputs[2] && inputs[2].value) || 0;
-  const sub   = qty * price;
-  const el = document.getElementById('s' + id);
-  if (el) el.textContent = '$' + sub.toLocaleString('en-US', {maximumFractionDigits:0});
-  updateLineTotal();
+function rowRecalc(rid){
+  var row=document.querySelector('[data-rid="'+rid+'"]');
+  if(!row)return;
+  var ins=row.querySelectorAll('input[type=number]');
+  var q=parseFloat(ins[0]?ins[0].value:0)||0;
+  var p=parseFloat(ins[1]?ins[1].value:0)||0;
+  document.getElementById('tot-'+rid).textContent=fmt(q*p);
+  recalc();
 }
 
-function updateLineTotal() {
-  let total = 0;
-  document.querySelectorAll('#items-tbody tr').forEach(function(tr) {
-    const inputs = tr.querySelectorAll('input');
-    const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
-    const price = parseFloat(inputs[2] && inputs[2].value) || 0;
-    total += qty * price;
-  });
-  const el = document.getElementById('items-total');
-  if (el) el.textContent = '$' + total.toLocaleString('en-US', {maximumFractionDigits:0});
-}
-
-function getLineItems() {
-  const items = [];
-  document.querySelectorAll('#items-tbody tr').forEach(function(tr) {
-    const inputs = tr.querySelectorAll('input');
-    const desc  = (inputs[0] && inputs[0].value.trim()) || '';
-    const qty   = parseFloat(inputs[1] && inputs[1].value) || 0;
-    const price = parseFloat(inputs[2] && inputs[2].value) || 0;
-    if (desc || price) items.push({ desc: desc, qty: qty, price: price, sub: qty * price });
-  });
-  return items;
-}
-
-// ── LANGUAGE ──────────────────────────────────────────────────────────────────
-function setLang(l) {
-  S.lang = l;
-  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active', b.textContent===l.toUpperCase()));
-  applyT();
-  renderServices();
-}
-
-function applyT() {
-  const t = T[S.lang];
-  const ids = {
-    'h-badge':'badge','h-title':'title','h-sub':'sub','h-loc':'loc',
-    'p1-title':'p1t','p1-desc':'p1d','p2-title':'p2t','p2-desc':'p2d',
-    'lbl-sqft':'lblSqft','hint-sqft':'hintSqft','lbl-prop':'lblProp',
-    'prop0':'prop0','prop1':'prop1','prop2':'prop2','prop3':'prop3',
-    'lbl-zone':'lblZone','tgl-t':'tglT','tgl-s':'tglS',
-    'err-1':'err1','err-2':'err2','btn1':'btn1','btn2b':'btn2b','btn2n':'btn2n',
-    'p3-title':'p3t','p3-desc':'p3d','rl':'rl','rr':'rr','inc-t':'incT',
-    'disc-title':'discTitle','disc':'disc','btn3b':'btn3b','btn3n':'btn3n',
-    'p4-title':'p4t','p4-desc':'p4d','lbl-emaillang':'lblELang',
-    'lang-note':'langNote','err-4':'err4','sending-msg':'sending',
-    'send-lbl':'sendLbl','btn4b':'btn4b',
-    'suc-t':'sucT','suc-p':'sucP','suc-email-t':'sucET','suc-email-p':'sucEP',
-    'btn-restart':'btnRestart',
-    'items-title-lbl':'itemsTitle','th-desc':'thDesc','th-qty':'thQty','th-unit':'thUnit','th-sub':'thSub',
-    'btn-add-svc-lbl':'addSvcBtn','btn-add-item-lbl':'addItemBtn','total-lbl':'totalLbl'
-  };
-  Object.entries(ids).forEach(([id, key]) => {
-    const el = document.getElementById(id);
-    if (el) { if (['h-title','suc-p'].includes(id)) el.innerHTML = t[key]; else el.textContent = t[key]; }
-  });
-  ['sl-1','sl-2','sl-3','sl-4'].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.textContent=t.sl[i]; });
-  const ph = ['c-name','c-phone','c-email','c-addr'];
-  ph.forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.placeholder=t[['phName','phPhone','phEmail','phAddr'][i]]; });
-}
-
-// ── TOGGLE ────────────────────────────────────────────────────────────────────
-function toggleRush() {
-  S.rush = !S.rush;
-  document.getElementById('rushToggle').classList.toggle('on', S.rush);
-}
-
-// ── NAVIGATION ────────────────────────────────────────────────────────────────
-function nextStep(from) {
-  if (from===1) {
-    if (!S.svcId) { document.getElementById('err-1').classList.add('show'); return; }
+function delRow(rid){
+  var row=document.querySelector('[data-rid="'+rid+'"]');
+  if(row)row.parentNode.removeChild(row);
+  var body=document.getElementById('svc-body');
+  if(!body.querySelector('[data-rid]')){
+    var tr=document.createElement('tr');
+    tr.className='emptyrow';
+    tr.id='empty-msg';
+    var td=document.createElement('td');
+    td.colSpan=5;
+    td.id='empty-txt';
+    td.textContent=t().emptyTxt;
+    tr.appendChild(td);
+    body.appendChild(tr);
   }
-  if (from===2) {
-    const sqft = document.getElementById('sqft').value;
-    const prop = document.getElementById('propiedad').value;
-    if (!sqft || !prop) { document.getElementById('err-2').classList.add('show'); return; }
-    S.sqft = parseFloat(sqft);
-    S.propiedad = prop;
-    S.zona = document.getElementById('zona').value;
-    mostrarResultado();
-  }
-  goTo(from+1);
+  recalc();
 }
 
-function prevStep(from) { goTo(from-1); }
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function goTo(n) {
-  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+n).classList.add('active');
-  updateDots(n);
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function updateDots(cur) {
-  for (let i=1;i<=4;i++) {
-    const d=document.getElementById('dot-'+i);
-    d.classList.remove('active','done');
-    if (i<cur) d.classList.add('done');
-    else if (i===cur) d.classList.add('active');
-  }
-  const fill = document.getElementById('progressFill');
-  if (fill) fill.style.width = (((cur-1)/3)*100) + '%';
-}
-
-// ── SUBMIT ────────────────────────────────────────────────────────────────────
-function enviar(e) {
-  e.preventDefault();
-
-  const name    = document.getElementById('c-name').value.trim();
-  const phone   = document.getElementById('c-phone').value.trim();
-  const email   = document.getElementById('c-email').value.trim();
-  const address = document.getElementById('c-address').value.trim();
-
-  const errEl = document.getElementById('err-4');
-  if (!name || !phone || !email) { errEl.classList.add('show'); return; }
-
-  const svc      = SERVICES.find(s => s.id === S.svcId);
-  const { min, max } = calcular();
-  const optLabel = S.unitOptIdx !== null ? svc.unitOpts[S.lang][S.unitOptIdx] : 'N/A';
-
-  const estimateNum  = nextEstimateNumber();
-  const estimateDate = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-
-  const estData = {
-    number:       estimateNum,
-    date:         estimateDate,
-    service:      svc.name['en'],
-    option:       optLabel,
-    sqft:         S.sqft ? S.sqft.toLocaleString() + ' sq ft' : 'N/A',
-    propertyType: propName['en'][S.propiedad] || S.propiedad,
-    zone:         zonaName['en'][S.zona],
-    rush:         S.rush,
-    priceMin:     min.toLocaleString('en-US'),
-    priceMax:     max.toLocaleString('en-US'),
-    includes:     svc.includes['en'],
-    lineItems:    getLineItems(),
-  };
-
-  // Generate and auto-download PDF
-  const doc = generatePDF({ name, phone, email, address }, estData);
-  doc.save('FlyElectric-Estimate-' + estimateNum + '.pdf');
-
-  // Show success screen
-  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-success').classList.add('active');
-  document.getElementById('stepsEl').style.display = 'none';
-  document.getElementById('suc-est-num-val').textContent = estimateNum;
-}
-
-// ─── PDF GENERATION ───────────────────────────────────────────────────────────
-function generatePDF(customer, est) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const W = 210, M = 15, CW = W - M * 2;
-
-  // Helper setters
-  const fc = (...c) => doc.setFillColor(...c);
-  const dc = (...c) => doc.setDrawColor(...c);
-  const tc = (...c) => doc.setTextColor(...c);
-
-  // ── HEADER ──────────────────────────────────────────────────────
-  fc(10, 14, 39);
-  doc.rect(0, 0, W, 40, 'F');
-
-  // Yellow accent strip
-  fc(255, 230, 0);
-  doc.rect(0, 40, W, 2.5, 'F');
-
-  // Logo box
-  fc(255, 230, 0);
-  doc.roundedRect(M, 8, 11, 11, 2, 2, 'F');
-  tc(10, 14, 39);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('FE', M + 2.2, 15.5);
-
-  // Company name
-  tc(255, 255, 255);
-  doc.setFontSize(15);
-  doc.text('FLY ELECTRIC SOLUTIONS LLC', M + 15, 14);
-
-  // Sub-info
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  tc(170, 178, 200);
-  doc.text('(571) 379-6040   ·   info@flyelectricsolution.com   ·   flyelectricsolution.com', M + 15, 21);
-  doc.text('Licensed & Insured   ·   TDLR Licensed Master Electrician   ·   Houston, TX', M + 15, 27);
-
-  // Estimate badge (right)
-  tc(255, 230, 0);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('ESTIMATE', W - M, 12, { align: 'right' });
-  tc(190, 195, 215);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('#' + est.number, W - M, 19, { align: 'right' });
-  doc.text(est.date, W - M, 26, { align: 'right' });
-
-  let y = 51;
-
-  // ── CUSTOMER INFO ────────────────────────────────────────────────
-  fc(249, 250, 251);
-  dc(220, 222, 228);
-  doc.setLineWidth(0.3);
-  doc.rect(M, y, CW, 26, 'FD');
-
-  tc(10, 14, 39);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
-  doc.text('CUSTOMER INFORMATION', M + 4, y + 6);
-
-  const half = CW / 2;
-  doc.setFontSize(8.5);
-  tc(31, 41, 55);
-
-  [
-    ['Name:', customer.name, M + 4, y + 13],
-    ['Phone:', customer.phone, M + 4, y + 20],
-    ['Email:', customer.email, M + half + 4, y + 13],
-    ['Address:', customer.address || 'Not provided', M + half + 4, y + 20],
-  ].forEach(([lbl, val, x, yy]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(lbl, x, yy);
-    doc.setFont('helvetica', 'normal');
-    const lines = doc.splitTextToSize(val, half - 22);
-    doc.text(lines[0] || '', x + (lbl.length * 1.9 + 4), yy);
-  });
-
-  y += 33;
-
-  // ── PROJECT DETAILS ──────────────────────────────────────────────
-  tc(10, 14, 39);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('PROJECT DETAILS', M, y);
-  dc(255, 230, 0);
-  doc.setLineWidth(0.8);
-  doc.line(M, y + 2.5, M + CW, y + 2.5);
-  y += 8;
-
-  const rows = [
-    ['SERVICE',        est.service],
-    ['OPTION',         est.option],
-    ['SQUARE FOOTAGE', est.sqft],
-    ['PROPERTY TYPE',  est.propertyType],
-    ['ZONE / AREA',    est.zone],
-    ['RUSH SERVICE',   est.rush ? 'Yes — Emergency +25%' : 'No'],
-  ];
-
-  rows.forEach(([lbl, val], i) => {
-    if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 8, 'F'); }
-    tc(107, 114, 128);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.text(lbl, M + 3, y + 1);
-    tc(31, 41, 55);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    const vLines = doc.splitTextToSize(String(val), CW - 62);
-    doc.text(vLines[0] || '', M + 62, y + 1);
-    y += 8;
-  });
-
-  y += 6;
-
-  // ── PRICE BOX ────────────────────────────────────────────────────
-  fc(10, 14, 39);
-  doc.rect(M, y, CW, 28, 'F');
-  fc(255, 230, 0);
-  doc.rect(M, y, 4, 28, 'F');
-
-  tc(170, 178, 200);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text('QUOTE TOTAL', M + 9, y + 8);
-
-  tc(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  const itemsTotal = (est.lineItems || []).reduce((s, it) => s + (it.sub || 0), 0);
-  doc.text('$' + itemsTotal.toLocaleString('en-US'), M + 9, y + 21);
-
-  tc(170, 178, 200);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text('Based on itemized quote below  ·  Preliminary, non-binding', W - M, y + 8, { align: 'right' });
-
-  y += 35;
-
-  // ── WHAT'S INCLUDED ──────────────────────────────────────────────
-  tc(10, 14, 39);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text("WHAT'S INCLUDED", M, y);
-  dc(255, 230, 0);
-  doc.setLineWidth(0.8);
-  doc.line(M, y + 2.5, M + CW, y + 2.5);
-  y += 8;
-
-  est.includes.forEach((item, i) => {
-    if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 7.5, 'F'); }
-    fc(255, 230, 0);
-    doc.circle(M + 4, y, 1.4, 'F');
-    tc(31, 41, 55);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.text(item, M + 9, y + 1);
-    y += 7.5;
-  });
-
-  y += 7;
-
-  // ── LINE ITEMS TABLE ─────────────────────────────────────────────
-  if (est.lineItems && est.lineItems.length > 0) {
-    if (y > 220) { doc.addPage(); y = 20; }
-
-    tc(10, 14, 39);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.text('DETAILED QUOTE', M, y);
-    dc(255, 230, 0);
-    doc.setLineWidth(0.8);
-    doc.line(M, y + 2.5, M + CW, y + 2.5);
-    y += 8;
-
-    // Table header row
-    fc(10, 14, 39);
-    doc.rect(M, y - 3.5, CW, 8, 'F');
-    tc(255, 230, 0);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('DESCRIPTION', M + 3, y + 1);
-    doc.text('QTY', M + CW * 0.60 + 4, y + 1, { align: 'center' });
-    doc.text('UNIT PRICE', M + CW * 0.73, y + 1);
-    doc.text('SUBTOTAL', M + CW, y + 1, { align: 'right' });
-    y += 8;
-
-    let lineTotal = 0;
-    est.lineItems.forEach((item, i) => {
-      if (y > 258) { doc.addPage(); y = 20; }
-      if (i % 2 === 0) { fc(249, 250, 251); doc.rect(M, y - 3.5, CW, 7.5, 'F'); }
-      tc(55, 65, 81);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
-      const descTrimmed = doc.splitTextToSize(item.desc || '', CW * 0.55);
-      doc.text(descTrimmed[0] || '', M + 3, y + 1);
-      doc.text(String(item.qty), M + CW * 0.60 + 4, y + 1, { align: 'center' });
-      doc.text('$' + (item.price || 0).toLocaleString('en-US'), M + CW * 0.73, y + 1);
-      doc.setFont('helvetica', 'bold');
-      doc.text('$' + (item.sub || 0).toLocaleString('en-US'), M + CW, y + 1, { align: 'right' });
-      lineTotal += item.sub || 0;
-      y += 7.5;
+function openModal(){
+  var T=t();
+  var body=document.getElementById('modal-body');
+  body.innerHTML='';
+  CATALOG.forEach(function(group){
+    var div=document.createElement('div');
+    div.className='cgroup';
+    var lbl=document.createElement('div');
+    lbl.className='clabel';
+    lbl.textContent=lang==='es'?group.cat_es:group.cat;
+    div.appendChild(lbl);
+    var slist=document.createElement('div');
+    slist.className='slist';
+    group.items.forEach(function(item){
+      var el=document.createElement('div');
+      el.className='sitem';
+      el.innerHTML='<span class="sname">'+(lang==='es'?item.name_es:item.name)+'</span><span class="sprice">'+fmt(item.price)+'</span>';
+      el.addEventListener('click',function(){
+        addRow(lang==='es'?item.name_es:item.name,1,item.price);
+        closeModal();
+      });
+      slist.appendChild(el);
     });
+    div.appendChild(slist);
+    body.appendChild(div);
+  });
+  document.getElementById('modal').classList.remove('hide');
+}
 
-    // Total bar
-    y += 2;
-    if (y > 262) { doc.addPage(); y = 20; }
-    fc(10, 14, 39);
-    doc.rect(M, y, CW, 11, 'F');
-    tc(170, 178, 200);
-    doc.setFont('helvetica', 'bold');
+function closeModal(){document.getElementById('modal').classList.add('hide');}
+
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function resetQ(){
+  if(!confirm(t().confirmNew))return;
+  document.getElementById('f-name').value='';
+  document.getElementById('f-addr').value='';
+  document.getElementById('f-phone').value='';
+  var body=document.getElementById('svc-body');
+  body.innerHTML='';
+  rowCount=0;
+  var tr=document.createElement('tr');
+  tr.className='emptyrow';
+  tr.id='empty-msg';
+  var td=document.createElement('td');
+  td.colSpan=5;
+  td.id='empty-txt';
+  td.textContent=t().emptyTxt;
+  tr.appendChild(td);
+  body.appendChild(tr);
+  initQuote();
+  recalc();
+}
+
+function sendWA(){
+  var T=t();
+  var name=document.getElementById('f-name').value||'N/A';
+  var addr=document.getElementById('f-addr').value||'N/A';
+  var qn=document.getElementById('qnum').textContent;
+  var total=document.getElementById('t-total').textContent;
+  var lines=[];
+  document.querySelectorAll('#svc-body tr[data-rid]').forEach(function(row){
+    var desc=row.querySelector('input[type=text]');
+    var ins=row.querySelectorAll('input[type=number]');
+    var d=desc?desc.value:'';
+    var q=parseFloat(ins[0]?ins[0].value:0)||0;
+    var p=parseFloat(ins[1]?ins[1].value:0)||0;
+    if(d||p>0)lines.push('• '+(d||'Item')+' (x'+q+') — '+fmt(q*p));
+  });
+  var msg=T.waMsgFn(qn,name,addr,lines.join('\n'),total);
+  window.open('https://wa.me/15713796040?text='+encodeURIComponent(msg),'_blank');
+}
+
+function parseMoney(s){return parseFloat(String(s).replace(/[^0-9.]/g,''))||0;}
+
+function makePDF(){
+  if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF library loading... please try again in a moment.');return;}
+  var T=t();
+  var doc=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
+  var W=doc.internal.pageSize.getWidth();
+  var H=doc.internal.pageSize.getHeight();
+  var name=document.getElementById('f-name').value||'N/A';
+  var addr=document.getElementById('f-addr').value||'N/A';
+  var phone=document.getElementById('f-phone').value||'N/A';
+  var date=document.getElementById('f-date').value||'';
+  var qn=document.getElementById('qnum').textContent;
+  var sub=parseMoney(document.getElementById('t-sub').textContent);
+  var mat=parseMoney(document.getElementById('t-mat').textContent);
+  var labor=parseMoney(document.getElementById('t-labor').textContent);
+  var tax=parseMoney(document.getElementById('t-tax').textContent);
+  var total=parseMoney(document.getElementById('t-total').textContent);
+
+  // Header band
+  doc.setFillColor(17,17,17);
+  doc.rect(0,0,W,40,'F');
+  doc.setFillColor(255,215,0);
+  doc.rect(0,38,W,2,'F');
+
+  // Logo
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22);
+  doc.setTextColor(255,215,0);
+  doc.text('FLY ELECTRIC',14,17);
+  doc.setTextColor(255,255,255);
+  doc.text('SOLUTIONS LLC',14,26);
+  doc.setFontSize(8);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(170,170,170);
+  doc.text('TDLR Licensed · Fully Insured · Houston TX',14,33);
+  doc.text('(571) 379-6040  ·  flyelectricsolution.com',14,38.5);
+
+  // Estimate info (right)
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(255,215,0);
+  doc.text(T.pdfTitle,W-14,14,{align:'right'});
+  doc.setFontSize(12);
+  doc.setTextColor(255,255,255);
+  doc.text(qn,W-14,22,{align:'right'});
+  doc.setFontSize(8);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(170,170,170);
+  doc.text(date,W-14,29,{align:'right'});
+
+  // Client box
+  var cy=48;
+  doc.setFillColor(245,245,248);
+  doc.roundedRect(14,cy,W-28,28,3,3,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(100,100,120);
+  doc.text(lang==='es'?'INFORMACIÓN DEL CLIENTE':'CLIENT INFORMATION',20,cy+7);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.setTextColor(20,20,20);
+  doc.text(name,20,cy+14);
+  doc.text(addr,20,cy+20);
+  doc.text(lang==='es'?'Tel: '+phone:'Phone: '+phone,20,cy+26);
+
+  // Table
+  var tableY=cy+34;
+  var rows=[];
+  document.querySelectorAll('#svc-body tr[data-rid]').forEach(function(row){
+    var desc=row.querySelector('input[type=text]');
+    var ins=row.querySelectorAll('input[type=number]');
+    var d=desc?desc.value:'';
+    var q=parseFloat(ins[0]?ins[0].value:0)||0;
+    var p=parseFloat(ins[1]?ins[1].value:0)||0;
+    if(d||p>0)rows.push([d||'—',q%1===0?String(q):q.toFixed(2),fmt(p),fmt(q*p)]);
+  });
+  if(rows.length===0)rows.push([lang==='es'?'Sin ítems':'No items','—','—','—']);
+
+  doc.autoTable({
+    startY:tableY,
+    head:[[T.descHeader,T.qtyHeader,T.unitHeader,T.totalHeader]],
+    body:rows,
+    margin:{left:14,right:14},
+    headStyles:{fillColor:[26,26,26],textColor:[255,215,0],fontStyle:'bold',fontSize:9,cellPadding:4},
+    bodyStyles:{fontSize:9,textColor:[30,30,30],cellPadding:3.5},
+    columnStyles:{0:{cellWidth:'auto'},1:{halign:'center',cellWidth:18},2:{halign:'right',cellWidth:32},3:{halign:'right',cellWidth:32}},
+    alternateRowStyles:{fillColor:[248,248,252]},
+    tableLineColor:[210,210,220],tableLineWidth:0.2,
+  });
+
+  var ty=doc.lastAutoTable.finalY+8;
+
+  // Totals box
+  var totLines=[
+    [T.lSub,fmt(sub)],
+    ['  '+T.lMat,fmt(mat)],
+    ['  '+T.lLabor,fmt(labor)],
+    [T.lTax,fmt(tax)]
+  ];
+  var totH=totLines.length*9+8;
+  doc.setFillColor(248,248,252);
+  doc.roundedRect(14,ty-3,W-28,totH,3,3,'F');
+  doc.setDrawColor(210,210,220);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(14,ty-3,W-28,totH,3,3,'D');
+  totLines.forEach(function(pair){
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(80,80,100);
+    doc.text(pair[0],20,ty+4);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(20,20,20);
+    doc.text(pair[1],W-18,ty+4,{align:'right'});
+    ty+=9;
+  });
+
+  // Grand total
+  ty+=6;
+  doc.setFillColor(26,26,26);
+  doc.roundedRect(14,ty,W-28,16,3,3,'F');
+  doc.setDrawColor(255,215,0);
+  doc.setLineWidth(0.7);
+  doc.roundedRect(14,ty,W-28,16,3,3,'D');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255,215,0);
+  doc.text('TOTAL',20,ty+10.5);
+  doc.setFontSize(14);
+  doc.text(fmt(total),W-18,ty+10.5,{align:'right'});
+
+  // Signature area
+  ty+=26;
+  if(ty+30<H-30){
+    doc.setDrawColor(180,180,180);
+    doc.setLineWidth(0.3);
+    doc.line(14,ty+20,95,ty+20);
+    doc.line(105,ty+20,W-14,ty+20);
+    doc.setFont('helvetica','normal');
     doc.setFontSize(8);
-    doc.text('QUOTE TOTAL', M + 3, y + 7.5);
-    tc(255, 230, 0);
-    doc.setFontSize(13);
-    doc.text('$' + lineTotal.toLocaleString('en-US'), M + CW, y + 7.5, { align: 'right' });
-    y += 18;
+    doc.setTextColor(120,120,120);
+    doc.text(lang==='es'?'Firma del Cliente':'Client Signature',14,ty+25);
+    doc.text(lang==='es'?'Firma del Contratista':'Contractor Signature',105,ty+25);
   }
 
-  y += 4;
-
-  // ── DISCLAIMER ───────────────────────────────────────────────────
-  if (y > 232) { doc.addPage(); y = 20; }
-
-  const discText = 'This is a preliminary automated estimate and is not binding. Final pricing depends on on-site inspection findings, material specifications, NEC code requirements, local permit fees, and labor complexity. A licensed electrician from Fly Electric Solutions will contact you within 2 business hours to schedule an inspection and issue a binding written quote before any work begins. This estimate expires 30 days from the date generated.';
-  const discLines = doc.splitTextToSize(discText, CW - 10);
-  const discH = discLines.length * 4.5 + 16;
-
-  fc(255, 251, 235);
-  dc(245, 158, 11);
-  doc.setLineWidth(0.5);
-  doc.rect(M, y, CW, discH, 'FD');
-
-  tc(146, 64, 14);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.text('! IMPORTANT - ESTIMATE TERMS & CONDITIONS', M + 5, y + 8);
-
-  tc(92, 45, 5);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text(discLines, M + 5, y + 14);
-
-  // ── FOOTER ───────────────────────────────────────────────────────
-  fc(10, 14, 39);
-  doc.rect(0, 283, W, 14, 'F');
-  tc(175, 182, 205);
-  doc.setFont('helvetica', 'normal');
+  // Footer
+  var fy=H-18;
+  doc.setDrawColor(220,220,220);
+  doc.setLineWidth(0.3);
+  doc.line(14,fy-4,W-14,fy-4);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(30,30,30);
+  doc.text('Fly Electric Solutions LLC',14,fy);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(100,100,100);
+  doc.text('(571) 379-6040  ·  info@flyelectricsolution.com  ·  flyelectricsolution.com',W/2,fy,{align:'center'});
   doc.setFontSize(7);
-  doc.text(
-    'Fly Electric Solutions LLC   ·   (571) 379-6040   ·   flyelectricsolution.com   ·   TDLR Licensed Master Electrician',
-    W / 2, 289, { align: 'center' }
-  );
-  doc.text(
-    'This document was auto-generated. For questions reply to your confirmation email or call us.',
-    W / 2, 293, { align: 'center' }
-  );
+  doc.setTextColor(150,150,150);
+  doc.text(T.legalPdf,14,fy+5,{maxWidth:W-28});
 
-  return doc;
+  doc.save('FlyElectric_Estimado_'+qn+'.pdf');
+  // Increment counter after successful save
+  incrementCounter(total);
+  var toastMsg = lang==='es'
+    ? 'PDF guardado: FlyElectric_Estimado_'+qn+'.pdf'
+    : 'PDF saved: FlyElectric_Estimado_'+qn+'.pdf';
+  showToast(toastMsg);
 }
 
-function printEstimate() {
-  const el = document.getElementById('print-date');
-  if (el) el.textContent = 'Generated: ' + new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
-  window.print();
 
+// ─── COUNTER (localStorage) ───────────────────────────────────────────────────
+var STORE_KEY = 'fes_counter_v1';
+
+function loadCounter() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    return raw ? JSON.parse(raw) : {total:0, entries:[]};
+  } catch(e) { return {total:0, entries:[]}; }
 }
 
-function reiniciar() {
-  Object.assign(S,{svcId:null,unitOptIdx:null,sqft:0,propiedad:'',zona:'houston',rush:false});
-  ['sqft','c-name','c-phone','c-email','c-address'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('propiedad').value='';
-  document.getElementById('zona').value='houston';
-  document.getElementById('rushToggle').classList.remove('on');
-  document.getElementById('stepsEl').style.display='flex';
-  renderServices();
-  goTo(1);
+function saveCounter(data) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e) {}
 }
 
-// Init
-applyT();
-renderServices();
+function renderCounter() {
+  var data = loadCounter();
+  var now = new Date();
+  var ym = now.getFullYear()+'-'+(now.getMonth()+1);
+  var monthEntries = data.entries.filter(function(e){ return e.ym === ym; });
+  var monthCount = monthEntries.length;
+  var totalRevenue = data.entries.reduce(function(acc,e){ return acc+(e.amount||0); }, 0);
+
+  document.getElementById('cnt-total').textContent = data.total;
+  document.getElementById('cnt-month').textContent = monthCount;
+  document.getElementById('cnt-revenue').textContent = totalRevenue >= 1000
+    ? '$' + (totalRevenue/1000).toFixed(1) + 'k'
+    : '$' + Math.round(totalRevenue);
+}
+
+function incrementCounter(amount) {
+  var data = loadCounter();
+  var now = new Date();
+  var ym = now.getFullYear()+'-'+(now.getMonth()+1);
+  data.total = (data.total||0) + 1;
+  data.entries = data.entries || [];
+  data.entries.push({ym:ym, amount:amount||0, ts:Date.now()});
+  // keep last 500 entries only
+  if(data.entries.length > 500) data.entries = data.entries.slice(-500);
+  saveCounter(data);
+  renderCounter();
+}
+
+function showToast(msg) {
+  var el = document.getElementById('pdf-toast');
+  document.getElementById('pdf-toast-msg').textContent = msg;
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 3500);
+}
+
+function updateCounterLabels() {
+  var T = t();
+  var isEs = lang === 'es';
+  document.getElementById('cnt-lbl-total').textContent  = isEs ? 'Estimados Generados' : 'Estimates Created';
+  document.getElementById('cnt-lbl-month').textContent  = isEs ? 'Este Mes' : 'This Month';
+  document.getElementById('cnt-lbl-revenue').textContent = isEs ? 'Valor Total Estimado' : 'Total Estimated Value';
+  document.getElementById('pdf-toast-msg').textContent  = isEs ? 'PDF generado exitosamente' : 'PDF generated successfully';
+}
+
+initQuote();
+applyLang();
+renderCounter();
+updateCounterLabels();
+
 </script>
-
 </body>
 </html>
