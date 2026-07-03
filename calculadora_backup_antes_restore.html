@@ -87,30 +87,6 @@ footer{border-top:1px solid var(--border);padding:20px;text-align:center;font-si
 footer a{color:var(--gold);text-decoration:none;}
 .fname{color:var(--text2);font-weight:600;margin-bottom:4px;}
 
-.mode-bar{background:#0d0d0d;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:center;padding:10px 20px;gap:0;}
-.mode-btn{flex:1;max-width:220px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);font-family:inherit;transition:all .2s;letter-spacing:.02em;}
-.mode-btn:first-child{border-radius:8px 0 0 8px;border-right:none;}
-.mode-btn:last-child{border-radius:0 8px 8px 0;}
-.mode-btn.active-est{background:#1a3a1a;border-color:#4caf50;color:#4caf50;}
-.mode-btn.active-cot{background:#1a1a3a;border-color:var(--gold);color:var(--gold);}
-.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px;}
-.pin-overlay.hide{display:none;}
-.pin-box{background:#1a1a1a;border:1px solid #FFD700;border-radius:18px;padding:32px 28px;width:100%;max-width:340px;text-align:center;}
-.pin-icon{font-size:36px;margin-bottom:10px;}
-.pin-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:4px;}
-.pin-sub{font-size:12px;color:#888;margin-bottom:24px;}
-.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:24px;}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #444;background:transparent;transition:all .2s;}
-.pin-dot.filled{background:#FFD700;border-color:#FFD700;}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
-.pin-key{background:#222;border:1px solid #333;border-radius:10px;padding:16px 8px;font-size:20px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;transition:all .15s;}
-.pin-key:hover{background:#2a2a2a;border-color:#FFD700;color:#FFD700;}
-.pin-key:active{transform:scale(.95);}
-.pin-key.del{font-size:16px;color:#888;}
-.pin-key.del:hover{color:#e55;border-color:#e55;}
-.pin-error{color:#e55;font-size:12px;font-weight:600;min-height:18px;margin-bottom:8px;}
-.pin-cancel{background:none;border:none;color:#666;font-size:12px;cursor:pointer;font-family:inherit;padding:8px;}
-.pin-cancel:hover{color:#aaa;}
 .counter-bar{background:#111;border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;}
 .counter-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);}
 .counter-num{font-size:20px;font-weight:800;color:var(--gold);font-family:'Segoe UI',monospace;min-width:28px;text-align:center;}
@@ -129,11 +105,6 @@ footer a{color:var(--gold);text-decoration:none;}
     <a href="https://flyelectricsolution.com#quote" class="btn-cta" id="cta-btn">Free Estimate</a>
   </div>
 </nav>
-
-<div class="mode-bar">
-  <button class="mode-btn active-est" id="btn-mode-est" onclick="setMode('est')">📋 <span id="mlbl-est">Estimado</span></button>
-  <button class="mode-btn" id="btn-mode-cot" onclick="setMode('cot')">🔒 <span id="mlbl-cot">Cotización Oficial</span></button>
-</div>
 
 <div class="counter-bar" id="counter-bar">
   <div class="counter-item">
@@ -160,36 +131,6 @@ footer a{color:var(--gold);text-decoration:none;}
 <div class="pdf-success" id="pdf-toast">
   <span class="check">✅</span>
   <span id="pdf-toast-msg">PDF generado exitosamente</span>
-</div>
-
-<div class="pin-overlay hide" id="pin-overlay">
-  <div class="pin-box">
-    <div class="pin-icon">🔒</div>
-    <div class="pin-title" id="pin-title">Cotización Oficial</div>
-    <div class="pin-sub" id="pin-sub">Ingresa el PIN para continuar</div>
-    <div class="pin-dots">
-      <div class="pin-dot" id="pd0"></div>
-      <div class="pin-dot" id="pd1"></div>
-      <div class="pin-dot" id="pd2"></div>
-      <div class="pin-dot" id="pd3"></div>
-    </div>
-    <div class="pin-error" id="pin-error"></div>
-    <div class="pin-pad">
-      <button class="pin-key" onclick="pinKey('1')">1</button>
-      <button class="pin-key" onclick="pinKey('2')">2</button>
-      <button class="pin-key" onclick="pinKey('3')">3</button>
-      <button class="pin-key" onclick="pinKey('4')">4</button>
-      <button class="pin-key" onclick="pinKey('5')">5</button>
-      <button class="pin-key" onclick="pinKey('6')">6</button>
-      <button class="pin-key" onclick="pinKey('7')">7</button>
-      <button class="pin-key" onclick="pinKey('8')">8</button>
-      <button class="pin-key" onclick="pinKey('9')">9</button>
-      <button class="pin-key del" onclick="pinKey('clear')">&#x2715;</button>
-      <button class="pin-key" onclick="pinKey('0')">0</button>
-      <button class="pin-key del" onclick="pinKey('del')">&#x232B;</button>
-    </div>
-    <button class="pin-cancel" onclick="pinCancel()" id="pin-cancel-btn">Cancelar / Cancel</button>
-  </div>
 </div>
 
 <div class="modal-ov hide" id="modal">
@@ -271,7 +212,6 @@ footer a{color:var(--gold);text-decoration:none;}
 var quoteCount=1;
 var lang='en';
 var rowCount=0;
-var docMode='est'; // 'est' = estimado (público), 'cot' = cotización oficial (protegida con PIN)
 
 var TXT={
   en:{
@@ -344,150 +284,6 @@ var CATALOG=[
   ]}
 ];
 
-var MODE_TXT={
-  est:{
-    en:{modeLabel:'ESTIMATE',ttlClient:'Estimate Information',qlabel:'Estimate #',ttlSum:'Estimate Summary',lTotal:'TOTAL',
-      btnPdf:'Generate PDF Estimate',btnNew:'New Estimate',pdfTitle:'ELECTRICAL ESTIMATE',
-      legalTxt:'⚠️ This estimate is for reference only. Final pricing may vary based on on-site conditions, materials needed, and permit requirements. Sales Tax (8.25%) applies to materials only per Texas law. A licensed electrician will confirm final pricing after inspection. Fly Electric Solutions LLC · Insured & Professional.',
-      legalPdf:'This is a reference estimate only. Final price may vary based on site conditions. TX Sales Tax applies to materials only.',
-      waPfx:'Estimate',waNote:'_Reference estimate only. Final price may vary._',
-      confirmNew:'Start a new estimate? Current data will be lost.',cntLabel:'Estimates Created',grandColor:'#4caf50'},
-    es:{modeLabel:'ESTIMADO',ttlClient:'Información del Estimado',qlabel:'Estimado #',ttlSum:'Resumen del Estimado',lTotal:'TOTAL',
-      btnPdf:'Generar PDF del Estimado',btnNew:'Nuevo Estimado',pdfTitle:'ESTIMADO ELÉCTRICO',
-      legalTxt:'⚠️ Este estimado es referencial. El precio final puede variar según condiciones en sitio, materiales requeridos y permisos. El Sales Tax (8.25%) aplica solo sobre materiales según la ley de Texas. Un electricista licenciado confirmará el precio final tras la inspección. Fly Electric Solutions LLC · Insured & Professional · Totalmente Asegurada.',
-      legalPdf:'Este estimado es referencial. El precio final puede variar. Sales Tax aplica solo sobre materiales (ley TX).',
-      waPfx:'Estimado',waNote:'_Estimado referencial. El precio final puede variar._',
-      confirmNew:'¿Iniciar un nuevo estimado? Se perderán los datos actuales.',cntLabel:'Estimados Generados',grandColor:'#4caf50'}
-  },
-  cot:{
-    en:{modeLabel:'OFFICIAL QUOTE',ttlClient:'Official Quote — Client Info',qlabel:'Official Quote #',ttlSum:'Official Quote Summary',lTotal:'OFFICIAL TOTAL',
-      btnPdf:'Generate Official PDF',btnNew:'New Official Quote',pdfTitle:'OFFICIAL ELECTRICAL QUOTE',
-      legalTxt:'📄 This is an OFFICIAL QUOTE prepared after an on-site visit. Prices are final. Sales Tax (8.25%) applies to materials only per Texas law. The client\'s acceptance of this quote (signature below) constitutes agreement to proceed with the work described under these terms. Fly Electric Solutions LLC · Insured & Professional.',
-      legalPdf:'Official quote after on-site visit. Prices are final. TX Sales Tax on materials only. Client acceptance constitutes agreement to proceed.',
-      waPfx:'Official Quote',waNote:'_Official quote after on-site visit. Prices are final. Valid 30 days._',
-      confirmNew:'Start a new official quote? Current data will be lost.',cntLabel:'Official Quotes Created',grandColor:'#FFD700'},
-    es:{modeLabel:'COTIZACIÓN OFICIAL',ttlClient:'Cotización Oficial — Datos del Cliente',qlabel:'Cotización Oficial #',ttlSum:'Resumen de Cotización Oficial',lTotal:'TOTAL OFICIAL',
-      btnPdf:'Generar PDF Oficial',btnNew:'Nueva Cotización Oficial',pdfTitle:'COTIZACIÓN ELÉCTRICA OFICIAL',
-      legalTxt:'📄 Esta es una COTIZACIÓN OFICIAL preparada después de una visita al sitio. Los precios son definitivos. El Sales Tax (8.25%) aplica solo sobre materiales según la ley de Texas. La aceptación de esta cotización por parte del cliente (firma abajo) constituye un acuerdo para proceder con el trabajo descrito bajo estos términos. Fly Electric Solutions LLC · Insured & Professional · Totalmente Asegurada.',
-      legalPdf:'Cotización oficial tras visita al sitio. Precios definitivos. Sales Tax solo sobre materiales (ley TX). La aceptación del cliente constituye acuerdo para proceder.',
-      waPfx:'Cotización Oficial',waNote:'_Cotización oficial tras visita en sitio. Precios definitivos. Válida 30 días._',
-      confirmNew:'¿Iniciar una nueva cotización oficial? Se perderán los datos actuales.',cntLabel:'Cotizaciones Oficiales',grandColor:'#FFD700'}
-  }
-};
-
-function getMT(){return MODE_TXT[docMode][lang];}
-
-function setMode(mode){
-  if(mode==='cot'&&!isPinUnlocked()){
-    openPinOverlay();
-    return;
-  }
-  docMode=mode;
-  document.getElementById('btn-mode-est').className='mode-btn'+(mode==='est'?' active-est':'');
-  document.getElementById('btn-mode-cot').className='mode-btn'+(mode==='cot'?' active-cot':'');
-  applyModeTexts();
-  document.getElementById('qnum').textContent=genQNum();
-}
-
-function applyModeTexts(){
-  var MT=getMT();
-  var ttlEl=document.getElementById('ttl-client');
-  ttlEl.childNodes[ttlEl.childNodes.length-1].textContent=' '+MT.ttlClient;
-  document.getElementById('qlabel').textContent=MT.qlabel;
-  var sumEl=document.getElementById('ttl-sum');
-  sumEl.childNodes[sumEl.childNodes.length-1].textContent=' '+MT.ttlSum;
-  document.getElementById('lbl-total').textContent=MT.lTotal;
-  var grand=document.querySelector('.grand');
-  grand.style.borderColor=MT.grandColor;
-  document.getElementById('t-total').style.color=MT.grandColor;
-  document.getElementById('btn-pdf').textContent=MT.btnPdf;
-  document.getElementById('btn-new').textContent=MT.btnNew;
-  document.getElementById('legal-txt').textContent=MT.legalTxt;
-  document.getElementById('legal-txt').style.borderColor=docMode==='cot'?'var(--gold)':'var(--border)';
-  document.getElementById('cnt-lbl-total').textContent=MT.cntLabel;
-  document.getElementById('mlbl-est').textContent=lang==='es'?'Estimado':'Estimate';
-  document.getElementById('mlbl-cot').textContent=lang==='es'?'Cotización Oficial':'Official Quote';
-}
-
-// ─── PIN LOCK (Cotización Oficial) ─────────────────────────────────────────────
-var CORRECT_PIN='2025';
-var PIN_SESSION_KEY='fes_pin_unlocked';
-var pinBuffer='';
-
-function isPinUnlocked(){
-  try{
-    var ts=parseInt(localStorage.getItem(PIN_SESSION_KEY)||'0');
-    if(Date.now()-ts<4*60*60*1000)return true; // sesión válida 4 horas
-  }catch(e){}
-  return false;
-}
-
-function setPinUnlocked(){
-  try{localStorage.setItem(PIN_SESSION_KEY,String(Date.now()));}catch(e){}
-}
-
-function pinKey(k){
-  var err=document.getElementById('pin-error');
-  err.textContent='';
-  if(k==='clear'){pinBuffer='';updatePinDots();return;}
-  if(k==='del'){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();return;}
-  if(pinBuffer.length>=4)return;
-  pinBuffer+=k;
-  updatePinDots();
-  if(pinBuffer.length===4){
-    setTimeout(function(){
-      if(pinBuffer===CORRECT_PIN){
-        setPinUnlocked();
-        closePinOverlay();
-        activateCotMode();
-      }else{
-        err.textContent=lang==='es'?'❌ PIN incorrecto. Intenta de nuevo.':'❌ Incorrect PIN. Try again.';
-        pinBuffer='';
-        updatePinDots();
-        var box=document.querySelector('.pin-box');
-        box.style.transform='translateX(-8px)';
-        setTimeout(function(){box.style.transform='translateX(8px)';},80);
-        setTimeout(function(){box.style.transform='translateX(0)';box.style.transition='transform .15s';},160);
-      }
-    },120);
-  }
-}
-
-function updatePinDots(){
-  for(var i=0;i<4;i++){
-    var dot=document.getElementById('pd'+i);
-    if(dot)dot.className='pin-dot'+(i<pinBuffer.length?' filled':'');
-  }
-}
-
-function openPinOverlay(){
-  pinBuffer='';
-  updatePinDots();
-  document.getElementById('pin-error').textContent='';
-  document.getElementById('pin-overlay').classList.remove('hide');
-  document.getElementById('pin-title').textContent=lang==='es'?'Cotización Oficial':'Official Quote';
-  document.getElementById('pin-sub').textContent=lang==='es'?'Ingresa el PIN para continuar':'Enter PIN to continue';
-  document.getElementById('pin-cancel-btn').textContent=lang==='es'?'Cancelar':'Cancel';
-}
-
-function closePinOverlay(){
-  document.getElementById('pin-overlay').classList.add('hide');
-  pinBuffer='';
-}
-
-function pinCancel(){
-  closePinOverlay();
-  setMode('est');
-}
-
-function activateCotMode(){
-  docMode='cot';
-  document.getElementById('btn-mode-est').className='mode-btn';
-  document.getElementById('btn-mode-cot').className='mode-btn active-cot';
-  applyModeTexts();
-  document.getElementById('qnum').textContent=genQNum();
-}
-
 function t(){return TXT[lang];}
 
 function applyLang(){
@@ -521,7 +317,7 @@ function applyLang(){
   document.getElementById('legal-txt').textContent=T.legal;
 }
 
-function toggleLang(){lang=lang==='en'?'es':'en';applyLang();applyModeTexts();updateCounterLabels();}
+function toggleLang(){lang=lang==='en'?'es':'en';applyLang();updateCounterLabels();}
 
 function genQNum(){
   var d=new Date();
@@ -529,8 +325,7 @@ function genQNum(){
   var mm=String(d.getMonth()+1).padStart(2,'0');
   var dd=String(d.getDate()).padStart(2,'0');
   var rnd=String(quoteCount).padStart(3,'0'); quoteCount++;
-  var prefix=docMode==='cot'?'FES-COT':'FES';
-  return prefix+'-'+yy+mm+dd+'-'+rnd;
+  return 'FES-'+yy+mm+dd+'-'+rnd;
 }
 
 function initQuote(){
@@ -650,7 +445,7 @@ function closeModal(){document.getElementById('modal').classList.add('hide');}
 document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
 function resetQ(){
-  if(!confirm(getMT().confirmNew))return;
+  if(!confirm(t().confirmNew))return;
   document.getElementById('f-name').value='';
   document.getElementById('f-addr').value='';
   document.getElementById('f-phone').value='';
@@ -671,6 +466,7 @@ function resetQ(){
 }
 
 function sendWA(){
+  var T=t();
   var name=document.getElementById('f-name').value||'N/A';
   var addr=document.getElementById('f-addr').value||'N/A';
   var qn=document.getElementById('qnum').textContent;
@@ -684,8 +480,7 @@ function sendWA(){
     var p=parseFloat(ins[1]?ins[1].value:0)||0;
     if(d||p>0)lines.push('• '+(d||'Item')+' (x'+q+') — '+fmt(q*p));
   });
-  var MT=getMT();
-  var msg='*Fly Electric Solutions LLC*\n*'+MT.waPfx+': '+qn+'*\n\n'+(lang==='es'?'Cliente: ':'Client: ')+name+'\n'+(lang==='es'?'Dirección: ':'Address: ')+addr+'\n\n*'+(lang==='es'?'Trabajos:':'Work Items:')+'*\n'+lines.join('\n')+'\n\n*TOTAL: '+total+'*\n\n'+MT.waNote;
+  var msg=T.waMsgFn(qn,name,addr,lines.join('\n'),total);
   window.open('https://wa.me/17133842411?text='+encodeURIComponent(msg),'_blank');
 }
 
@@ -694,7 +489,6 @@ function parseMoney(s){return parseFloat(String(s).replace(/[^0-9.]/g,''))||0;}
 function makePDF(){
   if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF library loading... please try again in a moment.');return;}
   var T=t();
-  var MT=getMT();
   var doc=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
   var W=doc.internal.pageSize.getWidth();
   var H=doc.internal.pageSize.getHeight();
@@ -732,7 +526,7 @@ function makePDF(){
   doc.setFont('helvetica','bold');
   doc.setFontSize(9);
   doc.setTextColor(255,215,0);
-  doc.text(MT.pdfTitle,W-14,14,{align:'right'});
+  doc.text(T.pdfTitle,W-14,14,{align:'right'});
   doc.setFontSize(12);
   doc.setTextColor(255,255,255);
   doc.text(qn,W-14,22,{align:'right'});
@@ -740,13 +534,6 @@ function makePDF(){
   doc.setFont('helvetica','normal');
   doc.setTextColor(170,170,170);
   doc.text(date,W-14,29,{align:'right'});
-  // Mode badge (green = Estimado, gold = Cotización Oficial)
-  var modeColor=docMode==='cot'?[255,215,0]:[76,175,80];
-  doc.setFillColor(modeColor[0],modeColor[1],modeColor[2]);
-  doc.roundedRect(W-50,32,36,6,1,1,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(7);
-  doc.setTextColor(docMode==='cot'?17:255,docMode==='cot'?17:255,docMode==='cot'?17:255);
-  doc.text(MT.modeLabel,W-32,36.5,{align:'center'});
 
   // Client box
   var cy=48;
@@ -856,7 +643,7 @@ function makePDF(){
   doc.text('(713) 384-2411  ·  info@flyelectricsolution.com  ·  flyelectricsolution.com',W/2,fy,{align:'center'});
   doc.setFontSize(7);
   doc.setTextColor(150,150,150);
-  doc.text(MT.legalPdf,14,fy+5,{maxWidth:W-28});
+  doc.text(T.legalPdf,14,fy+5,{maxWidth:W-28});
 
   doc.save('FlyElectric_Estimado_'+qn+'.pdf');
   // Increment counter after successful save
@@ -928,7 +715,6 @@ function updateCounterLabels() {
 
 initQuote();
 applyLang();
-applyModeTexts();
 renderCounter();
 updateCounterLabels();
 
