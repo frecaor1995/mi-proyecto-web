@@ -87,12 +87,6 @@ footer{border-top:1px solid var(--border);padding:20px;text-align:center;font-si
 footer a{color:var(--gold);text-decoration:none;}
 .fname{color:var(--text2);font-weight:600;margin-bottom:4px;}
 
-.accept-card{border-color:var(--gold);}
-.accept-legal{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:16px;padding:14px 16px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);}
-.accept-check{display:flex;align-items:flex-start;gap:10px;margin-top:6px;font-size:12px;color:var(--text2);cursor:pointer;line-height:1.5;}
-.accept-check input{margin-top:2px;width:16px;height:16px;accent-color:var(--gold);cursor:pointer;flex-shrink:0;}
-.abtn.apdf:disabled{opacity:.45;cursor:not-allowed;}
-.abtn.apdf:disabled:hover{background:var(--gold);}
 .mode-bar{background:#0d0d0d;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:center;padding:10px 20px;gap:0;}
 .mode-btn{flex:1;max-width:220px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);font-family:inherit;transition:all .2s;letter-spacing:.02em;}
 .mode-btn:first-child{border-radius:8px 0 0 8px;border-right:none;}
@@ -255,22 +249,8 @@ footer a{color:var(--gold);text-decoration:none;}
     <div class="grand"><span class="gl" id="lbl-total">TOTAL</span><span class="ga" id="t-total">$0.00</span></div>
   </div>
 
-  <div class="card accept-card" id="acceptance-card" style="display:none;">
-    <div class="card-title" id="ttl-accept">Client Acceptance / Contract Agreement</div>
-    <div class="accept-legal" id="accept-legal-txt"></div>
-    <div class="fields-grid">
-      <div class="field full"><label id="lbl-acc-name">Client Full Name (Acceptance)</label><input type="text" id="acc-name" placeholder="John Smith"></div>
-      <div class="field"><label id="lbl-acc-sign">Client Signature</label><input type="text" id="acc-signature" placeholder="Type full name as signature"></div>
-      <div class="field"><label id="lbl-acc-date">Acceptance Date</label><input type="text" id="acc-date"></div>
-    </div>
-    <label class="accept-check">
-      <input type="checkbox" id="acc-checkbox" onchange="updatePdfButtonState()">
-      <span id="acc-checkbox-label">I accept this official quote and authorize Fly Electric Solutions LLC to proceed with the work described above.</span>
-    </label>
-  </div>
-
   <div class="actions">
-    <button class="abtn apdf" id="btn-pdf-btn" onclick="makePDF()">&#x1F5A8;&#xFE0F;&nbsp;<span id="btn-pdf">Generate PDF</span></button>
+    <button class="abtn apdf" onclick="makePDF()">&#x1F5A8;&#xFE0F;&nbsp;<span id="btn-pdf">Generate PDF</span></button>
     <button class="abtn awa" onclick="sendWA()">&#x1F4F1;&nbsp;<span id="btn-wa">Send via WhatsApp</span></button>
     <button class="abtn anew" onclick="resetQ()">&#x1F504;&nbsp;<span id="btn-new">New Quote</span></button>
   </div>
@@ -395,16 +375,6 @@ var MODE_TXT={
   }
 };
 
-var ACCEPT_TXT={
-  en:'By signing and accepting this Official Quote, the client authorizes Fly Electric Solutions LLC to proceed with the electrical work described in this document. The client acknowledges that the scope of work, pricing, materials, labor, taxes, and conditions have been reviewed and accepted. This acceptance constitutes an agreement to proceed with the work under the terms stated in this quote. Any additional work, unforeseen conditions, code requirements, or changes requested by the client may require a written change order and additional charges.',
-  es:'Al firmar y aceptar esta Cotización Oficial, el cliente autoriza a Fly Electric Solutions LLC a proceder con el trabajo eléctrico descrito en este documento. El cliente reconoce que el alcance del trabajo, los precios, materiales, mano de obra, impuestos y condiciones han sido revisados y aceptados. Esta aceptación constituye un acuerdo para proceder con el trabajo bajo los términos establecidos en esta cotización. Cualquier trabajo adicional, condición imprevista, requisito de código, o cambio solicitado por el cliente puede requerir una orden de cambio por escrito y cargos adicionales.'
-};
-
-var ACCEPT_CHECK={
-  en:'I accept this official quote and authorize Fly Electric Solutions LLC to proceed with the work described above.',
-  es:'Acepto esta cotización oficial y autorizo a Fly Electric Solutions LLC a proceder con el trabajo descrito anteriormente.'
-};
-
 function getMT(){return MODE_TXT[docMode][lang];}
 
 function setMode(mode){
@@ -437,18 +407,6 @@ function applyModeTexts(){
   document.getElementById('cnt-lbl-total').textContent=MT.cntLabel;
   document.getElementById('mlbl-est').textContent=lang==='es'?'Estimado':'Estimate';
   document.getElementById('mlbl-cot').textContent=lang==='es'?'Cotización Oficial':'Official Quote';
-  document.getElementById('acceptance-card').style.display=docMode==='cot'?'block':'none';
-  updatePdfButtonState();
-}
-
-function updatePdfButtonState(){
-  var btn=document.getElementById('btn-pdf-btn');
-  if(docMode==='cot'){
-    var checked=document.getElementById('acc-checkbox').checked;
-    btn.disabled=!checked;
-  }else{
-    btn.disabled=false;
-  }
 }
 
 // ─── PIN LOCK (Cotización Oficial) ─────────────────────────────────────────────
@@ -561,12 +519,6 @@ function applyLang(){
   document.getElementById('btn-wa').textContent=T.btnWa;
   document.getElementById('btn-new').textContent=T.btnNew;
   document.getElementById('legal-txt').textContent=T.legal;
-  document.getElementById('ttl-accept').textContent=lang==='es'?'Aceptación del Cliente / Acuerdo de Contrato':'Client Acceptance / Contract Agreement';
-  document.getElementById('accept-legal-txt').textContent=ACCEPT_TXT[lang];
-  document.getElementById('lbl-acc-name').textContent=lang==='es'?'Nombre Completo del Cliente (Aceptación)':'Client Full Name (Acceptance)';
-  document.getElementById('lbl-acc-sign').textContent=lang==='es'?'Firma del Cliente':'Client Signature';
-  document.getElementById('lbl-acc-date').textContent=lang==='es'?'Fecha de Aceptación':'Acceptance Date';
-  document.getElementById('acc-checkbox-label').textContent=ACCEPT_CHECK[lang];
 }
 
 function toggleLang(){lang=lang==='en'?'es':'en';applyLang();applyModeTexts();updateCounterLabels();}
@@ -584,9 +536,7 @@ function genQNum(){
 function initQuote(){
   document.getElementById('qnum').textContent=genQNum();
   var now=new Date();
-  var dateStr=now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('f-date').value=dateStr;
-  document.getElementById('acc-date').value=dateStr;
+  document.getElementById('f-date').value=now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 }
 
 function fmt(n){return n.toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -704,9 +654,6 @@ function resetQ(){
   document.getElementById('f-name').value='';
   document.getElementById('f-addr').value='';
   document.getElementById('f-phone').value='';
-  document.getElementById('acc-name').value='';
-  document.getElementById('acc-signature').value='';
-  document.getElementById('acc-checkbox').checked=false;
   var body=document.getElementById('svc-body');
   body.innerHTML='';
   rowCount=0;
@@ -721,7 +668,6 @@ function resetQ(){
   body.appendChild(tr);
   initQuote();
   recalc();
-  updatePdfButtonState();
 }
 
 function sendWA(){
@@ -746,12 +692,6 @@ function sendWA(){
 function parseMoney(s){return parseFloat(String(s).replace(/[^0-9.]/g,''))||0;}
 
 function makePDF(){
-  if(docMode==='cot'&&!document.getElementById('acc-checkbox').checked){
-    alert(lang==='es'
-      ? '⚠️ Debes marcar la casilla de aceptación del cliente antes de generar la Cotización Oficial.'
-      : '⚠️ You must check the client acceptance box before generating the Official Quote.');
-    return;
-  }
   if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF library loading... please try again in a moment.');return;}
   var T=t();
   var MT=getMT();
@@ -917,71 +857,6 @@ function makePDF(){
   doc.setFontSize(7);
   doc.setTextColor(150,150,150);
   doc.text(MT.legalPdf,14,fy+5,{maxWidth:W-28});
-
-  // Client Acceptance / Contract Agreement page (Official Quote only)
-  if(docMode==='cot'){
-    doc.addPage();
-    doc.setFillColor(17,17,17);
-    doc.rect(0,0,W,26,'F');
-    doc.setFillColor(255,215,0);
-    doc.rect(0,24,W,2,'F');
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(14);
-    doc.setTextColor(255,215,0);
-    doc.text(lang==='es'?'ACEPTACIÓN DEL CLIENTE / ACUERDO DE CONTRATO':'CLIENT ACCEPTANCE / CONTRACT AGREEMENT',W/2,16,{align:'center'});
-
-    var ay=40;
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(9.5);
-    doc.setTextColor(40,40,40);
-    var contractLines=doc.splitTextToSize(ACCEPT_TXT[lang],W-28);
-    doc.text(contractLines,14,ay);
-    ay+=contractLines.length*4.8+10;
-
-    doc.setDrawColor(180,180,180);
-    doc.setLineWidth(0.3);
-    doc.line(14,ay,W-14,ay);
-    ay+=10;
-
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(9);
-    doc.setTextColor(20,20,20);
-    doc.text((lang==='es'?'Cotización #: ':'Quote #: ')+qn,14,ay);
-    doc.text((lang==='es'?'Total: ':'Total: ')+fmt(total),W-14,ay,{align:'right'});
-    ay+=14;
-
-    var accName=document.getElementById('acc-name').value||name;
-    var accSig=document.getElementById('acc-signature').value||'';
-    var accDate=document.getElementById('acc-date').value||date;
-
-    doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(80,80,100);
-    doc.text(lang==='es'?'Nombre del Cliente:':'Client Name:',14,ay);
-    doc.setFont('helvetica','bold');doc.setTextColor(20,20,20);
-    doc.text(accName,65,ay);
-    ay+=11;
-
-    doc.setFont('helvetica','normal');doc.setTextColor(80,80,100);
-    doc.text(lang==='es'?'Firma del Cliente:':'Client Signature:',14,ay);
-    doc.setFont('helvetica','italic');doc.setTextColor(20,20,20);
-    doc.text(accSig,65,ay);
-    ay+=11;
-
-    doc.setFont('helvetica','normal');doc.setTextColor(80,80,100);
-    doc.text(lang==='es'?'Fecha de Aceptación:':'Acceptance Date:',14,ay);
-    doc.setFont('helvetica','bold');doc.setTextColor(20,20,20);
-    doc.text(accDate,65,ay);
-    ay+=18;
-
-    doc.setFillColor(240,255,240);
-    doc.roundedRect(14,ay-6,W-28,16,2,2,'F');
-    doc.setDrawColor(76,175,80);
-    doc.setLineWidth(0.4);
-    doc.roundedRect(14,ay-6,W-28,16,2,2,'D');
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(40,120,40);
-    doc.text('✓ '+ACCEPT_CHECK[lang],18,ay+3,{maxWidth:W-40});
-  }
 
   doc.save('FlyElectric_Estimado_'+qn+'.pdf');
   // Increment counter after successful save
