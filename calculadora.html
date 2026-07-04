@@ -482,15 +482,16 @@ var PIN_SESSION_KEY='fes_pin_unlocked';
 var pinBuffer='';
 
 function isPinUnlocked(){
+  // sessionStorage: la sesión desbloqueada dura solo mientras la pestaña esté abierta.
+  // Se pierde al cerrar la pestaña/ventana o al abrir el sitio en una pestaña nueva.
   try{
-    var ts=parseInt(localStorage.getItem(PIN_SESSION_KEY)||'0');
-    if(Date.now()-ts<4*60*60*1000)return true; // sesión válida 4 horas
+    return sessionStorage.getItem(PIN_SESSION_KEY)==='1';
   }catch(e){}
   return false;
 }
 
 function setPinUnlocked(){
-  try{localStorage.setItem(PIN_SESSION_KEY,String(Date.now()));}catch(e){}
+  try{sessionStorage.setItem(PIN_SESSION_KEY,'1');}catch(e){}
 }
 
 function pinKey(k){
