@@ -20,14 +20,23 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare site (only public site files, no secrets/dev artifacts)
+      - name: Prepare site
         run: |
           mkdir _site
-          cp index.html calculadora.html estimator.html CNAME robots.txt sitemap.xml logo-blanco.png logo-original.jpg _site/
+          cp -r public/* _site/
+          cp index.html _site/ || true
+          cp calculadora.html _site/ || true
+          cp estimator.html _site/ || true
+          cp CNAME _site/ || true
+          cp robots.txt _site/ || true
+          cp sitemap.xml _site/ || true
+          cp logo-blanco.png _site/ || true
+          cp logo-original.jpg _site/ || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -35,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '_site'
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
