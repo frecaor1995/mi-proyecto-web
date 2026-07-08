@@ -1,117 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fly Electric Solutions LLC | Capability Statement</title>
-<meta name="description" content="Fly Electric Solutions LLC provides residential, commercial and industrial electrical services across Greater Houston and Texas.">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fly Electric Solutions LLC | Capability Center</title>
+<meta name="description" content="Fly Electric Solutions LLC provides residential, commercial and industrial electrical services across Houston and Texas.">
 
 <style>
 :root{
   --gold:#d4a017;
   --black:#050505;
   --dark:#111;
+  --gray:#cfcfcf;
   --white:#fff;
-  --gray:#d6d6d6;
 }
 *{box-sizing:border-box}
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:var(--black);
-  color:var(--white);
+  background:#050505;
+  color:white;
+}
+.lang-switch{
+  position:fixed;
+  top:18px;
+  right:18px;
+  z-index:20;
+}
+.lang-switch button{
+  background:#111;
+  color:white;
+  border:1px solid var(--gold);
+  padding:10px 15px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.lang-switch button.active{
+  background:var(--gold);
+  color:#000;
 }
 .hero{
-  min-height:95vh;
+  min-height:100vh;
   display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
-  padding:40px 20px;
+  padding:80px 22px;
   background:
-    linear-gradient(rgba(0,0,0,.78),rgba(0,0,0,.92)),
-    radial-gradient(circle at top,#3a2b08,#050505 60%);
+    linear-gradient(rgba(0,0,0,.78),rgba(0,0,0,.95)),
+    radial-gradient(circle at top,#3a2b08,#050505 65%);
 }
-.hero h1{
-  font-size:52px;
+.hero-box{
+  max-width:1000px;
+}
+.logo-text{
   color:var(--gold);
-  margin:0 0 15px;
+  letter-spacing:3px;
+  font-weight:bold;
+  margin-bottom:20px;
 }
-.hero h2{
-  font-size:25px;
-  margin:0 0 10px;
+h1{
+  font-size:60px;
+  margin:0;
+  color:var(--gold);
 }
-.hero p{
+.subtitle{
+  font-size:24px;
+  margin:22px auto;
+  color:#eee;
+}
+.description{
+  max-width:850px;
+  margin:0 auto 30px;
   color:var(--gray);
   font-size:18px;
-  max-width:850px;
-  margin:10px auto;
+  line-height:1.6;
 }
 .btn{
   display:inline-block;
   margin:10px;
-  padding:15px 24px;
+  padding:16px 26px;
   border-radius:10px;
   background:var(--gold);
   color:#000;
   text-decoration:none;
   font-weight:bold;
 }
-.btn.secondary{
+.btn.outline{
   background:transparent;
-  color:var(--white);
+  color:white;
   border:1px solid var(--gold);
 }
 .section{
-  max-width:1150px;
+  max-width:1180px;
   margin:auto;
-  padding:60px 22px;
+  padding:70px 22px;
 }
 .section h2{
   color:var(--gold);
-  font-size:34px;
-  margin-bottom:15px;
+  font-size:38px;
+  margin-bottom:14px;
+}
+.section-intro{
+  color:var(--gray);
+  max-width:800px;
+  line-height:1.6;
 }
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
   gap:22px;
+  margin-top:28px;
 }
 .card{
-  background:linear-gradient(145deg,#111,#1a1a1a);
+  background:linear-gradient(145deg,#101010,#191919);
   border:1px solid rgba(212,160,23,.35);
-  border-radius:18px;
-  padding:25px;
-  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  padding:28px;
+  border-radius:20px;
+  box-shadow:0 15px 40px rgba(0,0,0,.35);
 }
 .card h3{
   color:var(--gold);
   margin-top:0;
 }
+.card p{
+  color:#ddd;
+  line-height:1.5;
+}
 .badge{
   display:inline-block;
+  padding:10px 15px;
+  margin:6px;
+  border-radius:999px;
   border:1px solid var(--gold);
   color:var(--gold);
-  padding:8px 13px;
-  margin:5px;
-  border-radius:999px;
   font-weight:bold;
 }
-.split{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:30px;
+.data-box{
+  background:#0b0b0b;
+  border-top:1px solid var(--gold);
+  border-bottom:1px solid var(--gold);
+}
+.cta{
+  text-align:center;
+  background:linear-gradient(135deg,#111,#231900);
 }
 .footer{
   text-align:center;
-  background:#020202;
   padding:35px 20px;
+  background:#020202;
   color:#aaa;
 }
-a{color:var(--gold)}
-@media(max-width:750px){
-  .hero h1{font-size:38px}
-  .split{grid-template-columns:1fr}
+.es{display:none}
+body.spanish .en{display:none}
+body.spanish .es{display:block}
+body.spanish span.es{display:inline}
+body.spanish a.es{display:inline-block}
+@media(max-width:700px){
+  h1{font-size:40px}
+  .subtitle{font-size:20px}
   .btn{display:block}
 }
 </style>
@@ -119,51 +167,85 @@ a{color:var(--gold)}
 
 <body>
 
-<header class="hero">
-  <div>
-    <h1>Fly Electric Solutions LLC</h1>
-    <h2>Reliable Electrical Solutions Built on Safety, Quality and Trust.</h2>
-    <p>Professional electrical contracting services for residential, commercial, industrial and government-ready projects across Greater Houston and Texas.</p>
-    <p>Soluciones eléctricas profesionales para proyectos residenciales, comerciales, industriales y oportunidades gubernamentales en Houston y Texas.</p>
+<div class="lang-switch">
+  <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
+  <button id="btn-es" onclick="setLang('es')">ES</button>
+</div>
 
-    <a class="btn" href="https://drive.google.com/file/d/1YwHBuxVJAlwN-AmZVEETuTMMMYZ7Qnnl/view?usp=drive_link" target="_blank">Download Capability Statement</a>
-    <a class="btn secondary" href="tel:+17133842411">Call Now</a>
-    <a class="btn secondary" href="mailto:info@flyelectricsolution.com">Email Us</a>
+<header class="hero">
+  <div class="hero-box">
+    <div class="logo-text">FLY ELECTRIC SOLUTIONS LLC</div>
+
+    <h1 class="en">Capability Center</h1>
+    <h1 class="es">Centro de Capacidad Empresarial</h1>
+
+    <p class="subtitle en">Reliable Electrical Solutions Built on Safety, Quality and Trust.</p>
+    <p class="subtitle es">Soluciones eléctricas confiables basadas en seguridad, calidad y confianza.</p>
+
+    <p class="description en">
+      Houston-based electrical contractor serving residential, commercial, industrial and government-ready projects across Greater Houston and Texas.
+    </p>
+    <p class="description es">
+      Contratista eléctrico ubicado en Houston, sirviendo proyectos residenciales, comerciales, industriales y oportunidades gubernamentales en Greater Houston y Texas.
+    </p>
+
+    <a class="btn en" href="https://drive.google.com/file/d/1YwHBuxVJAlwN-AmZVEETuTMMMYZ7Qnnl/view?usp=drive_link" target="_blank">Download Capability Statement</a>
+    <a class="btn es" href="https://drive.google.com/file/d/1YwHBuxVJAlwN-AmZVEETuTMMMYZ7Qnnl/view?usp=drive_link" target="_blank">Descargar Capability Statement</a>
+
+    <a class="btn outline en" href="mailto:info@flyelectricsolution.com">Request a Quote</a>
+    <a class="btn outline es" href="mailto:info@flyelectricsolution.com">Solicitar Cotización</a>
+
+    <a class="btn outline en" href="tel:+17133842411">Call Now</a>
+    <a class="btn outline es" href="tel:+17133842411">Llamar Ahora</a>
   </div>
 </header>
 
 <section class="section">
-  <div class="split">
-    <div>
-      <h2>Who We Are</h2>
-      <p>Fly Electric Solutions LLC is a Houston-based electrical contractor focused on safe, code-compliant and reliable electrical services.</p>
-      <p>Fly Electric Solutions LLC es una empresa eléctrica ubicada en Houston, enfocada en servicios seguros, confiables y conforme al código eléctrico.</p>
+  <h2 class="en">Who We Are</h2>
+  <h2 class="es">Quiénes Somos</h2>
+
+  <p class="section-intro en">
+    Fly Electric Solutions LLC delivers professional electrical services with a strong focus on safety, code compliance, responsiveness and long-term client relationships.
+  </p>
+  <p class="section-intro es">
+    Fly Electric Solutions LLC ofrece servicios eléctricos profesionales con enfoque en seguridad, cumplimiento del código, respuesta rápida y relaciones comerciales de largo plazo.
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>UEI</h3>
+      <p>S356FWLK42H3</p>
     </div>
     <div class="card">
-      <h3>Company Data</h3>
-      <p><strong>UEI:</strong> S356FWLK42H3</p>
-      <p><strong>DUNS:</strong> 14-644-4631</p>
-      <p><strong>Phone:</strong> +1 (713) 384-2411</p>
-      <p><strong>Email:</strong> info@flyelectricsolution.com</p>
-      <p><strong>Website:</strong> flyelectricsolution.com</p>
+      <h3>DUNS</h3>
+      <p>14-644-4631</p>
+    </div>
+    <div class="card">
+      <h3 class="en">Service Area</h3>
+      <h3 class="es">Área de Servicio</h3>
+      <p>Houston, Texas | Greater Houston & State of Texas</p>
     </div>
   </div>
 </section>
 
-<section class="section">
-  <h2>Core Capabilities / Servicios</h2>
+<section class="section data-box">
+  <h2 class="en">Core Capabilities</h2>
+  <h2 class="es">Servicios Principales</h2>
+
   <div class="grid">
-    <div class="card"><h3>Residential Electrical</h3><p>Installations, remodels, troubleshooting and panel upgrades.</p><p>Instalaciones, remodelaciones, diagnóstico y actualización de paneles.</p></div>
-    <div class="card"><h3>Commercial Electrical</h3><p>Lighting, branch circuits, panels and service support.</p><p>Iluminación, circuitos, paneles y soporte eléctrico comercial.</p></div>
-    <div class="card"><h3>Industrial Electrical</h3><p>Three-phase systems, motor controls and equipment connections.</p><p>Sistemas trifásicos, controles de motor y conexiones de equipos.</p></div>
-    <div class="card"><h3>EV Chargers</h3><p>Residential and commercial EV charger installation.</p><p>Instalación de cargadores eléctricos residenciales y comerciales.</p></div>
-    <div class="card"><h3>Troubleshooting</h3><p>Electrical diagnostics, repairs and code-compliant solutions.</p><p>Diagnóstico eléctrico, reparaciones y soluciones conforme al código.</p></div>
-    <div class="card"><h3>NEC / OSHA Compliance</h3><p>Safety-first execution aligned with industry standards.</p><p>Ejecución segura alineada con estándares de la industria.</p></div>
+    <div class="card"><h3>Residential Electrical</h3><p class="en">Installations, remodels, repairs and panel upgrades.</p><p class="es">Instalaciones, remodelaciones, reparaciones y actualización de paneles.</p></div>
+    <div class="card"><h3>Commercial Electrical</h3><p class="en">Lighting, panels, circuits and commercial project support.</p><p class="es">Iluminación, paneles, circuitos y soporte para proyectos comerciales.</p></div>
+    <div class="card"><h3>Industrial Electrical</h3><p class="en">Three-phase systems, motor controls and equipment connections.</p><p class="es">Sistemas trifásicos, controles de motor y conexión de equipos.</p></div>
+    <div class="card"><h3>EV Chargers</h3><p class="en">Residential and commercial EV charger installation.</p><p class="es">Instalación de cargadores eléctricos residenciales y comerciales.</p></div>
+    <div class="card"><h3>Panel Upgrades</h3><p class="en">Service upgrades, panels and electrical distribution support.</p><p class="es">Actualización de servicios, paneles y distribución eléctrica.</p></div>
+    <div class="card"><h3>NEC / OSHA Compliance</h3><p class="en">Safety-first execution aligned with industry standards.</p><p class="es">Ejecución segura alineada con estándares de la industria.</p></div>
   </div>
 </section>
 
 <section class="section">
-  <h2>Certifications & Readiness</h2>
+  <h2 class="en">Certifications & Readiness</h2>
+  <h2 class="es">Certificaciones y Preparación</h2>
+
   <span class="badge">OSHA 30</span>
   <span class="badge">SAM.gov Registered</span>
   <span class="badge">Insured</span>
@@ -172,32 +254,37 @@ a{color:var(--gold)}
 </section>
 
 <section class="section">
+  <h2>NAICS</h2>
   <div class="grid">
     <div class="card">
-      <h3>NAICS Codes</h3>
-      <p><strong>238210</strong> – Electrical Contractors and Other Wiring Installation Contractors</p>
-      <p><strong>238220</strong> – Building Equipment Contractors / Related Support Services</p>
+      <h3>238210</h3>
+      <p>Electrical Contractors and Other Wiring Installation Contractors</p>
     </div>
     <div class="card">
-      <h3>Service Area</h3>
-      <p>Houston, Texas</p>
-      <p>Greater Houston Metropolitan Area</p>
-      <p>State of Texas — project-based support</p>
-    </div>
-    <div class="card">
-      <h3>Social Media</h3>
-      <p><a href="https://www.linkedin.com/company/fly-electric-solutions/?viewAsMember=true" target="_blank">LinkedIn</a></p>
-      <p><a href="https://www.facebook.com/people/Fly-Electric-Solutions-LLC/61590269765455/" target="_blank">Facebook</a></p>
+      <h3>238220</h3>
+      <p>Building Equipment Contractors / Related Support Services</p>
     </div>
   </div>
 </section>
 
-<section class="section" style="text-align:center;">
-  <h2>Ready to Power Your Next Project?</h2>
-  <p>¿Listo para impulsar su próximo proyecto?</p>
-  <a class="btn" href="tel:+17133842411">Call +1 (713) 384-2411</a>
-  <a class="btn secondary" href="mailto:info@flyelectricsolution.com">Request a Quote</a>
-  <a class="btn secondary" href="https://flyelectricsolution.com">Visit Website</a>
+<section class="section cta">
+  <h2 class="en">Ready to Power Your Next Project?</h2>
+  <h2 class="es">¿Listo para Impulsar su Próximo Proyecto?</h2>
+
+  <p class="en">Contact Fly Electric Solutions LLC today for professional electrical support.</p>
+  <p class="es">Contacte hoy a Fly Electric Solutions LLC para soporte eléctrico profesional.</p>
+
+  <a class="btn" href="tel:+17133842411">+1 (713) 384-2411</a>
+  <a class="btn outline" href="mailto:info@flyelectricsolution.com">info@flyelectricsolution.com</a>
+  <a class="btn outline" href="https://flyelectricsolution.com">Website</a>
+</section>
+
+<section class="section">
+  <h2 class="en">Connect With Us</h2>
+  <h2 class="es">Conéctese con Nosotros</h2>
+
+  <a class="btn outline" href="https://www.linkedin.com/company/fly-electric-solutions/?viewAsMember=true" target="_blank">LinkedIn</a>
+  <a class="btn outline" href="https://www.facebook.com/people/Fly-Electric-Solutions-LLC/61590269765455/" target="_blank">Facebook</a>
 </section>
 
 <footer class="footer">
@@ -205,6 +292,22 @@ a{color:var(--gold)}
   <p>Safety • Quality • Integrity • Reliability • Excellence</p>
   <p>Houston, Texas | Greater Houston & State of Texas</p>
 </footer>
+
+<script>
+function setLang(lang){
+  if(lang === 'es'){
+    document.body.classList.add('spanish');
+    document.getElementById('btn-es').classList.add('active');
+    document.getElementById('btn-en').classList.remove('active');
+    document.documentElement.lang = 'es';
+  }else{
+    document.body.classList.remove('spanish');
+    document.getElementById('btn-en').classList.add('active');
+    document.getElementById('btn-es').classList.remove('active');
+    document.documentElement.lang = 'en';
+  }
+}
+</script>
 
 </body>
 </html>
