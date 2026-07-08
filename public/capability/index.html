@@ -1,113 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Capability Statement | Fly Electric Solutions LLC</title>
-<meta name="description" content="Fly Electric Solutions LLC provides residential, commercial, and industrial electrical services across Greater Houston and Texas. OSHA 30, SAM.gov registered, insured, bilingual electrical contractor." />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fly Electric Solutions LLC | Capability Statement</title>
+<meta name="description" content="Fly Electric Solutions LLC provides residential, commercial and industrial electrical services across Greater Houston and Texas.">
 
 <style>
 :root{
-  --black:#0b0b0b;
-  --dark:#141414;
   --gold:#d4a017;
-  --white:#ffffff;
-  --gray:#d8d8d8;
+  --black:#050505;
+  --dark:#111;
+  --white:#fff;
+  --gray:#d6d6d6;
 }
 *{box-sizing:border-box}
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:linear-gradient(135deg,#050505,#1a1a1a);
+  background:var(--black);
   color:var(--white);
 }
 .hero{
-  padding:45px 22px;
+  min-height:95vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   text-align:center;
-  background:radial-gradient(circle at top,#2a2a2a,#050505);
+  padding:40px 20px;
+  background:
+    linear-gradient(rgba(0,0,0,.78),rgba(0,0,0,.92)),
+    radial-gradient(circle at top,#3a2b08,#050505 60%);
 }
-.logo{
-  max-width:220px;
-  background:white;
-  padding:12px;
-  border-radius:16px;
-  margin-bottom:22px;
-}
-h1{
-  font-size:42px;
-  margin:10px 0;
+.hero h1{
+  font-size:52px;
   color:var(--gold);
+  margin:0 0 15px;
 }
-.tagline{
-  font-size:20px;
+.hero h2{
+  font-size:25px;
+  margin:0 0 10px;
+}
+.hero p{
   color:var(--gray);
-  margin-bottom:25px;
+  font-size:18px;
+  max-width:850px;
+  margin:10px auto;
 }
-.buttons a{
+.btn{
   display:inline-block;
-  margin:8px;
-  padding:15px 22px;
+  margin:10px;
+  padding:15px 24px;
+  border-radius:10px;
   background:var(--gold);
   color:#000;
   text-decoration:none;
   font-weight:bold;
-  border-radius:10px;
 }
-.buttons a.dark{
-  background:#222;
-  color:white;
+.btn.secondary{
+  background:transparent;
+  color:var(--white);
   border:1px solid var(--gold);
 }
 .section{
   max-width:1150px;
   margin:auto;
-  padding:35px 22px;
+  padding:60px 22px;
+}
+.section h2{
+  color:var(--gold);
+  font-size:34px;
+  margin-bottom:15px;
 }
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:20px;
+  gap:22px;
 }
 .card{
-  background:rgba(255,255,255,.06);
+  background:linear-gradient(145deg,#111,#1a1a1a);
   border:1px solid rgba(212,160,23,.35);
-  border-radius:16px;
-  padding:24px;
+  border-radius:18px;
+  padding:25px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
 }
 .card h3{
   color:var(--gold);
   margin-top:0;
 }
-ul{
-  padding-left:20px;
-}
-.highlight{
-  text-align:center;
-  background:#111;
-  border-top:1px solid var(--gold);
-  border-bottom:1px solid var(--gold);
-}
-.big{
-  font-size:26px;
+.badge{
+  display:inline-block;
+  border:1px solid var(--gold);
   color:var(--gold);
+  padding:8px 13px;
+  margin:5px;
+  border-radius:999px;
+  font-weight:bold;
+}
+.split{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:30px;
 }
 .footer{
   text-align:center;
-  padding:28px;
-  background:#050505;
-  color:#bbb;
+  background:#020202;
+  padding:35px 20px;
+  color:#aaa;
 }
-.badge{
-  display:inline-block;
-  padding:8px 12px;
-  border:1px solid var(--gold);
-  border-radius:999px;
-  margin:5px;
-  color:var(--gold);
-}
-@media(max-width:600px){
-  h1{font-size:32px}
-  .buttons a{display:block}
+a{color:var(--gold)}
+@media(max-width:750px){
+  .hero h1{font-size:38px}
+  .split{grid-template-columns:1fr}
+  .btn{display:block}
 }
 </style>
 </head>
@@ -115,67 +120,55 @@ ul{
 <body>
 
 <header class="hero">
-  <img src="/assets/logo.png.jpg" alt="Fly Electric Solutions LLC Logo" class="logo">
-  <h1>Fly Electric Solutions LLC</h1>
-  <p class="tagline">Reliable Electrical Solutions Built on Safety, Quality and Trust.</p>
+  <div>
+    <h1>Fly Electric Solutions LLC</h1>
+    <h2>Reliable Electrical Solutions Built on Safety, Quality and Trust.</h2>
+    <p>Professional electrical contracting services for residential, commercial, industrial and government-ready projects across Greater Houston and Texas.</p>
+    <p>Soluciones eléctricas profesionales para proyectos residenciales, comerciales, industriales y oportunidades gubernamentales en Houston y Texas.</p>
 
-  <div class="buttons">
-    <a href="https://drive.google.com/file/d/1YwHBuxVJAlwN-AmZVEETuTMMMYZ7Qnnl/view?usp=drive_link" target="_blank">📄 Download Capability Statement</a>
-    <a href="tel:+17133842411">📞 Call Now</a>
-    <a href="mailto:info@flyelectricsolution.com" class="dark">✉️ Email Us</a>
-    <a href="https://flyelectricsolution.com" class="dark">🌐 Visit Website</a>
+    <a class="btn" href="https://drive.google.com/file/d/1YwHBuxVJAlwN-AmZVEETuTMMMYZ7Qnnl/view?usp=drive_link" target="_blank">Download Capability Statement</a>
+    <a class="btn secondary" href="tel:+17133842411">Call Now</a>
+    <a class="btn secondary" href="mailto:info@flyelectricsolution.com">Email Us</a>
   </div>
 </header>
 
-<section class="section highlight">
-  <p class="big">Houston-Based Electrical Contractor Serving Greater Houston & Texas</p>
-  <p>Residential • Commercial • Industrial • Government & Commercial Ready</p>
-</section>
-
 <section class="section">
-  <div class="grid">
-    <div class="card">
-      <h3>Core Capabilities</h3>
-      <ul>
-        <li>Residential Electrical</li>
-        <li>Commercial Electrical</li>
-        <li>Industrial Electrical</li>
-        <li>EV Chargers</li>
-        <li>Panel Upgrades</li>
-        <li>Troubleshooting</li>
-        <li>NEC / OSHA Compliance</li>
-      </ul>
+  <div class="split">
+    <div>
+      <h2>Who We Are</h2>
+      <p>Fly Electric Solutions LLC is a Houston-based electrical contractor focused on safe, code-compliant and reliable electrical services.</p>
+      <p>Fly Electric Solutions LLC es una empresa eléctrica ubicada en Houston, enfocada en servicios seguros, confiables y conforme al código eléctrico.</p>
     </div>
-
     <div class="card">
       <h3>Company Data</h3>
       <p><strong>UEI:</strong> S356FWLK42H3</p>
       <p><strong>DUNS:</strong> 14-644-4631</p>
-      <p><strong>Location:</strong> Houston, Texas</p>
-      <p><strong>Coverage:</strong> Greater Houston & State of Texas</p>
-      <p><strong>Languages:</strong> English / Spanish</p>
-    </div>
-
-    <div class="card">
-      <h3>Certifications & Readiness</h3>
-      <span class="badge">OSHA 30</span>
-      <span class="badge">SAM.gov Registered</span>
-      <span class="badge">Insured</span>
-      <span class="badge">Safety First</span>
-    </div>
-
-    <div class="card">
-      <h3>Differentiators</h3>
-      <ul>
-        <li>Fast Response</li>
-        <li>Safety First Culture</li>
-        <li>Bilingual Communication</li>
-        <li>Transparent Quoting</li>
-        <li>Commercial & Government Ready</li>
-        <li>Code-Compliant Electrical Work</li>
-      </ul>
+      <p><strong>Phone:</strong> +1 (713) 384-2411</p>
+      <p><strong>Email:</strong> info@flyelectricsolution.com</p>
+      <p><strong>Website:</strong> flyelectricsolution.com</p>
     </div>
   </div>
+</section>
+
+<section class="section">
+  <h2>Core Capabilities / Servicios</h2>
+  <div class="grid">
+    <div class="card"><h3>Residential Electrical</h3><p>Installations, remodels, troubleshooting and panel upgrades.</p><p>Instalaciones, remodelaciones, diagnóstico y actualización de paneles.</p></div>
+    <div class="card"><h3>Commercial Electrical</h3><p>Lighting, branch circuits, panels and service support.</p><p>Iluminación, circuitos, paneles y soporte eléctrico comercial.</p></div>
+    <div class="card"><h3>Industrial Electrical</h3><p>Three-phase systems, motor controls and equipment connections.</p><p>Sistemas trifásicos, controles de motor y conexiones de equipos.</p></div>
+    <div class="card"><h3>EV Chargers</h3><p>Residential and commercial EV charger installation.</p><p>Instalación de cargadores eléctricos residenciales y comerciales.</p></div>
+    <div class="card"><h3>Troubleshooting</h3><p>Electrical diagnostics, repairs and code-compliant solutions.</p><p>Diagnóstico eléctrico, reparaciones y soluciones conforme al código.</p></div>
+    <div class="card"><h3>NEC / OSHA Compliance</h3><p>Safety-first execution aligned with industry standards.</p><p>Ejecución segura alineada con estándares de la industria.</p></div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Certifications & Readiness</h2>
+  <span class="badge">OSHA 30</span>
+  <span class="badge">SAM.gov Registered</span>
+  <span class="badge">Insured</span>
+  <span class="badge">Safety First</span>
+  <span class="badge">Bilingual EN / ES</span>
 </section>
 
 <section class="section">
@@ -185,35 +178,32 @@ ul{
       <p><strong>238210</strong> – Electrical Contractors and Other Wiring Installation Contractors</p>
       <p><strong>238220</strong> – Building Equipment Contractors / Related Support Services</p>
     </div>
-
     <div class="card">
-      <h3>Contact</h3>
-      <p><strong>Phone:</strong> +1 (713) 384-2411</p>
-      <p><strong>Email:</strong> info@flyelectricsolution.com</p>
-      <p><strong>Website:</strong> flyelectricsolution.com</p>
-      <p><strong>Service Area:</strong> Houston, Texas | Greater Houston & State of Texas</p>
+      <h3>Service Area</h3>
+      <p>Houston, Texas</p>
+      <p>Greater Houston Metropolitan Area</p>
+      <p>State of Texas — project-based support</p>
     </div>
-
     <div class="card">
-      <h3>Connect</h3>
-      <p><a style="color:#d4a017" href="https://www.linkedin.com/company/fly-electric-solutions/?viewAsMember=true" target="_blank">LinkedIn</a></p>
-      <p><a style="color:#d4a017" href="https://www.facebook.com/people/Fly-Electric-Solutions-LLC/61590269765455/" target="_blank">Facebook</a></p>
+      <h3>Social Media</h3>
+      <p><a href="https://www.linkedin.com/company/fly-electric-solutions/?viewAsMember=true" target="_blank">LinkedIn</a></p>
+      <p><a href="https://www.facebook.com/people/Fly-Electric-Solutions-LLC/61590269765455/" target="_blank">Facebook</a></p>
     </div>
   </div>
 </section>
 
-<section class="section highlight">
-  <h2>Request a Quote</h2>
-  <p>Ready to discuss your electrical project?</p>
-  <div class="buttons">
-    <a href="tel:+17133842411">📞 Call +1 (713) 384-2411</a>
-    <a href="mailto:info@flyelectricsolution.com" class="dark">✉️ Request by Email</a>
-  </div>
+<section class="section" style="text-align:center;">
+  <h2>Ready to Power Your Next Project?</h2>
+  <p>¿Listo para impulsar su próximo proyecto?</p>
+  <a class="btn" href="tel:+17133842411">Call +1 (713) 384-2411</a>
+  <a class="btn secondary" href="mailto:info@flyelectricsolution.com">Request a Quote</a>
+  <a class="btn secondary" href="https://flyelectricsolution.com">Visit Website</a>
 </section>
 
 <footer class="footer">
   <p><strong>Fly Electric Solutions LLC</strong></p>
   <p>Safety • Quality • Integrity • Reliability • Excellence</p>
+  <p>Houston, Texas | Greater Houston & State of Texas</p>
 </footer>
 
 </body>
