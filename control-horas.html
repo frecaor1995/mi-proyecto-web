@@ -285,7 +285,8 @@ function makeStore(KEY){
       return mem[KEY]||null;
     },
     async set(v){
-      const s=JSON.stringify(v); mem[KEY]=v;
+      let s; try{ s=JSON.stringify(v); }catch(e){ return false; }
+      mem[KEY]=v;
       try{ if(window.storage){await window.storage.set(KEY,s); return true;} }catch(e){}
       try{ localStorage.setItem(KEY,s); return true; }catch(e){ return false; }
     }
@@ -375,10 +376,10 @@ async function handleFiles(files,fromLib){
   render();
 }
 document.getElementById('filePickCam').addEventListener('change',async e=>{
-  const f=e.target.files; e.target.value=''; await handleFiles(f,false);
+  const f=Array.from(e.target.files); e.target.value=''; await handleFiles(f,false);
 });
 document.getElementById('filePickLib').addEventListener('change',async e=>{
-  const f=e.target.files; e.target.value=''; await handleFiles(f,true);
+  const f=Array.from(e.target.files); e.target.value=''; await handleFiles(f,true);
 });
 function pickFor(k,mode){ pickTarget=k;
   document.getElementById(mode==='lib'?'filePickLib':'filePickCam').click(); }
