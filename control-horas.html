@@ -222,6 +222,7 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
   <button class="btn ghost" id="btnWA">Texto para WhatsApp</button>
   <button class="btn ghost" id="btnExport">Exportar semana con fotos (PDF)</button>
 </div>
+<p class="note" id="exportHint" style="display:none"></p>
 <textarea id="out" placeholder="El reporte aparece aquí. Cópielo y mándelo." readonly></textarea>
 <p class="meter" id="meter"></p>
 
@@ -598,7 +599,33 @@ document.getElementById('prevWk').onclick=()=>{offset--;render();};
 document.getElementById('nextWk').onclick=()=>{if(offset<0){offset++;render();}};
 document.getElementById('btnReport').onclick=()=>{const o=document.getElementById('out');o.value=report();o.select();};
 document.getElementById('btnWA').onclick=()=>{const o=document.getElementById('out');o.value=whatsapp();o.select();};
-document.getElementById('btnExport').onclick=()=>{buildExport();setTimeout(()=>window.print(),120);};
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
+document.getElementById('btnExport').onclick=()=>{
+  console.log('PDF export started');
+  try{
+    buildExport();
+    console.log('Export view built');
+    const imgs=Array.from(document.querySelectorAll('#exportView img'));
+    const allReady=imgs.every(img=>img.complete && img.naturalWidth>0);
+    console.log('Images ready:',allReady,'('+imgs.length+' foto(s))');
+    const hint=document.getElementById('exportHint');
+    if(isIOS()){
+      hint.textContent='Se abrió la vista de impresión. Toque el ícono de Compartir (⬆) y elija "Guardar en Archivos" para obtener el PDF.';
+      hint.style.display='block';
+    }else{
+      hint.style.display='none';
+    }
+    console.log('PDF generated');
+    window.print();
+    console.log('PDF opened/downloaded');
+  }catch(err){
+    console.log('PDF export failed:',err);
+    alert('No se pudo generar el PDF: '+(err&&err.message?err.message:err));
+  }
+};
 
 /* ---------- arranque ---------- */
 (async()=>{
