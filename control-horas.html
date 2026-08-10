@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <meta name="referrer" content="no-referrer">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#E9ECEE">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Control de Horas</title>
@@ -25,6 +28,16 @@ header{padding:18px 0 12px}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--steel);margin:0 0 4px}
 h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:650}
+.nameInput{display:block;width:100%;font-family:var(--sans);font-size:21px;font-weight:650;
+  letter-spacing:-.01em;color:var(--ink);background:transparent;border:0;border-bottom:1px dashed var(--line);
+  padding:2px 0 5px;border-radius:0}
+.nameInput::placeholder{color:#A6B0B7;font-weight:500}
+.nameInput:focus{outline:0;border-bottom-color:var(--traveler)}
+.banner{display:flex;align-items:flex-start;gap:8px;background:#FFF4E0;border:1px solid #E8C88A;
+  color:#6B4A05;border-radius:8px;padding:10px 12px;margin-top:11px;font-size:12.5px;line-height:1.45}
+.banner.bad{background:#FDF0F0;border-color:#F0C0C0;color:#7F1420}
+.banner button{margin-left:auto;background:transparent;border:0;color:inherit;font-size:15px;
+  cursor:pointer;padding:0 2px;line-height:1}
 .weeknav{display:flex;align-items:center;gap:8px;margin-top:10px}
 .weeknav button{font-family:var(--mono);font-size:13px;padding:6px 10px;background:var(--card);
   border:1px solid var(--line);border-radius:6px;color:var(--ink);cursor:pointer}
@@ -103,10 +116,11 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:650}
   border:1px solid var(--line);border-radius:4px;text-align:center}
 .shots{grid-column:1/-1;display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
 .shots img{width:52px;height:52px;object-fit:cover;border-radius:5px;border:1px solid var(--line);cursor:pointer}
-.addshot{width:52px;height:52px;border:1.5px dashed var(--traveler);border-radius:5px;background:#EBF1F9;
-  color:var(--traveler);font-size:19px;line-height:1;cursor:pointer;display:flex;align-items:center;
-  justify-content:center;padding:0}
-.addshot.lib{border-style:solid;border-color:var(--line);background:#fff}
+.addshot{min-width:60px;height:52px;border:1.5px dashed var(--traveler);border-radius:5px;background:#EBF1F9;
+  color:var(--traveler);font-size:12px;font-weight:600;line-height:1;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;padding:0 8px}
+.addshot{font-size:12px;font-weight:600}
+.addshot.lib{border-style:solid;border-color:var(--line);background:#fff;color:var(--steel)}
 .shotcount{font-family:var(--mono);font-size:11px;color:var(--steel)}
 .nophoto{font-family:var(--mono);font-size:11px;color:var(--hot);font-weight:600}
 
@@ -133,6 +147,8 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
   border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);margin-top:8px;resize:vertical}
 .note{font-size:12px;color:var(--steel);line-height:1.55;margin:14px 0 0}
 .meter{font-family:var(--mono);font-size:11px;color:var(--steel);margin-top:10px;text-align:center}
+.ver{font-family:var(--mono);font-size:11px;text-align:center;margin:18px 0 0;padding:7px;
+  border:1px solid var(--ground);color:var(--ground);border-radius:6px;font-weight:600}
 .meter.warn{color:var(--hot);font-weight:600}
 
 .saved{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(60px);
@@ -158,7 +174,16 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
   .exday{page-break-inside:avoid;margin-bottom:16px}
   .exday img{max-width:100%;max-height:520px;object-fit:contain;border:1px solid #999}
 }
-#exportView.show{display:block;background:#fff;padding:16px;max-width:520px;margin:0 auto}
+#exportView.show{display:block;position:fixed;inset:0;overflow:auto;background:#fff;
+  padding:14px 14px 40px;z-index:80;-webkit-overflow-scrolling:touch}
+.exbar{position:sticky;top:0;background:#fff;display:flex;gap:8px;padding:6px 0 10px;
+  border-bottom:1px solid var(--line);margin-bottom:12px}
+.exbar button{flex:1;padding:12px 6px;border-radius:8px;border:1px solid var(--ink);
+  background:var(--ink);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.exbar button.ghost{background:transparent;color:var(--ink)}
+.exempty{background:#FFF4E0;border:1px solid #E8C88A;color:#6B4A05;border-radius:8px;
+  padding:12px;font-size:13px;line-height:1.5;margin-bottom:14px}
+@media print{.exbar,.exempty{display:none!important}}
 #exportView h2{font-size:17px;margin:0 0 4px}
 #exportView table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin:10px 0 18px}
 #exportView th,#exportView td{border:1px solid #999;padding:5px 6px;text-align:left}
@@ -176,7 +201,11 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
 
 <header>
   <p class="eyebrow">Registro propio de horas</p>
-  <h1 id="crewName">Control de Horas</h1>
+  <input id="crewName" class="nameInput" placeholder="Escriba su nombre" autocomplete="name">
+  <div class="banner" id="banner" hidden>
+    <span id="bannerTxt"></span>
+    <button id="bannerX" aria-label="Cerrar aviso">✕</button>
+  </div>
   <div class="weeknav">
     <button id="prevWk">‹ Anterior</button>
     <span class="weeklabel" id="weekLabel"></span>
@@ -197,8 +226,8 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
     <button class="out" id="btnOut">SALIDA<small id="outTime">--:--</small></button>
   </div>
   <div class="camrow">
-    <button class="camera" id="btnCam">📷 Tomar foto</button>
-    <button class="camera lib" id="btnLib">🖼 De la galería</button>
+    <button class="camera" id="btnCam">Tomar foto</button>
+    <button class="camera lib" id="btnLib">De la galería</button>
   </div>
   <p class="camsub" id="camSub">Tómela al salir, con la fecha y su renglón visibles</p>
   <div class="opts">
@@ -248,7 +277,8 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
   <img id="lbImg" alt="Foto de la hoja">
 </div>
 
-<div id="exportView"></div>
+<div id="exportView"><p class="ver">VERSION 4 — 10 ago</p>
+</div>
 <div class="saved" id="toast">Guardado</div>
 <input type="file" id="filePickCam" accept="image/*" capture="environment" style="display:none">
 <input type="file" id="filePickLib" accept="image/*" multiple style="display:none">
@@ -352,8 +382,9 @@ function compress(file,maxEdge=1500,q=0.72){
   });
 }
 async function handleFiles(files,fromLib){
-  if(!files||!files.length||!pickTarget) return;
-  const arr=shots(pickTarget); let added=0, full=false;
+  if(!pickTarget){ alert('No se supo a qué día agregar la foto. Intente de nuevo.'); return; }
+  if(!files||!files.length){ alert('No llegó ninguna imagen. Intente de nuevo.'); return; }
+  const arr=shots(pickTarget); let added=0, full=false, failed=0;
   for(const f of files){
     if(arr.length>=3){ full=true; break; }
     try{
@@ -364,21 +395,22 @@ async function handleFiles(files,fromLib){
         rec.o=(o.getMonth()+1)+'/'+o.getDate()+' '+hhmm(o);
       }
       arr.push(rec); added++;
-    }catch(err){ alert('No se pudo leer una de las fotos.'); }
+    }catch(err){ failed++; }
   }
   if(added){
     const ok=await pstore.set(photos);
-    if(!ok){ arr.splice(arr.length-added,added); await pstore.set(photos);
+    if(!ok){ arr.splice(arr.length-added,added); await pstore.set(photos); added=0;
       alert('No cabe. Exporte el PDF de las semanas viejas y borre esas fotos.'); }
   }
+  if(failed) alert('No se pudo leer '+failed+' imagen(es). Pruebe con una foto normal (JPG o PNG).');
   if(full) alert('Máximo 3 fotos por día.');
   render();
 }
 document.getElementById('filePickCam').addEventListener('change',async e=>{
-  const f=e.target.files; e.target.value=''; await handleFiles(f,false);
+  const f=Array.from(e.target.files||[]); e.target.value=''; await handleFiles(f,false);
 });
 document.getElementById('filePickLib').addEventListener('change',async e=>{
-  const f=e.target.files; e.target.value=''; await handleFiles(f,true);
+  const f=Array.from(e.target.files||[]); e.target.value=''; await handleFiles(f,true);
 });
 function pickFor(k,mode){ pickTarget=k;
   document.getElementById(mode==='lib'?'filePickLib':'filePickCam').click(); }
@@ -454,8 +486,8 @@ function render(){
       ${(!rec.in&&!rec.out)?`<button class="fill" data-fill="${k}">Poner ${ampm(data.std.in)} → ${ampm(data.std.out)}</button>`:''}
       <div class="shots">
         ${ph.map((s,i)=>`<img src="${s.d}" data-k="${k}" data-i="${i}" alt="Foto ${s.t}">`).join('')}
-        ${ph.length<3?`<button class="addshot" data-add="${k}" data-mode="cam" aria-label="Tomar foto">📷</button>
-        <button class="addshot lib" data-add="${k}" data-mode="lib" aria-label="Desde galería">🖼</button>`:''}
+        ${ph.length<3?`<button class="addshot" data-add="${k}" data-mode="cam">Cámara</button>
+        <button class="addshot lib" data-add="${k}" data-mode="lib">Galería</button>`:''}
         <span class="${ph.length?'shotcount':'nophoto'}">${ph.length?ph.map(shotLabel).join(' · '):(h?'sin foto':'')}</span>
       </div>`;
     box.appendChild(el);
@@ -519,7 +551,7 @@ function whatsapp(){
     if(!h&&!Number(r.trans)) return;
     s+=DOW[d.getDay()]+' '+d.getDate()+': '+(r.in||'--')+'–'+(r.out||'--')+' = '+f1(h)+'h'
       +(Number(r.trans)?' +'+f1(Number(r.trans))+' transp':'')
-      +(shots(k).length?' 📷':'')+(r.in&&!r.out?' ⚠️ sin salida':'')+'\n';
+      +(shots(k).length?' [foto]':'')+(r.in&&!r.out?' (!) SIN SALIDA':'')+'\n';
   });
   s+='\nTrabajo '+f1(T.w)+' + transporte '+f1(T.t)+' = *'+f1(T.total)+' h*\n'
    +f1(T.reg)+' regulares + '+f1(T.ot)+' overtime';
@@ -527,7 +559,15 @@ function whatsapp(){
 }
 function buildExport(){
   const days=weekDays(offset), T=totals(offset), v=document.getElementById('exportView');
-  let h=`<h2>Registro de horas — ${fmtD(days[0])} al ${fmtD(days[5])}</h2>
+  const nPh=days.reduce((a,d)=>a+shots(iso(d)).length,0);
+  let h=`<div class="exbar">
+      <button id="exPrint">Guardar PDF</button>
+      <button class="ghost" id="exShare">Compartir</button>
+      <button class="ghost" id="exClose">Cerrar</button>
+    </div>`;
+  if(!nPh) h+=`<div class="exempty"><b>Esta semana no tiene fotos.</b> Vuelva atrás y en cada día
+    toque <b>Cámara</b> para tomarla, o <b>Galería</b> para cargar una que ya tenga en el carrete.</div>`;
+  h+=`<h2>Registro de horas — ${fmtD(days[0])} al ${fmtD(days[5])}</h2>
     <p style="font-family:monospace;font-size:12px">${data.name||''}</p>
     <table><tr><th>Fecha</th><th>Día</th><th>Entrada</th><th>Salida</th><th>Trabajo</th><th>Transp.</th><th>Foto</th></tr>`;
   days.forEach(d=>{
@@ -545,6 +585,35 @@ function buildExport(){
       <img src="${s.d}"></div>`; });
   });
   v.innerHTML=h;
+  v.classList.add('show');
+  document.getElementById('exClose').onclick=()=>v.classList.remove('show');
+  document.getElementById('exPrint').onclick=()=>window.print();
+  document.getElementById('exShare').onclick=shareWeek;
+}
+
+function dataURLtoFile(d,name){
+  const [head,b64]=d.split(','), mime=(head.match(/:(.*?);/)||[,'image/jpeg'])[1];
+  const bin=atob(b64), u8=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+  return new File([u8],name,{type:mime});
+}
+async function shareWeek(){
+  const files=[];
+  weekDays(offset).forEach(d=>{
+    const k=iso(d);
+    shots(k).forEach((s,i)=>files.push(dataURLtoFile(s.d,k+'-'+(i+1)+'.jpg')));
+  });
+  const text=report();
+  try{
+    if(files.length && navigator.canShare && navigator.canShare({files})){
+      await navigator.share({files,text,title:'Registro de horas'});
+    }else if(navigator.share){
+      await navigator.share({text,title:'Registro de horas'});
+      if(files.length) alert('Este teléfono compartió solo el texto. Las fotos ya están en su carrete: adjúntelas a mano.');
+    }else{
+      alert('Este navegador no permite compartir. Use Guardar PDF.');
+    }
+  }catch(e){}
 }
 
 /* ---------- eventos ---------- */
@@ -597,7 +666,7 @@ document.getElementById('prevWk').onclick=()=>{offset--;render();};
 document.getElementById('nextWk').onclick=()=>{if(offset<0){offset++;render();}};
 document.getElementById('btnReport').onclick=()=>{const o=document.getElementById('out');o.value=report();o.select();};
 document.getElementById('btnWA').onclick=()=>{const o=document.getElementById('out');o.value=whatsapp();o.select();};
-document.getElementById('btnExport').onclick=()=>{buildExport();setTimeout(()=>window.print(),120);};
+document.getElementById('btnExport').onclick=()=>buildExport();
 
 /* ---------- arranque ---------- */
 (async()=>{
@@ -606,13 +675,46 @@ document.getElementById('btnExport').onclick=()=>{buildExport();setTimeout(()=>w
   if(s) data=Object.assign({days:{},rate:null,paid:{},name:null,std:{in:'06:30',out:'15:00'}},s);
   if(!data.std) data.std={in:'06:30',out:'15:00'};
   const p=await pstore.get(); if(p) photos=p;
-  if(!data.name){
-    const n=prompt('¿Su nombre? (aparece en el reporte)');
-    if(n&&n.trim()){ data.name=n.trim(); await store.set(data); }
-  }
-  if(data.name) document.getElementById('crewName').textContent=data.name;
+
+  // el nombre puede venir en el enlace:  .../h-xxxx.html#Fredy%20Castillo
+  const fromLink=decodeURIComponent((location.hash||'').replace(/^#/,'')).trim();
+  if(fromLink && !data.name){ data.name=fromLink; await store.set(data); }
+  document.getElementById('crewName').value=data.name||'';
+
+  checkStorage();
   render();
 })();
+
+function checkStorage(){
+  const b=document.getElementById('banner'), t=document.getElementById('bannerTxt');
+  let works=true;
+  if(!window.storage){
+    try{ localStorage.setItem('ch_probe','1');
+         works=localStorage.getItem('ch_probe')==='1';
+         localStorage.removeItem('ch_probe'); }
+    catch(e){ works=false; }
+  }
+  if(!works){
+    b.hidden=false; b.classList.add('bad');
+    t.innerHTML='<b>Este navegador no guarda nada.</b> Abra el enlace en Safari o Chrome (no dentro de WhatsApp) y agréguelo a la pantalla de inicio. Si no, pierde las horas al cerrar.';
+    return;
+  }
+  try{ if(sessionStorage.getItem('ch_tip')==='1') return; }catch(e){}
+  const inApp=/(FBAN|FBAV|Instagram|Line\/|MicroMessenger|WhatsApp)/i.test(navigator.userAgent)
+    || (/iPhone|iPad/.test(navigator.userAgent) && !window.matchMedia('(display-mode: standalone)').matches
+        && !window.navigator.standalone);
+  if(inApp){
+    b.hidden=false;
+    t.innerHTML='Si abrió esto dentro de WhatsApp, el teléfono puede <b>borrar los datos al cerrar</b>. Toque el botón de compartir → <b>Abrir en Safari</b> → <b>Agregar a pantalla de inicio</b>. Una sola vez.';
+  }
+}
+document.getElementById('bannerX').onclick=()=>{
+  document.getElementById('banner').hidden=true;
+  try{ sessionStorage.setItem('ch_tip','1'); }catch(e){}
+};
+document.getElementById('crewName').addEventListener('change',async e=>{
+  data.name=e.target.value.trim()||null; await save();
+});
 </script>
 </body>
 </html>
