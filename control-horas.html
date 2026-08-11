@@ -76,9 +76,13 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:650}
   border:1px solid var(--line);border-radius:5px;color:var(--ink)}
 .stdrow button{margin-left:auto;font-size:12px;padding:7px 10px;border:1px solid var(--ink);
   background:transparent;color:var(--ink);border-radius:6px;cursor:pointer;font-weight:600}
-.fill{grid-column:2/-1;justify-self:start;font-family:var(--mono);font-size:12px;padding:5px 9px;
+.dayctl{grid-column:2/-1;display:flex;gap:8px;flex-wrap:wrap}
+.fill{font-family:var(--mono);font-size:12px;padding:5px 9px;
   border:1px dashed var(--steel);background:transparent;color:var(--steel);border-radius:5px;cursor:pointer}
 .fill:active{background:var(--concrete)}
+.clearday{font-family:var(--mono);font-size:12px;padding:5px 9px;
+  border:1px dashed var(--hot);background:transparent;color:var(--hot);border-radius:5px;cursor:pointer}
+.clearday:active{background:#FEF5F5}
 .day{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);
   border-radius:8px;margin-bottom:7px;padding:10px 12px;
   display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center}
@@ -311,7 +315,13 @@ function weekStart(off){const d=new Date();d.setHours(0,0,0,0);
 function weekDays(off){const s=weekStart(off),o=[];
   for(let i=0;i<6;i++){const d=new Date(s);d.setDate(s.getDate()+i);o.push(d);}return o;}
 const weekKey=off=>iso(weekStart(off));
-const day=k=>data.days[k]||(data.days[k]={in:'',out:'',lunch:true,trans:0});
+const isoDow=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getDay();};
+function defaultDay(k){
+  const dow=isoDow(k);
+  if(dow>=1&&dow<=5) return {in:data.std.in,out:data.std.out,lunch:true,trans:1};
+  return {in:'',out:'',lunch:true,trans:0};
+}
+const day=k=>data.days[k]||(data.days[k]=defaultDay(k));
 const shots=k=>photos[k]||(photos[k]=[]);
 const shotLabel=s=> s.src==='lib'
   ? 'de galería'+(s.o?' ('+s.o+')':'')
@@ -453,7 +463,10 @@ function render(){
         <label>transporte <input type="number" step="0.25" min="0" data-k="${k}" data-f="trans" value="${rec.trans||0}"></label>
       </div>
       ${incomplete?'<div class="flag">Falta la hora de salida</div>':''}
-      ${(!rec.in&&!rec.out)?`<button class="fill" data-fill="${k}">Poner ${ampm(data.std.in)} → ${ampm(data.std.out)}</button>`:''}
+      <div class="dayctl">
+        ${(!rec.in&&!rec.out)?`<button class="fill" data-fill="${k}">Poner ${ampm(data.std.in)} → ${ampm(data.std.out)}</button>`:''}
+        ${(rec.in||rec.out||Number(rec.trans))?`<button class="clearday" data-clear="${k}">Faltó / Borrar día</button>`:''}
+      </div>
       <div class="shots">
         ${ph.map((s,i)=>`<img src="${s.d}" data-k="${k}" data-i="${i}" alt="Foto ${s.t}">`).join('')}
         ${ph.length<3?`<button class="addshot" data-add="${k}" data-mode="cam" aria-label="Tomar foto">📷</button>
@@ -580,6 +593,12 @@ document.getElementById('week').addEventListener('click',async e=>{
   const fl=e.target.closest('[data-fill]');
   if(fl){ const r=day(fl.dataset.fill); r.in=data.std.in; r.out=data.std.out;
     if(!Number(r.trans)) r.trans=1; render(); await save(); return; }
+  const cl=e.target.closest('[data-clear]');
+  if(cl){
+    if(!confirm('¿Confirmar que este trabajador no laboró este día?')) return;
+    const r=day(cl.dataset.clear); r.in=''; r.out=''; r.trans=0;
+    render(); await save(); return;
+  }
   const b=e.target.closest('[data-add]'); if(b){pickFor(b.dataset.add,b.dataset.mode);return;}
   if(e.target.tagName==='IMG'&&e.target.dataset.k) openShot(e.target.dataset.k,+e.target.dataset.i);
 });
@@ -588,7 +607,8 @@ document.getElementById('paid').onchange=async e=>{data.paid[weekKey(offset)]=Nu
 document.getElementById('stdIn').onchange=async e=>{data.std.in=e.target.value||'06:30';render();await save();};
 document.getElementById('stdOut').onchange=async e=>{data.std.out=e.target.value||'15:00';render();await save();};
 document.getElementById('fillWeek').onclick=async()=>{
-  const empty=weekDays(offset).filter(d=>{const r=day(iso(d));return !r.in&&!r.out;});
+  const empty=weekDays(offset).filter(d=>d.getDay()>=1&&d.getDay()<=5)
+    .filter(d=>{const r=day(iso(d));return !r.in&&!r.out;});
   if(!empty.length){ alert('No hay días vacíos en esta semana.'); return; }
   if(!confirm('Poner '+ampm(data.std.in)+' → '+ampm(data.std.out)+' en '+empty.length+
     ' día(s) vacío(s)? Ajuste después los que hayan sido distintos.')) return;
