@@ -338,9 +338,12 @@ function worked(rec){
 function totals(off){
   let w=0,t=0;
   weekDays(off).forEach(d=>{const r=day(iso(d)); w+=worked(r); t+=Number(r.trans)||0;});
-  const total=w+t;
-  return {w:+w.toFixed(2),t:+t.toFixed(2),total:+total.toFixed(2),
-          reg:Math.min(40,total),ot:+Math.max(0,total-40).toFixed(2)};
+  w=+w.toFixed(2); t=+t.toFixed(2);
+  const regWork=+Math.min(40,w).toFixed(2);       // horas de trabajo regulares (tope 40)
+  const ot=+Math.max(0,w-40).toFixed(2);           // overtime: SOLO trabajo, nunca transporte
+  const reg=+(regWork+t).toFixed(2);               // horas normales pagables = trabajo regular + transporte
+  const total=+(reg+ot).toFixed(2);                // total pagable
+  return {w,t,regWork,ot,reg,total};
 }
 const f1=n=>n.toFixed(1);
 const money=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -500,9 +503,9 @@ function cotejo(){
   if(!rate||!paid){ box.innerHTML=''; return; }
   const T=totals(offset), should=T.reg*rate+T.ot*rate*1.5, diff=+(should-paid).toFixed(2);
   if(Math.abs(diff)<0.5)
-    box.innerHTML=`<div class="verdict ok"><b>Cuadra</b>${f1(T.total)} horas: ${f1(T.reg)} regulares y ${f1(T.ot)} de overtime = ${money(should)}.</div>`;
+    box.innerHTML=`<div class="verdict ok"><b>Cuadra</b>${f1(T.total)} horas: ${f1(T.reg)} normales (${f1(T.regWork)} trabajo + ${f1(T.t)} transporte) y ${f1(T.ot)} de overtime = ${money(should)}.</div>`;
   else if(diff>0)
-    box.innerHTML=`<div class="verdict bad"><b>Faltan ${money(diff)}</b>Por ${f1(T.total)} horas (${f1(T.reg)} regulares + ${f1(T.ot)} de overtime a ${money(rate*1.5)}) deberían ser ${money(should)}. Reclame esta semana, no la otra.</div>`;
+    box.innerHTML=`<div class="verdict bad"><b>Faltan ${money(diff)}</b>Por ${f1(T.total)} horas (${f1(T.reg)} normales: ${f1(T.regWork)} trabajo + ${f1(T.t)} transporte + ${f1(T.ot)} de overtime a ${money(rate*1.5)}) deberían ser ${money(should)}. Reclame esta semana, no la otra.</div>`;
   else
     box.innerHTML=`<div class="verdict ok"><b>${money(-diff)} de más</b>Le pagaron por encima de las ${f1(T.total)} horas registradas. Revise que no falte registrar algo.</div>`;
 }
@@ -522,7 +525,9 @@ function report(){
   });
   s+='\n'+f1(T.w)+' hours worked (30-min lunch deducted where taken)\n'
    +f1(T.t)+' transport hours\n'
-   +f1(T.total)+' total — '+f1(T.reg)+' regular + '+f1(T.ot)+' overtime\n'
+   +f1(T.reg)+' payable at regular rate ('+f1(T.regWork)+' work regular + '+f1(T.t)+' transport)\n'
+   +f1(T.ot)+' overtime (work only, over 40 h/week — transport is never overtime)\n'
+   +f1(T.total)+' total payable hours\n'
    +'\nTimes recorded on site at clock-in and clock-out. Photos of the sign-in sheet available on request.';
   return s;
 }
@@ -536,8 +541,8 @@ function whatsapp(){
       +(Number(r.trans)?' +'+f1(Number(r.trans))+' transp':'')
       +(shots(k).length?' 📷':'')+(r.in&&!r.out?' ⚠️ sin salida':'')+'\n';
   });
-  s+='\nTrabajo '+f1(T.w)+' + transporte '+f1(T.t)+' = *'+f1(T.total)+' h*\n'
-   +f1(T.reg)+' regulares + '+f1(T.ot)+' overtime';
+  s+='\nTrabajo '+f1(T.w)+' + transporte '+f1(T.t)+' = *'+f1(T.total)+' h pagables*\n'
+   +f1(T.reg)+' normales ('+f1(T.regWork)+' trabajo + '+f1(T.t)+' transp) + '+f1(T.ot)+' overtime';
   return s;
 }
 function buildExport(){
@@ -552,8 +557,8 @@ function buildExport(){
         <td>${ph.length?ph.map(shotLabel).join(', '):'—'}</td></tr>`;
   });
   h+=`</table><p style="font-family:monospace;font-size:12px">
-    Trabajo ${f1(T.w)} h · Transporte ${f1(T.t)} h · Total ${f1(T.total)} h
-    (${f1(T.reg)} regulares + ${f1(T.ot)} overtime)</p>`;
+    Trabajo ${f1(T.w)} h · Transporte ${f1(T.t)} h · Total pagable ${f1(T.total)} h<br>
+    ${f1(T.reg)} h normales (${f1(T.regWork)} trabajo + ${f1(T.t)} transporte) · ${f1(T.ot)} h overtime</p>`;
   days.forEach(d=>{
     const k=iso(d), ph=shots(k);
     ph.forEach(s=>{ h+=`<div class="exday"><p>${fmtD(d)} ${DOW[d.getDay()]} — foto ${shotLabel(s)}</p>
