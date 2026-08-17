@@ -1,0 +1,97 @@
+:root {
+  --ink: #071611;
+  --surface: #eef1e9;
+  --signal: #d7ff36;
+  --line: rgba(7, 22, 17, 0.17);
+  --muted: #53625b;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: Bahnschrift, "Aptos Narrow", sans-serif;
+}
+
+.foundation-shell {
+  position: relative;
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at center, black 20%, transparent 72%);
+}
+
+.status-panel {
+  position: relative;
+  width: min(100%, 68rem);
+  border: 1px solid var(--ink);
+  background: rgba(238, 241, 233, 0.88);
+  box-shadow: 14px 14px 0 var(--ink);
+  padding: clamp(2rem, 7vw, 6rem);
+  animation: arrive 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.eyebrow, .scope-note {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.eyebrow { display: flex; align-items: center; gap: 0.7rem; }
+
+.status-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 4px var(--ink);
+}
+
+h1 {
+  max-width: 10ch;
+  margin: 3rem 0 2.5rem;
+  font-family: Rockwell, "Roboto Slab", serif;
+  font-size: clamp(3.4rem, 11vw, 8.4rem);
+  font-weight: 800;
+  letter-spacing: -0.075em;
+  line-height: 0.82;
+}
+
+h1 span {
+  display: inline-block;
+  padding: 0.08em 0.14em 0.12em;
+  background: var(--signal);
+  border: 0.055em solid var(--ink);
+  transform: rotate(-1.5deg);
+}
+
+.rule { height: 1px; background: var(--ink); }
+.status-copy { margin: 1.4rem 0 0; font-size: clamp(1.25rem, 3vw, 2rem); font-weight: 600; }
+.scope-note { margin-top: 0.7rem; color: var(--muted); }
+
+@keyframes arrive {
+  from { opacity: 0; transform: translateY(22px); }
+}
+
+@media (max-width: 520px) {
+  .foundation-shell { padding: 1.25rem; }
+  .status-panel { box-shadow: 8px 8px 0 var(--ink); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-panel { animation: none; }
+}
