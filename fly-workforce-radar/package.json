@@ -15,6 +15,7 @@
     "ingestion:validate": "vitest run src/test/ingestion",
     "claims:validate": "vitest run src/test/claims",
     "company:validate": "vitest run src/test/company",
+    "manpower:validate": "vitest run src/test/manpower-acceptance",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
