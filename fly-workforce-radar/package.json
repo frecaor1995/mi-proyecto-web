@@ -10,6 +10,7 @@
     "start": "next start",
     "test": "vitest run",
     "schema:validate": "vitest run src/test/schema",
+    "evidence:validate": "vitest run src/test/evidence",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
