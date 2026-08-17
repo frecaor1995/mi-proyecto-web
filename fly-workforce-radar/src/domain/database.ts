@@ -1,6 +1,8 @@
 export const ACCESS_CLASSIFICATIONS = [
   "PUBLIC",
   "ACCOUNT_REQUIRED",
+  "REQUIRES_LOGIN",
+  "PAYWALLED",
   "RESTRICTED",
   "UNKNOWN",
 ] as const;

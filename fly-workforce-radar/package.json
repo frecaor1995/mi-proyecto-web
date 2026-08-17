@@ -11,6 +11,7 @@
     "test": "vitest run",
     "schema:validate": "vitest run src/test/schema",
     "evidence:validate": "vitest run src/test/evidence",
+    "source:validate": "vitest run src/test/source",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
