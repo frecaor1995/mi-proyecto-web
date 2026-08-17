@@ -13,6 +13,7 @@
     "evidence:validate": "vitest run src/test/evidence",
     "source:validate": "vitest run src/test/source",
     "ingestion:validate": "vitest run src/test/ingestion",
+    "claims:validate": "vitest run src/test/claims",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
