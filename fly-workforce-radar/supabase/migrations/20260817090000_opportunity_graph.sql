@@ -1,0 +1,11 @@
+begin;
+create type opportunity_lifecycle as enum('ACTIVE','STALE','CLOSED','UNKNOWN');
+alter table opportunities add column lifecycle opportunity_lifecycle not null default 'UNKNOWN',add column opportunity_identity_key text,add column unresolved_company_context text,add column opportunity_metadata jsonb not null default '{}'::jsonb;
+create unique index opportunities_identity_unique_idx on opportunities(opportunity_identity_key) where opportunity_identity_key is not null;
+create table opportunity_companies(opportunity_id uuid not null references opportunities(id) on delete cascade,company_id uuid not null references companies(id) on delete restrict,link_reason text not null,evidence_id uuid references raw_evidence(id) on delete restrict,created_at timestamptz not null default now(),primary key(opportunity_id,company_id));
+create table opportunity_evidence(opportunity_id uuid not null references opportunities(id) on delete cascade,evidence_id uuid not null references raw_evidence(id) on delete restrict,link_reason text not null,created_at timestamptz not null default now(),primary key(opportunity_id,evidence_id));
+create table opportunity_completeness_snapshots(id uuid primary key default gen_random_uuid(),opportunity_id uuid not null references opportunities(id) on delete restrict,gaps text[] not null default '{}',conflicts jsonb not null default '[]'::jsonb,evaluated_at timestamptz not null,rule_version text not null,details jsonb not null default '{}'::jsonb,created_at timestamptz not null default now());
+create function prevent_opportunity_snapshot_mutation()returns trigger language plpgsql as $$begin raise exception 'opportunity_completeness_snapshots is append-only';end;$$;
+create trigger opportunity_completeness_snapshots_append_only before update or delete on opportunity_completeness_snapshots for each row execute function prevent_opportunity_snapshot_mutation();
+create index opportunity_companies_company_idx on opportunity_companies(company_id);create index opportunity_evidence_evidence_idx on opportunity_evidence(evidence_id);create index opportunity_completeness_history_idx on opportunity_completeness_snapshots(opportunity_id,evaluated_at desc);
+commit;
