@@ -1,0 +1,4 @@
+begin;
+alter table contact_route_grade_evaluations add column snapshot_sequence bigint generated always as identity;
+create index contact_route_grade_history_order_idx on contact_route_grade_evaluations(contact_route_id,evaluated_at,snapshot_sequence);
+commit;
