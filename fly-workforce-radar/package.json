@@ -19,6 +19,7 @@
     "contact:validate": "vitest run src/test/contact",
     "opportunity:validate": "vitest run src/test/opportunity",
     "verification:validate": "vitest run src/test/verification",
+    "eligibility:validate": "vitest run src/test/eligibility",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
