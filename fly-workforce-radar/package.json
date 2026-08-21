@@ -23,6 +23,7 @@
     "scoring:validate": "vitest run src/test/scoring",
     "commercial-action:validate": "vitest run src/test/commercial-action",
     "integration:validate": "vitest run src/test/integration",
+    "production-source:validate": "vitest run src/test/production-source",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
