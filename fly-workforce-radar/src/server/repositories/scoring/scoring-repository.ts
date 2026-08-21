@@ -1,0 +1,1 @@
+import type{ScoreResult,ScoreSnapshot}from"../../../domain/scoring";export interface ScoringRepository{save(result:ScoreResult):Promise<ScoreSnapshot>;list(opportunityId:string,asOf?:Date):Promise<ScoreSnapshot[]>}

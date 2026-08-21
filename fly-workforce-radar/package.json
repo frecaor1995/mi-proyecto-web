@@ -20,6 +20,7 @@
     "opportunity:validate": "vitest run src/test/opportunity",
     "verification:validate": "vitest run src/test/verification",
     "eligibility:validate": "vitest run src/test/eligibility",
+    "scoring:validate": "vitest run src/test/scoring",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
