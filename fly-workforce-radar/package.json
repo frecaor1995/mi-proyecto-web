@@ -18,6 +18,7 @@
     "manpower:validate": "vitest run src/test/manpower-acceptance",
     "contact:validate": "vitest run src/test/contact",
     "opportunity:validate": "vitest run src/test/opportunity",
+    "verification:validate": "vitest run src/test/verification",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
