@@ -21,6 +21,7 @@
     "verification:validate": "vitest run src/test/verification",
     "eligibility:validate": "vitest run src/test/eligibility",
     "scoring:validate": "vitest run src/test/scoring",
+    "commercial-action:validate": "vitest run src/test/commercial-action",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
