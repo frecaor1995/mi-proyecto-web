@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{TARGETED_SOURCES_2J}from"../../services/targeted-evidence/targeted-evidence-closure-2j-service";
+describe("Phase 2J controlled live smoke",()=>{for(const source of TARGETED_SOURCES_2J.filter(x=>x.decision==="ACTIVATE"))it(source.name,async()=>{const response=await fetch(source.endpoint,{headers:{"user-agent":"FlyWorkforceRadar/1.0 public-source-validation"},signal:AbortSignal.timeout(30000)});expect(response.ok).toBe(true);const body=await response.text();expect(body.length).toBeGreaterThan(500)})});
