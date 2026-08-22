@@ -8,7 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run",
+    "test": "vitest run --exclude **/*.live.test.ts",
     "schema:validate": "vitest run src/test/schema",
     "evidence:validate": "vitest run src/test/evidence",
     "source:validate": "vitest run src/test/source",
@@ -24,6 +24,8 @@
     "commercial-action:validate": "vitest run src/test/commercial-action",
     "integration:validate": "vitest run src/test/integration",
     "production-source:validate": "vitest run src/test/production-source",
+    "production-adapters:validate": "vitest run src/test/production-source/production-adapters.test.ts",
+    "production-adapters:live": "vitest run src/server/adapters/production/production-adapters.live.test.ts --maxWorkers=1 --no-file-parallelism",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
