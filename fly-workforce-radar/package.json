@@ -34,6 +34,8 @@
     "hot-evidence:validate": "vitest run src/test/hot-evidence",
     "hot-evidence:live": "vitest run src/server/adapters/production/hot-evidence.live.test.ts --maxWorkers=1 --no-file-parallelism",
     "opportunity-qualification:validate": "vitest run src/test/opportunity-qualification",
+    "targeted-evidence:validate": "vitest run src/test/targeted-evidence",
+    "targeted-evidence:live": "vitest run src/server/adapters/production/targeted-evidence-closure.live.test.ts --maxWorkers=1 --no-file-parallelism",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
