@@ -26,6 +26,8 @@
     "production-source:validate": "vitest run src/test/production-source",
     "production-adapters:validate": "vitest run src/test/production-source/production-adapters.test.ts",
     "production-adapters:live": "vitest run src/server/adapters/production/production-adapters.live.test.ts --maxWorkers=1 --no-file-parallelism",
+    "multi-source:validate": "vitest run src/test/production-source/multi-source-expansion.test.ts",
+    "multi-source:live": "vitest run src/server/adapters/production/multi-source.live.test.ts --maxWorkers=1 --no-file-parallelism",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },

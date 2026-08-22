@@ -1,6 +1,6 @@
 import type { ProductionCaptureResult, ProductionSourceAdapter } from "./production-source";
 
-export type ProductionObservationKind = "WORKFORCE_DEMAND" | "PROJECT_PROCUREMENT";
+export type ProductionObservationKind = "WORKFORCE_DEMAND" | "PROJECT_PROCUREMENT" | "STAFFING_INTELLIGENCE" | "VENDOR_ROUTE" | "PROJECT_CONTEXT";
 export interface ProductionObservation {
   kind: ProductionObservationKind; title: string | null; organization: string | null; location: string | null;
   sourceUrl: string; externalId: string; facts: Record<string, string | number | boolean | null>;
