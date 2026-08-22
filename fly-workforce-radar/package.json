@@ -28,6 +28,8 @@
     "production-adapters:live": "vitest run src/server/adapters/production/production-adapters.live.test.ts --maxWorkers=1 --no-file-parallelism",
     "multi-source:validate": "vitest run src/test/production-source/multi-source-expansion.test.ts",
     "multi-source:live": "vitest run src/server/adapters/production/multi-source.live.test.ts --maxWorkers=1 --no-file-parallelism",
+    "commercial-intelligence:validate": "vitest run src/test/production-source/commercial-intelligence.test.ts",
+    "commercial-intelligence:live": "vitest run src/server/adapters/production/commercial-intelligence.live.test.ts --maxWorkers=1 --no-file-parallelism",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
