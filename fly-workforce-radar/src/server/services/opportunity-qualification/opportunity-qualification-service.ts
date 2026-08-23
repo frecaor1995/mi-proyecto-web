@@ -1,4 +1,5 @@
 import type{OpportunityGraph}from"../../../domain/opportunity";import type{GapMatrixEntry,ManagerVerificationCandidate,QualificationDossier,QualificationGap,QualificationState}from"../../../domain/opportunity-qualification";import type{ManpowerAcceptanceResult}from"../../../domain/manpower-acceptance";import{MANPOWER_ACCEPTANCE_RULE_VERSION}from"../../../domain/manpower-acceptance";import{EligibilityService}from"../eligibility/eligibility-service";
+import type{AggregatedCandidate}from"../../../domain/evidence-aggregation";import{aggregatedCandidates}from"../evidence-aggregation/evidence-aggregation-service";
 const at=new Date("2026-08-21T12:00:00Z"),source=(key:string)=>`source:${key}`,evidence=(key:string)=>`evidence:${key}`;
 export type Seed=Omit<QualificationDossier,"gapMatrix"|"eligibility"|"scoreState"|"commercialActionState"|"managerState">;
 const seeds:Seed[]=[
@@ -23,7 +24,51 @@ export const routeGradesFor=(x:Seed):Record<string,unknown>[]=>x.contactRoute&&x
 const matrix=(x:Seed):GapMatrixEntry[]=>gaps.map(g=>{const s=state(x,g),eligibility=["DEMAND","COMPANY","PROJECT","BUYER","AF_01","CONTACT_ROUTE","ROUTE_AUTHORITY","PROVENANCE","CURRENTNESS","CONFLICT","HUMAN_VERIFICATION"].includes(g);return{gap:g,status:s,evidenceAvailable:x.evidenceIds,evidenceRequired:s==="PRESENT"?"None for descriptive completeness":`Current opportunity-specific ${g} evidence`,likelySources:x.demandSources.map(source),blocksVamo:eligibility&&["CONTACT_ROUTE","ROUTE_AUTHORITY","CONFLICT","HUMAN_VERIFICATION"].includes(g),blocksHotA:eligibility,blocksHotB:eligibility&&["DEMAND","CONTACT_ROUTE","ROUTE_AUTHORITY","PROVENANCE","CURRENTNESS","CONFLICT","HUMAN_VERIFICATION"].includes(g),humanReviewRequired:["BUYER","AF_01","ROUTE_AUTHORITY","CONFLICT","HUMAN_VERIFICATION"].includes(g)&&s!=="PRESENT"}});
 const graph=(x:Seed):OpportunityGraph=>({opportunity:{id:x.id,identityKey:x.id,projectId:x.project?`${x.id}:project`:null,unresolvedCompanyContext:x.company,title:x.context,lifecycle:"ACTIVE",firstSeenAt:x.firstSeen,lastSeenAt:x.lastSeen,staleAfter:x.staleAfter,verificationDueAt:null,metadata:{}},demandSignals:x.currentDemand?[{id:`${x.id}:demand`,raw_evidence_id:x.evidenceIds[0],stale_after:x.staleAfter}]:[],claims:[],companies:x.company?[{id:`${x.id}:company`,name:x.company}]:[],companyRoles:x.buyerCandidate?[{id:`${x.id}:buyer`,role:"MANPOWER_BUYER",verification_state:"UNVERIFIED"}]:[],project:x.project?{id:`${x.id}:project`,name:x.project}:null,acceptance:acceptanceFor(x),vendorRoutes:[],contactPeople:[],contactRoutes:x.contactRoute?[{id:`${x.id}:route`,route_type:x.routeType,verification_state:routeVerificationStateFor(x),lifecycle:"ACTIVE",stale_after:x.staleAfter}]:[],routeGrades:routeGradesFor(x),evidence:x.evidenceIds.map(id=>({id})),verificationReviews:[],gaps:["MISSING_MANPOWER_ACCEPTANCE","MISSING_ACTIONABLE_ROUTE",...(x.project?[]:["MISSING_PROJECT"])]as OpportunityGraph["gaps"],conflicts:x.conflicts,asOf:at,descriptiveOnly:true});
 export{graph};
-export function qualificationDossiers():QualificationDossier[]{return seeds.map(x=>{const results=new EligibilityService({graph:async()=>graph(x)},{activeEvidenceIds:async(ids:string[])=>ids,save:async r=>({...r,id:"unused",createdAt:at}),list:async()=>[]},()=>at).assess(graph(x),at),eligibility=Object.fromEntries(results.map(r=>[r.eligibilityType,{eligible:r.eligible,blockers:r.blockingGaps}]))as QualificationDossier["eligibility"];return{...x,gapMatrix:matrix(x),eligibility,scoreState:"NOT_SCORABLE",commercialActionState:"NOT_GENERATED",managerState:x.buyerCandidate&&x.buyerVerificationStatus==="UNVERIFIED"?"AWAITING_MANAGER_VERIFICATION":"EVIDENCE_GAP"}})}
+const buildDossier=(x:Seed):QualificationDossier=>{const results=new EligibilityService({graph:async()=>graph(x)},{activeEvidenceIds:async(ids:string[])=>ids,save:async r=>({...r,id:"unused",createdAt:at}),list:async()=>[]},()=>at).assess(graph(x),at),eligibility=Object.fromEntries(results.map(r=>[r.eligibilityType,{eligible:r.eligible,blockers:r.blockingGaps}]))as QualificationDossier["eligibility"];return{...x,gapMatrix:matrix(x),eligibility,scoreState:"NOT_SCORABLE",commercialActionState:"NOT_GENERATED",managerState:x.buyerCandidate&&x.buyerVerificationStatus==="UNVERIFIED"?"AWAITING_MANAGER_VERIFICATION":"EVIDENCE_GAP"}};
+export function qualificationDossiers():QualificationDossier[]{return seeds.map(buildDossier)}
+
+/**
+ * Phase 2M / TECH-DEBT-04 resolution. seedWithAggregatedEvidence() folds
+ * AggregatedCandidate evidence -- sourced one-directionally from the neutral
+ * evidence-aggregation-service.ts, which reads the Phase 2H/2I/2J targeted-evidence
+ * data and the hot-conversion REAL_CONVERSION_SET ledger and never imports anything
+ * from this file -- into a Seed's own buyer/AF-01/contact-route fields. This is the
+ * concrete mechanism by which a human reviewer's decision on richer FACTS-level
+ * evidence (previously unreachable from this file without a circular import) becomes
+ * visible to the same real, unmodified graph()/EligibilityService pipeline every
+ * other seed already goes through.
+ *
+ * Candidate evidence NEVER overwrites a Seed's own descriptive fields (this is
+ * additive, never lossy) and only ever promotes buyer/AF-01/route verification state
+ * to "VERIFIED" when the candidate's OWN verificationState is genuinely "VERIFIED" --
+ * which, for every real AggregatedCandidate produced from real production evidence,
+ * is never true; only the CONTROLLED_TEST_REVIEW pathway exercised in tests can
+ * produce that state.
+ *
+ * qualificationDossiers() above (relied on by every prior-phase test and by every
+ * existing downstream consumer of the default seeds) is left byte-for-byte
+ * unchanged: it still maps seeds through buildDossier() with zero enrichment, exactly
+ * as before this phase. qualificationDossiersEnriched() below is the new, additive,
+ * explicitly-opt-in entry point that exercises and proves the resolved wiring.
+ */
+export function seedWithAggregatedEvidence(x:Seed,candidates:AggregatedCandidate[]=[]):Seed{
+  const mine=candidates.filter(c=>c.opportunityId===x.id);
+  const buyer=mine.find(c=>c.type==="BUYER_CANDIDATE");
+  const af01=mine.find(c=>c.type==="AF01_CANDIDATE");
+  const contact=mine.find(c=>c.type==="CONTACT_AUTHORITY");
+  if(!buyer&&!af01&&!contact)return x;
+  const evidenceIds=[...new Set([...x.evidenceIds,...mine.flatMap(c=>c.evidenceIds)])];
+  const sourceUrls=[...new Set([...x.sourceUrls,...mine.flatMap(c=>c.sourceUrls)])];
+  return{
+    ...x,
+    evidenceIds,
+    sourceUrls,
+    ...(buyer&&buyer.verificationState==="VERIFIED"?{buyerCandidate:x.buyerCandidate??buyer.value,buyerVerificationStatus:"VERIFIED"as const}:{}),
+    ...(af01&&af01.verificationState==="VERIFIED"?{af01Candidate:x.af01Candidate??af01.value,af01Category:x.af01Category??af01.category,af01VerificationState:"VERIFIED"as const}:{}),
+    ...(contact&&contact.verificationState==="VERIFIED"?{contactPerson:x.contactPerson??contact.contactPersonName,contactRoute:x.contactRoute??contact.routeTarget,routeType:x.routeType??contact.routeType,routeGrade:x.routeGrade??contact.routeGrade,routeVerificationState:"VERIFIED"as const}:{}),
+  };
+}
+export function qualificationDossiersEnriched(candidates:AggregatedCandidate[]=aggregatedCandidates()):QualificationDossier[]{return seeds.map(x=>buildDossier(seedWithAggregatedEvidence(x,candidates)))}
 export function managerVerificationCandidates(rows=qualificationDossiers()):ManagerVerificationCandidate[]{return rows.flatMap(x=>x.managerState!=="AWAITING_MANAGER_VERIFICATION"?[]:[{target:`COMPANY_ROLE:${x.id}:buyer`,opportunityId:x.id,currentState:"UNVERIFIED"as const,proposedDecision:"NEEDS_MORE_EVIDENCE"as const,supportingEvidence:[x.buyerCandidate??""],evidenceIds:x.evidenceIds,sourceUrls:x.sourceUrls,reason:"Candidate is explicit but evidence does not yet establish external manpower authority",ifVerified:"Buyer gate may improve; AF-01 and route gates remain",ifRejected:"Buyer candidate cannot support eligibility"}])}
 export function convergence(x:QualificationDossier){const values={Demand:x.currentDemand?"PRESENT":"MISSING",Project:x.projectStatus==="CONFLICTING"?"CONFLICTING":x.project?"PRESENT":"MISSING",Buyer:x.buyerVerificationStatus,AF01:x.af01VerificationState,ContactRoute:x.routeVerificationState};return{values,present:Object.values(values).filter(v=>v!=="MISSING").length,verified:Object.values(values).filter(v=>v==="VERIFIED").length}}
 export const sourceContribution=(rows=qualificationDossiers())=>[...new Set(rows.flatMap(x=>x.demandSources))].map(key=>({source:key,roles:["DEMAND_CONTRIBUTOR","DISCOVERY_CONTRIBUTOR"],opportunities:rows.filter(x=>x.demandSources.includes(key)).map(x=>x.id)}));
