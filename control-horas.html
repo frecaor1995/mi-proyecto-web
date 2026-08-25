@@ -76,9 +76,13 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:650}
   border:1px solid var(--line);border-radius:5px;color:var(--ink)}
 .stdrow button{margin-left:auto;font-size:12px;padding:7px 10px;border:1px solid var(--ink);
   background:transparent;color:var(--ink);border-radius:6px;cursor:pointer;font-weight:600}
-.fill{grid-column:2/-1;justify-self:start;font-family:var(--mono);font-size:12px;padding:5px 9px;
+.dayctl{grid-column:2/-1;display:flex;gap:8px;flex-wrap:wrap}
+.fill{font-family:var(--mono);font-size:12px;padding:5px 9px;
   border:1px dashed var(--steel);background:transparent;color:var(--steel);border-radius:5px;cursor:pointer}
 .fill:active{background:var(--concrete)}
+.clearday{font-family:var(--mono);font-size:12px;padding:5px 9px;
+  border:1px dashed var(--hot);background:transparent;color:var(--hot);border-radius:5px;cursor:pointer}
+.clearday:active{background:#FEF5F5}
 .day{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);
   border-radius:8px;margin-bottom:7px;padding:10px 12px;
   display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center}
@@ -109,6 +113,10 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:650}
 .addshot.lib{border-style:solid;border-color:var(--line);background:#fff}
 .shotcount{font-family:var(--mono);font-size:11px;color:var(--steel)}
 .nophoto{font-family:var(--mono);font-size:11px;color:var(--hot);font-weight:600}
+.shotwrap{position:relative;display:inline-block;line-height:0}
+.markbadge{position:absolute;top:-4px;right:-4px;background:var(--ground);color:#fff;
+  font-size:10px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:700;border:1.5px solid #fff;pointer-events:none}
 
 .actions{display:grid;gap:8px;margin:18px 0}
 .btn{display:block;width:100%;text-align:center;padding:15px;border-radius:9px;
@@ -150,9 +158,16 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
   padding:9px 14px;border-radius:7px;font-size:14px;cursor:pointer}
 .lbbar button.del{border-color:#E8626F;color:#E8626F}
 
+#markEditor{position:fixed;inset:0;background:rgba(10,12,14,.97);z-index:80;display:none;
+  flex-direction:column;padding:14px}
+#markEditor.show{display:flex}
+#markCanvasWrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;margin:8px 0}
+#markCanvas{touch-action:none;cursor:crosshair;max-width:100%;max-height:100%;border-radius:4px}
+#markConfirm{background:var(--traveler);border-color:var(--traveler)!important;font-weight:600}
+
 #exportView{display:none}
 @media print{
-  body>.wrap,#lightbox,.saved{display:none!important}
+  body>.wrap,#lightbox,#markEditor,.saved{display:none!important}
   #exportView{display:block!important}
   body{background:#fff;padding:0}
   .exday{page-break-inside:avoid;margin-bottom:16px}
@@ -222,6 +237,7 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
   <button class="btn ghost" id="btnWA">Texto para WhatsApp</button>
   <button class="btn ghost" id="btnExport">Exportar semana con fotos (PDF)</button>
 </div>
+<p class="note" id="exportHint" style="display:none"></p>
 <textarea id="out" placeholder="El reporte aparece aquí. Cópielo y mándelo." readonly></textarea>
 <p class="meter" id="meter"></p>
 
@@ -246,6 +262,19 @@ textarea{width:100%;height:190px;font-family:var(--mono);font-size:12px;line-hei
     <div><button class="del" id="lbDel">Borrar</button> <button id="lbClose">Cerrar</button></div>
   </div>
   <img id="lbImg" alt="Foto de la hoja">
+  <div class="lbbar" id="lbMarkBar"></div>
+</div>
+
+<div id="markEditor">
+  <div class="lbbar">
+    <span>Marcar nombre: <b id="markWorkerName"></b></span>
+    <button id="markCancel">Cancelar</button>
+  </div>
+  <div id="markCanvasWrap"><canvas id="markCanvas"></canvas></div>
+  <div class="lbbar">
+    <button id="markReset" class="del">Borrar selección</button>
+    <button id="markConfirm">Confirmar marca</button>
+  </div>
 </div>
 
 <div id="exportView"></div>
@@ -285,7 +314,8 @@ function makeStore(KEY){
       return mem[KEY]||null;
     },
     async set(v){
-      const s=JSON.stringify(v); mem[KEY]=v;
+      let s; try{ s=JSON.stringify(v); }catch(e){ return false; }
+      mem[KEY]=v;
       try{ if(window.storage){await window.storage.set(KEY,s); return true;} }catch(e){}
       try{ localStorage.setItem(KEY,s); return true; }catch(e){ return false; }
     }
@@ -309,7 +339,13 @@ function weekStart(off){const d=new Date();d.setHours(0,0,0,0);
 function weekDays(off){const s=weekStart(off),o=[];
   for(let i=0;i<6;i++){const d=new Date(s);d.setDate(s.getDate()+i);o.push(d);}return o;}
 const weekKey=off=>iso(weekStart(off));
-const day=k=>data.days[k]||(data.days[k]={in:'',out:'',lunch:true,trans:0});
+const isoDow=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getDay();};
+function defaultDay(k){
+  const dow=isoDow(k);
+  if(dow>=1&&dow<=5) return {in:data.std.in,out:data.std.out,lunch:true,trans:1};
+  return {in:'',out:'',lunch:true,trans:0};
+}
+const day=k=>data.days[k]||(data.days[k]=defaultDay(k));
 const shots=k=>photos[k]||(photos[k]=[]);
 const shotLabel=s=> s.src==='lib'
   ? 'de galería'+(s.o?' ('+s.o+')':'')
@@ -326,9 +362,12 @@ function worked(rec){
 function totals(off){
   let w=0,t=0;
   weekDays(off).forEach(d=>{const r=day(iso(d)); w+=worked(r); t+=Number(r.trans)||0;});
-  const total=w+t;
-  return {w:+w.toFixed(2),t:+t.toFixed(2),total:+total.toFixed(2),
-          reg:Math.min(40,total),ot:+Math.max(0,total-40).toFixed(2)};
+  w=+w.toFixed(2); t=+t.toFixed(2);
+  const regWork=+Math.min(40,w).toFixed(2);       // horas de trabajo regulares (tope 40)
+  const ot=+Math.max(0,w-40).toFixed(2);           // overtime: SOLO trabajo, nunca transporte
+  const reg=+(regWork+t).toFixed(2);               // horas normales pagables = trabajo regular + transporte
+  const total=+(reg+ot).toFixed(2);                // total pagable
+  return {w,t,regWork,ot,reg,total};
 }
 const f1=n=>n.toFixed(1);
 const money=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -375,25 +414,221 @@ async function handleFiles(files,fromLib){
   render();
 }
 document.getElementById('filePickCam').addEventListener('change',async e=>{
-  const f=e.target.files; e.target.value=''; await handleFiles(f,false);
+  const f=Array.from(e.target.files); e.target.value=''; await handleFiles(f,false);
 });
 document.getElementById('filePickLib').addEventListener('change',async e=>{
-  const f=e.target.files; e.target.value=''; await handleFiles(f,true);
+  const f=Array.from(e.target.files); e.target.value=''; await handleFiles(f,true);
 });
 function pickFor(k,mode){ pickTarget=k;
   document.getElementById(mode==='lib'?'filePickLib':'filePickCam').click(); }
 
+/* ---------- marca de nombre (manual) ----------
+   La foto ORIGINAL (s.d) nunca se toca. La marca es solo metadata
+   (coordenadas normalizadas 0..1 de un óvalo) guardada en s.mark.
+   La imagen "marcada" se genera al vuelo con canvas, a partir del
+   original + esas coordenadas, y se cachea en memoria (no en
+   localStorage) para no duplicar fotos completas guardadas. */
+const markedCache=new Map();
+const markKey=(k,i)=>k+'#'+i;
+function invalidateMarkCache(k,i){ markedCache.delete(markKey(k,i)); }
+function invalidateMarkCacheForDay(k){
+  Array.from(markedCache.keys()).forEach(key=>{ if(key.indexOf(k+'#')===0) markedCache.delete(key); });
+}
+function strokeMarkEllipse(ctx,cx,cy,rx,ry,lineWidth){
+  ctx.save();
+  ctx.lineWidth=lineWidth;
+  ctx.strokeStyle='#FF3B30';
+  ctx.shadowColor='rgba(0,0,0,.6)';
+  ctx.shadowBlur=lineWidth*0.6;
+  ctx.beginPath();
+  ctx.ellipse(cx,cy,Math.max(1,rx),Math.max(1,ry),0,0,Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+}
+function renderMarkedDataURL(shot){
+  return new Promise(resolve=>{
+    if(!shot.mark){ resolve(shot.d); return; }
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');
+      c.width=img.naturalWidth; c.height=img.naturalHeight;
+      const ctx=c.getContext('2d');
+      ctx.drawImage(img,0,0);
+      const m=shot.mark;
+      const cx=(m.x+m.w/2)*img.naturalWidth, cy=(m.y+m.h/2)*img.naturalHeight;
+      const rx=(m.w/2)*img.naturalWidth, ry=(m.h/2)*img.naturalHeight;
+      strokeMarkEllipse(ctx,cx,cy,rx,ry,Math.max(5,img.naturalWidth*0.012));
+      resolve(c.toDataURL('image/jpeg',0.85));
+    };
+    img.onerror=()=>resolve(shot.d);
+    img.src=shot.d;
+  });
+}
+async function ensureMarkedCached(k,i){
+  const s=shots(k)[i];
+  if(!s||!s.mark||!s.mark.confirmed) return null;
+  const key=markKey(k,i);
+  if(markedCache.has(key)) return markedCache.get(key);
+  const durl=await renderMarkedDataURL(s);
+  markedCache.set(key,durl);
+  return durl;
+}
+function getMarkedSrcSync(k,i){
+  const s=shots(k)[i]; if(!s) return null;
+  if(s.mark&&s.mark.confirmed){
+    if(markedCache.has(markKey(k,i))) return markedCache.get(markKey(k,i));
+    ensureMarkedCached(k,i); // no bloquea: cachea para la próxima vez
+  }
+  return s.d;
+}
+
+/* ---------- editor de marcado manual (touch + mouse) ---------- */
+let markState=null;
+function openMarkEditor(k,i){
+  const s=shots(k)[i]; if(!s) return;
+  const img=new Image();
+  img.onload=()=>{
+    document.getElementById('markEditor').classList.add('show');
+    document.getElementById('markWorkerName').textContent=data.name||'(sin nombre configurado)';
+    const wrap=document.getElementById('markCanvasWrap');
+    const canvas=document.getElementById('markCanvas');
+    const rect=wrap.getBoundingClientRect();
+    const cw=Math.max(100,Math.round(rect.width)), ch=Math.max(100,Math.round(rect.height));
+    canvas.width=cw; canvas.height=ch;
+    const scale=Math.min(cw/img.naturalWidth, ch/img.naturalHeight);
+    const drawW=img.naturalWidth*scale, drawH=img.naturalHeight*scale;
+    const offsetX=(cw-drawW)/2, offsetY=(ch-drawH)/2;
+    let box=null;
+    if(s.mark){
+      box={x:offsetX+s.mark.x*drawW,y:offsetY+s.mark.y*drawH,w:s.mark.w*drawW,h:s.mark.h*drawH};
+    }
+    markState={k,i,img,canvas,ctx:canvas.getContext('2d'),offsetX,offsetY,drawW,drawH,box,drag:null};
+    drawMarkEditor();
+  };
+  img.onerror=()=>alert('No se pudo abrir la foto para marcarla.');
+  img.src=s.d;
+}
+function drawMarkEditor(){
+  const st=markState; if(!st) return;
+  const {ctx,canvas,img,offsetX,offsetY,drawW,drawH,box}=st;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,offsetX,offsetY,drawW,drawH);
+  if(box){
+    const cx=box.x+box.w/2, cy=box.y+box.h/2, rx=Math.abs(box.w/2), ry=Math.abs(box.h/2);
+    strokeMarkEllipse(ctx,cx,cy,rx,ry,Math.max(3,Math.min(canvas.width,canvas.height)*0.01));
+    ctx.fillStyle='#FF3B30';
+    ctx.beginPath(); ctx.arc(box.x+box.w,box.y+box.h,9,0,Math.PI*2); ctx.fill();
+  }
+}
+function markPointerPos(e){
+  const st=markState, rect=st.canvas.getBoundingClientRect();
+  return {x:(e.clientX-rect.left)*(st.canvas.width/rect.width), y:(e.clientY-rect.top)*(st.canvas.height/rect.height)};
+}
+function nearHandle(p,box){ if(!box) return false;
+  return Math.hypot(p.x-(box.x+box.w),p.y-(box.y+box.h))<18; }
+function insideBox(p,box){ if(!box) return false;
+  const x0=Math.min(box.x,box.x+box.w),x1=Math.max(box.x,box.x+box.w);
+  const y0=Math.min(box.y,box.y+box.h),y1=Math.max(box.y,box.y+box.h);
+  return p.x>=x0&&p.x<=x1&&p.y>=y0&&p.y<=y1; }
+document.getElementById('markCanvas').addEventListener('pointerdown',e=>{
+  const st=markState; if(!st) return;
+  e.preventDefault(); st.canvas.setPointerCapture(e.pointerId);
+  const p=markPointerPos(e);
+  if(nearHandle(p,st.box)) st.drag={mode:'resize',anchorX:st.box.x,anchorY:st.box.y};
+  else if(insideBox(p,st.box)) st.drag={mode:'move',dx:p.x-st.box.x,dy:p.y-st.box.y};
+  else { st.box={x:p.x,y:p.y,w:0,h:0}; st.drag={mode:'draw',startX:p.x,startY:p.y}; }
+});
+document.getElementById('markCanvas').addEventListener('pointermove',e=>{
+  const st=markState; if(!st||!st.drag) return;
+  e.preventDefault();
+  const p=markPointerPos(e);
+  if(st.drag.mode==='draw') st.box={x:st.drag.startX,y:st.drag.startY,w:p.x-st.drag.startX,h:p.y-st.drag.startY};
+  else if(st.drag.mode==='move') st.box={x:p.x-st.drag.dx,y:p.y-st.drag.dy,w:st.box.w,h:st.box.h};
+  else if(st.drag.mode==='resize') st.box={x:st.drag.anchorX,y:st.drag.anchorY,w:p.x-st.drag.anchorX,h:p.y-st.drag.anchorY};
+  drawMarkEditor();
+});
+function endMarkDrag(){
+  const st=markState; if(!st||!st.drag) return;
+  st.drag=null;
+  if(!st.box){ drawMarkEditor(); return; }
+  if(Math.abs(st.box.w)<10||Math.abs(st.box.h)<10) st.box=null;
+  else st.box={x:Math.min(st.box.x,st.box.x+st.box.w),y:Math.min(st.box.y,st.box.y+st.box.h),
+    w:Math.abs(st.box.w),h:Math.abs(st.box.h)};
+  drawMarkEditor();
+}
+document.getElementById('markCanvas').addEventListener('pointerup',endMarkDrag);
+document.getElementById('markCanvas').addEventListener('pointercancel',endMarkDrag);
+document.getElementById('markReset').onclick=()=>{ if(markState){ markState.box=null; drawMarkEditor(); } };
+document.getElementById('markCancel').onclick=()=>{
+  document.getElementById('markEditor').classList.remove('show'); markState=null;
+};
+document.getElementById('markConfirm').onclick=async()=>{
+  const st=markState; if(!st) return;
+  if(!st.box||st.box.w<10||st.box.h<10){ alert('Dibuje un óvalo alrededor del nombre antes de confirmar.'); return; }
+  const {k,i,offsetX,offsetY,drawW,drawH,box}=st;
+  const nx=Math.min(1,Math.max(0,(box.x-offsetX)/drawW));
+  const ny=Math.min(1,Math.max(0,(box.y-offsetY)/drawH));
+  const nw=Math.min(1-nx,box.w/drawW), nh=Math.min(1-ny,box.h/drawH);
+  const s=shots(k)[i];
+  if(s){
+    s.mark={method:'manual',name:data.name||'',confirmed:true,shape:'ellipse',x:nx,y:ny,w:nw,h:nh};
+    invalidateMarkCache(k,i);
+    const ok=await pstore.set(photos);
+    if(!ok) alert('No se pudo guardar la marca (almacenamiento lleno). Exporte y borre fotos viejas.');
+    await ensureMarkedCached(k,i);
+  }
+  document.getElementById('markEditor').classList.remove('show'); markState=null;
+  if(lbRef&&lbRef.k===k&&lbRef.i===i){ lbShowingMarked=true; await updateLightboxImage(); renderLightboxMarkBar(); }
+  render();
+};
+
 /* ---------- lightbox ---------- */
-let lbRef=null;
+let lbRef=null, lbShowingMarked=false;
 function openShot(k,i){
   lbRef={k,i};
   const s=shots(k)[i];
-  document.getElementById('lbImg').src=s.d;
+  lbShowingMarked=!!(s.mark&&s.mark.confirmed);
+  updateLightboxImage();
   document.getElementById('lbTime').textContent=(s.src==='lib'
     ? 'Galería'+(s.o?' · archivo del '+s.o:'')+' · agregada '+s.t
     : 'Tomada en la app a las '+s.t)+' · día '+k;
+  renderLightboxMarkBar();
   document.getElementById('lightbox').classList.add('show');
 }
+async function updateLightboxImage(){
+  const s=shots(lbRef.k)[lbRef.i]; if(!s) return;
+  if(lbShowingMarked&&s.mark&&s.mark.confirmed){
+    const durl=await ensureMarkedCached(lbRef.k,lbRef.i);
+    document.getElementById('lbImg').src=durl||s.d;
+  } else {
+    document.getElementById('lbImg').src=s.d;
+  }
+}
+function renderLightboxMarkBar(){
+  const s=shots(lbRef.k)[lbRef.i]; if(!s) return;
+  const hasMark=!!(s.mark&&s.mark.confirmed);
+  document.getElementById('lbMarkBar').innerHTML=`
+    <span>${hasMark?('✓ Nombre marcado'+(s.mark.name?': '+s.mark.name:'')):'Sin marcar'}</span>
+    <div>${hasMark
+      ?`<button data-mk="toggle">${lbShowingMarked?'Ver original':'Ver marcada'}</button>
+        <button data-mk="edit">Editar marca</button>
+        <button data-mk="unmark" class="del">Quitar marca</button>`
+      :`<button data-mk="mark">Marcar nombre</button>`}</div>`;
+}
+document.getElementById('lbMarkBar').addEventListener('click',async e=>{
+  const btn=e.target.closest('[data-mk]'); if(!btn||!lbRef) return;
+  const {k,i}=lbRef, s=shots(k)[i]; if(!s) return;
+  const act=btn.dataset.mk;
+  if(act==='toggle'){ lbShowingMarked=!lbShowingMarked; await updateLightboxImage(); renderLightboxMarkBar(); }
+  else if(act==='mark'||act==='edit'){ openMarkEditor(k,i); }
+  else if(act==='unmark'){
+    if(!confirm('¿Quitar la marca de este nombre? La foto original no se toca.')) return;
+    delete s.mark; invalidateMarkCache(k,i);
+    await pstore.set(photos);
+    lbShowingMarked=false; await updateLightboxImage(); renderLightboxMarkBar(); render();
+  }
+});
 document.getElementById('lbClose').onclick=()=>{
   document.getElementById('lightbox').classList.remove('show');
   document.getElementById('lbImg').src='';
@@ -401,6 +636,7 @@ document.getElementById('lbClose').onclick=()=>{
 document.getElementById('lbDel').onclick=async()=>{
   if(!lbRef||!confirm('¿Borrar esta foto? No se puede recuperar.')) return;
   shots(lbRef.k).splice(lbRef.i,1);
+  invalidateMarkCacheForDay(lbRef.k); // los índices de las fotos siguientes se recorren
   await pstore.set(photos);
   document.getElementById('lbClose').onclick();
   render();
@@ -451,14 +687,19 @@ function render(){
         <label>transporte <input type="number" step="0.25" min="0" data-k="${k}" data-f="trans" value="${rec.trans||0}"></label>
       </div>
       ${incomplete?'<div class="flag">Falta la hora de salida</div>':''}
-      ${(!rec.in&&!rec.out)?`<button class="fill" data-fill="${k}">Poner ${ampm(data.std.in)} → ${ampm(data.std.out)}</button>`:''}
+      <div class="dayctl">
+        ${(!rec.in&&!rec.out)?`<button class="fill" data-fill="${k}">Poner ${ampm(data.std.in)} → ${ampm(data.std.out)}</button>`:''}
+        ${(rec.in||rec.out||Number(rec.trans))?`<button class="clearday" data-clear="${k}">Faltó / Borrar día</button>`:''}
+      </div>
       <div class="shots">
-        ${ph.map((s,i)=>`<img src="${s.d}" data-k="${k}" data-i="${i}" alt="Foto ${s.t}">`).join('')}
+        ${ph.map((s,i)=>`<span class="shotwrap"><img src="${s.d}" data-k="${k}" data-i="${i}" alt="Foto ${s.t}">
+          ${s.mark&&s.mark.confirmed?'<b class="markbadge" title="Nombre marcado">✓</b>':''}</span>`).join('')}
         ${ph.length<3?`<button class="addshot" data-add="${k}" data-mode="cam" aria-label="Tomar foto">📷</button>
         <button class="addshot lib" data-add="${k}" data-mode="lib" aria-label="Desde galería">🖼</button>`:''}
         <span class="${ph.length?'shotcount':'nophoto'}">${ph.length?ph.map(shotLabel).join(' · '):(h?'sin foto':'')}</span>
       </div>`;
     box.appendChild(el);
+    ph.forEach((s,i)=>{ if(s.mark&&s.mark.confirmed) ensureMarkedCached(k,i); }); // precalienta la caché en memoria
   });
 
   document.getElementById('stdIn').value=data.std.in;
@@ -485,9 +726,9 @@ function cotejo(){
   if(!rate||!paid){ box.innerHTML=''; return; }
   const T=totals(offset), should=T.reg*rate+T.ot*rate*1.5, diff=+(should-paid).toFixed(2);
   if(Math.abs(diff)<0.5)
-    box.innerHTML=`<div class="verdict ok"><b>Cuadra</b>${f1(T.total)} horas: ${f1(T.reg)} regulares y ${f1(T.ot)} de overtime = ${money(should)}.</div>`;
+    box.innerHTML=`<div class="verdict ok"><b>Cuadra</b>${f1(T.total)} horas: ${f1(T.reg)} normales (${f1(T.regWork)} trabajo + ${f1(T.t)} transporte) y ${f1(T.ot)} de overtime = ${money(should)}.</div>`;
   else if(diff>0)
-    box.innerHTML=`<div class="verdict bad"><b>Faltan ${money(diff)}</b>Por ${f1(T.total)} horas (${f1(T.reg)} regulares + ${f1(T.ot)} de overtime a ${money(rate*1.5)}) deberían ser ${money(should)}. Reclame esta semana, no la otra.</div>`;
+    box.innerHTML=`<div class="verdict bad"><b>Faltan ${money(diff)}</b>Por ${f1(T.total)} horas (${f1(T.reg)} normales: ${f1(T.regWork)} trabajo + ${f1(T.t)} transporte + ${f1(T.ot)} de overtime a ${money(rate*1.5)}) deberían ser ${money(should)}. Reclame esta semana, no la otra.</div>`;
   else
     box.innerHTML=`<div class="verdict ok"><b>${money(-diff)} de más</b>Le pagaron por encima de las ${f1(T.total)} horas registradas. Revise que no falte registrar algo.</div>`;
 }
@@ -507,7 +748,9 @@ function report(){
   });
   s+='\n'+f1(T.w)+' hours worked (30-min lunch deducted where taken)\n'
    +f1(T.t)+' transport hours\n'
-   +f1(T.total)+' total — '+f1(T.reg)+' regular + '+f1(T.ot)+' overtime\n'
+   +f1(T.reg)+' payable at regular rate ('+f1(T.regWork)+' work regular + '+f1(T.t)+' transport)\n'
+   +f1(T.ot)+' overtime (work only, over 40 h/week — transport is never overtime)\n'
+   +f1(T.total)+' total payable hours\n'
    +'\nTimes recorded on site at clock-in and clock-out. Photos of the sign-in sheet available on request.';
   return s;
 }
@@ -521,8 +764,8 @@ function whatsapp(){
       +(Number(r.trans)?' +'+f1(Number(r.trans))+' transp':'')
       +(shots(k).length?' 📷':'')+(r.in&&!r.out?' ⚠️ sin salida':'')+'\n';
   });
-  s+='\nTrabajo '+f1(T.w)+' + transporte '+f1(T.t)+' = *'+f1(T.total)+' h*\n'
-   +f1(T.reg)+' regulares + '+f1(T.ot)+' overtime';
+  s+='\nTrabajo '+f1(T.w)+' + transporte '+f1(T.t)+' = *'+f1(T.total)+' h pagables*\n'
+   +f1(T.reg)+' normales ('+f1(T.regWork)+' trabajo + '+f1(T.t)+' transp) + '+f1(T.ot)+' overtime';
   return s;
 }
 function buildExport(){
@@ -537,12 +780,16 @@ function buildExport(){
         <td>${ph.length?ph.map(shotLabel).join(', '):'—'}</td></tr>`;
   });
   h+=`</table><p style="font-family:monospace;font-size:12px">
-    Trabajo ${f1(T.w)} h · Transporte ${f1(T.t)} h · Total ${f1(T.total)} h
-    (${f1(T.reg)} regulares + ${f1(T.ot)} overtime)</p>`;
+    Trabajo ${f1(T.w)} h · Transporte ${f1(T.t)} h · Total pagable ${f1(T.total)} h<br>
+    ${f1(T.reg)} h normales (${f1(T.regWork)} trabajo + ${f1(T.t)} transporte) · ${f1(T.ot)} h overtime</p>`;
   days.forEach(d=>{
     const k=iso(d), ph=shots(k);
-    ph.forEach(s=>{ h+=`<div class="exday"><p>${fmtD(d)} ${DOW[d.getDay()]} — foto ${shotLabel(s)}</p>
-      <img src="${s.d}"></div>`; });
+    ph.forEach((s,i)=>{
+      const marked=!!(s.mark&&s.mark.confirmed);
+      const src=marked?getMarkedSrcSync(k,i):s.d;
+      h+=`<div class="exday"><p>${fmtD(d)} ${DOW[d.getDay()]} — foto ${shotLabel(s)}${marked?(' · '+(data.name||s.mark.name||'trabajador')+' (nombre marcado)'):''}</p>
+      <img src="${src}"></div>`;
+    });
   });
   v.innerHTML=h;
 }
@@ -578,6 +825,12 @@ document.getElementById('week').addEventListener('click',async e=>{
   const fl=e.target.closest('[data-fill]');
   if(fl){ const r=day(fl.dataset.fill); r.in=data.std.in; r.out=data.std.out;
     if(!Number(r.trans)) r.trans=1; render(); await save(); return; }
+  const cl=e.target.closest('[data-clear]');
+  if(cl){
+    if(!confirm('¿Confirmar que este trabajador no laboró este día?')) return;
+    const r=day(cl.dataset.clear); r.in=''; r.out=''; r.trans=0;
+    render(); await save(); return;
+  }
   const b=e.target.closest('[data-add]'); if(b){pickFor(b.dataset.add,b.dataset.mode);return;}
   if(e.target.tagName==='IMG'&&e.target.dataset.k) openShot(e.target.dataset.k,+e.target.dataset.i);
 });
@@ -586,7 +839,8 @@ document.getElementById('paid').onchange=async e=>{data.paid[weekKey(offset)]=Nu
 document.getElementById('stdIn').onchange=async e=>{data.std.in=e.target.value||'06:30';render();await save();};
 document.getElementById('stdOut').onchange=async e=>{data.std.out=e.target.value||'15:00';render();await save();};
 document.getElementById('fillWeek').onclick=async()=>{
-  const empty=weekDays(offset).filter(d=>{const r=day(iso(d));return !r.in&&!r.out;});
+  const empty=weekDays(offset).filter(d=>d.getDay()>=1&&d.getDay()<=5)
+    .filter(d=>{const r=day(iso(d));return !r.in&&!r.out;});
   if(!empty.length){ alert('No hay días vacíos en esta semana.'); return; }
   if(!confirm('Poner '+ampm(data.std.in)+' → '+ampm(data.std.out)+' en '+empty.length+
     ' día(s) vacío(s)? Ajuste después los que hayan sido distintos.')) return;
@@ -597,7 +851,33 @@ document.getElementById('prevWk').onclick=()=>{offset--;render();};
 document.getElementById('nextWk').onclick=()=>{if(offset<0){offset++;render();}};
 document.getElementById('btnReport').onclick=()=>{const o=document.getElementById('out');o.value=report();o.select();};
 document.getElementById('btnWA').onclick=()=>{const o=document.getElementById('out');o.value=whatsapp();o.select();};
-document.getElementById('btnExport').onclick=()=>{buildExport();setTimeout(()=>window.print(),120);};
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
+document.getElementById('btnExport').onclick=()=>{
+  console.log('PDF export started');
+  try{
+    buildExport();
+    console.log('Export view built');
+    const imgs=Array.from(document.querySelectorAll('#exportView img'));
+    const allReady=imgs.every(img=>img.complete && img.naturalWidth>0);
+    console.log('Images ready:',allReady,'('+imgs.length+' foto(s))');
+    const hint=document.getElementById('exportHint');
+    if(isIOS()){
+      hint.textContent='Se abrió la vista de impresión. Toque el ícono de Compartir (⬆) y elija "Guardar en Archivos" para obtener el PDF.';
+      hint.style.display='block';
+    }else{
+      hint.style.display='none';
+    }
+    console.log('PDF generated');
+    window.print();
+    console.log('PDF opened/downloaded');
+  }catch(err){
+    console.log('PDF export failed:',err);
+    alert('No se pudo generar el PDF: '+(err&&err.message?err.message:err));
+  }
+};
 
 /* ---------- arranque ---------- */
 (async()=>{
