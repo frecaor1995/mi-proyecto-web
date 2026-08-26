@@ -72,3 +72,15 @@ export function qualificationDossiersEnriched(candidates:AggregatedCandidate[]=a
 export function managerVerificationCandidates(rows=qualificationDossiers()):ManagerVerificationCandidate[]{return rows.flatMap(x=>x.managerState!=="AWAITING_MANAGER_VERIFICATION"?[]:[{target:`COMPANY_ROLE:${x.id}:buyer`,opportunityId:x.id,currentState:"UNVERIFIED"as const,proposedDecision:"NEEDS_MORE_EVIDENCE"as const,supportingEvidence:[x.buyerCandidate??""],evidenceIds:x.evidenceIds,sourceUrls:x.sourceUrls,reason:"Candidate is explicit but evidence does not yet establish external manpower authority",ifVerified:"Buyer gate may improve; AF-01 and route gates remain",ifRejected:"Buyer candidate cannot support eligibility"}])}
 export function convergence(x:QualificationDossier){const values={Demand:x.currentDemand?"PRESENT":"MISSING",Project:x.projectStatus==="CONFLICTING"?"CONFLICTING":x.project?"PRESENT":"MISSING",Buyer:x.buyerVerificationStatus,AF01:x.af01VerificationState,ContactRoute:x.routeVerificationState};return{values,present:Object.values(values).filter(v=>v!=="MISSING").length,verified:Object.values(values).filter(v=>v==="VERIFIED").length}}
 export const sourceContribution=(rows=qualificationDossiers())=>[...new Set(rows.flatMap(x=>x.demandSources))].map(key=>({source:key,roles:["DEMAND_CONTRIBUTOR","DISCOVERY_CONTRIBUTOR"],opportunities:rows.filter(x=>x.demandSources.includes(key)).map(x=>x.id)}));
+
+/**
+ * Stage 2N-A addition. Exposes a single real Seed by id so a non-persisted preview
+ * service (decision-preview-service.ts) can run the REAL unmodified graph()/
+ * EligibilityService/ScoringService/CommercialActionService pipeline against a
+ * candidate-enriched seed, without duplicating this file's own seed literals or
+ * fabricating a parallel copy of them. Purely additive read access: returns the
+ * exact same Seed object qualificationDossiers() already builds every dossier from;
+ * nothing is created, mutated, or removed by this export, and nothing calling it can
+ * write back into `seeds`.
+ */
+export function qualificationSeed(id:string):Seed|undefined{return seeds.find(x=>x.id===id)}
