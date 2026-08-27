@@ -37,6 +37,7 @@
     "targeted-evidence:validate": "vitest run src/test/targeted-evidence",
     "targeted-evidence:live": "vitest run src/server/adapters/production/targeted-evidence-closure.live.test.ts --maxWorkers=1 --no-file-parallelism",
     "actionability:validate": "vitest run src/test/opportunity-actionability",
+    "active-lead:validate": "vitest run src/test/active-lead",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },

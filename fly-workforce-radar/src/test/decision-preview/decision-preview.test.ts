@@ -48,7 +48,10 @@ describe("Stage 2N-B: decisionPreview",()=>{
     expect(result.current.eligibility).toEqual({VAMO_ELIGIBLE:false,HOT_A_ELIGIBLE:false,HOT_B_ELIGIBLE:false});
     expect(result.ifVerified.eligibility).toEqual({VAMO_ELIGIBLE:true,HOT_A_ELIGIBLE:false,HOT_B_ELIGIBLE:true});
     expect(result.current.score).toBeNull();
-    expect(result.ifVerified.score).toBe(46);
+    // 48, not 46: Phase 2P fixed contactPeople (previously hardcoded empty on every
+    // Seed-derived graph) to genuinely populate from a verified contact person, so
+    // COMMERCIAL_SPECIFICITY's named-contact +2 can now actually apply.
+    expect(result.ifVerified.score).toBe(48);
     expect(result.changed).toBe(true);
   });
   it("the hypothetical VERIFIED candidate passed in is never mutated or returned VERIFIED back to the caller",()=>{
