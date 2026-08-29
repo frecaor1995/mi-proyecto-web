@@ -172,7 +172,7 @@ describe("Phase 2M: controlled end-to-end positive proof (synthetic candidate ev
   });
   it("this synthetic fixture is never part of the real tracked dossiers",()=>{
     expect(rows().map(x=>x.id)).not.toContain(seed.id);
-    expect(rows()).toHaveLength(4);
+    expect(rows()).toHaveLength(5);
   });
 });
 
@@ -295,17 +295,17 @@ describe("Phase 2M: graph consuming aggregated state -- candidate-only (UNVERIFI
 });
 
 describe("Phase 2M: real-data replay -- adversarial self-check that Port Arthur, Freeport, Trillium Amarillo and Corpus Christi ALL remain ineligible through the real (non-controlled) path",()=>{
-  it("qualificationDossiers() (unmodified default path): all four tracked opportunities remain fully blocked",()=>{
+  it("qualificationDossiers() (unmodified default path): all five tracked opportunities remain fully blocked",()=>{
     expect(rows().every(x=>!x.eligibility.VAMO_ELIGIBLE.eligible&&!x.eligibility.HOT_A_ELIGIBLE.eligible&&!x.eligibility.HOT_B_ELIGIBLE.eligible)).toBe(true);
   });
-  it("qualificationDossiersEnriched() with the REAL aggregatedCandidates(): all four tracked opportunities STILL remain fully blocked -- if any became eligible, that would be a bug in this phase's wiring, not a real discovery",()=>{
+  it("qualificationDossiersEnriched() with the REAL aggregatedCandidates(): all five tracked opportunities STILL remain fully blocked -- if any became eligible, that would be a bug in this phase's wiring, not a real discovery",()=>{
     const enriched=qualificationDossiersEnriched(aggregatedCandidates());
-    expect(enriched).toHaveLength(4);
+    expect(enriched).toHaveLength(5);
     expect(enriched.every(x=>!x.eligibility.VAMO_ELIGIBLE.eligible&&!x.eligibility.HOT_A_ELIGIBLE.eligible&&!x.eligibility.HOT_B_ELIGIBLE.eligible)).toBe(true);
   });
-  it("Port Arthur specifically: real buyer/AF-01/contact-authority candidates exist (three, from evidence-aggregation.test.ts's own count) but none carry a real VERIFIED decision anywhere in this codebase's actual data",()=>{
+  it("Port Arthur specifically: real buyer/AF-01/contact-authority candidates exist (six, from evidence-aggregation.test.ts's own count -- doubled by Phase 2Q's re-verification of the same RFP PDF) but none carry a real VERIFIED decision anywhere in this codebase's actual data",()=>{
     const portArthurCandidates=aggregatedCandidates().filter(c=>c.opportunityId==="qual-beaumont-port-arthur");
-    expect(portArthurCandidates).toHaveLength(3);
+    expect(portArthurCandidates).toHaveLength(6);
     expect(portArthurCandidates.every(c=>c.verificationState==="UNVERIFIED")).toBe(true);
     expect(by("qual-beaumont-port-arthur").eligibility.HOT_A_ELIGIBLE.eligible).toBe(false);
   });
@@ -315,10 +315,12 @@ describe("Phase 2M: real-data replay -- adversarial self-check that Port Arthur,
     expect(by("qual-freeport").eligibility.HOT_A_ELIGIBLE.eligible).toBe(false);
     expect(by("qual-freeport").eligibility.HOT_A_ELIGIBLE.blockers).toContain("MATERIAL_CONFLICT_PRESENT");
   });
-  it("Trillium Amarillo specifically: real recruiter contact-authority evidence exists but is not linked to any tracked opportunity, so it cannot affect any tracked dossier's eligibility at all",()=>{
-    const amarillo=aggregatedCandidates().find(c=>c.market==="Texas Panhandle")!;
-    expect(amarillo.opportunityId).toBeNull();
-    expect(rows().map(x=>x.market)).not.toContain("Texas Panhandle");
+  it("Trillium Amarillo specifically (Phase 2Q): real recruiter contact-authority evidence now IS linked to the real tracked qual-amarillo opportunity, yet still cannot clear eligibility -- no route grade exists, and Trillium's own posting is not treated as verified manpower acceptance for an unnamed end client",()=>{
+    const amarillo=aggregatedCandidates().find(c=>c.market==="Texas Panhandle"&&c.type==="CONTACT_AUTHORITY")!;
+    expect(amarillo.opportunityId).toBe("qual-amarillo");
+    expect(rows().map(x=>x.market)).toContain("Texas Panhandle");
+    expect(by("qual-amarillo").eligibility.HOT_A_ELIGIBLE.eligible).toBe(false);
+    expect(by("qual-amarillo").eligibility.HOT_B_ELIGIBLE.eligible).toBe(false);
   });
   it("Corpus Christi specifically: the real cross-entity conflict candidate exists, unverified, and HOT_A_ELIGIBLE is still blocked by MATERIAL_CONFLICT_PRESENT",()=>{
     const corpusCandidates=aggregatedCandidates().filter(c=>c.opportunityId==="qual-corpus");
@@ -341,15 +343,15 @@ describe("Phase 2M: TECH-DEBT-04 classification",()=>{
     expect(seedWithAggregatedEvidence).toBeTypeOf("function");
     expect(qualificationDossiersEnriched).toBeTypeOf("function");
   });
-  it("qualificationDossiers()'s default, backward-compatible behavior is unchanged: still exactly four dossiers, still the same four markets in the same order, still zero eligible results -- proven by the fact all prior-phase tests (658 as of Phase 2L) still pass unmodified against this file",()=>{
-    expect(rows()).toHaveLength(4);
-    expect(rows().map(x=>x.market)).toEqual(["Freeport","Beaumont / Port Arthur","Permian Basin","Corpus Christi"]);
+  it("qualificationDossiers()'s default behavior is unchanged for the original four opportunities and additive for the Phase 2Q-authorized fifth: five dossiers, five markets in seed-array order, still zero eligible results",()=>{
+    expect(rows()).toHaveLength(5);
+    expect(rows().map(x=>x.market)).toEqual(["Freeport","Beaumont / Port Arthur","Permian Basin","Corpus Christi","Texas Panhandle"]);
   });
   it("resolution is genuinely one-directional: opportunity-qualification-service.ts imports evidence-aggregation-service.ts, which never imports back",()=>{
     // Functional corroboration of src/test/evidence-aggregation/evidence-aggregation.test.ts's
     // static source-text acyclicity checks: both modules load and interoperate correctly here.
     expect(aggregatedCandidates().length).toBeGreaterThan(0);
-    expect(qualificationDossiersEnriched().length).toBe(4);
+    expect(qualificationDossiersEnriched().length).toBe(5);
   });
 });
 

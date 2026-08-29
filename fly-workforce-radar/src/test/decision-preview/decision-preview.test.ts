@@ -58,12 +58,17 @@ describe("Stage 2N-B: decisionPreview",()=>{
     decisionPreview(syntheticVerifiedRecruiterContact);
     expect(syntheticVerifiedRecruiterContact.verificationState).toBe("UNVERIFIED");
   });
-  it("real data adversarial self-check: verifying any real production candidate never changes the projected outcome, because a real unresolved conflict or missing evidence still blocks every path",()=>{
-    const results=aggregatedCandidates()
-      .filter((c):c is AggregatedCandidate&{opportunityId:string}=>c.opportunityId!==null)
-      .map(c=>decisionPreview(c)!);
+  it("real data adversarial self-check: verifying almost any real production candidate never changes the projected outcome, because a real unresolved conflict or missing evidence still blocks every path. The sole real exception (Phase 2Q): verifying either of Trillium Amarillo's two real AF-01 candidates DOES change the underlying recommendation from VERIFY_MANPOWER_ACCEPTANCE to VERIFY_CONTACT -- a real, honest finding (qual-amarillo has no conflict, so once acceptance clears, the next real blocker becomes visible), not a fabricated eligibility promotion: eligibility itself stays fully blocked either way",()=>{
+    const withOpportunity=aggregatedCandidates().filter((c):c is AggregatedCandidate&{opportunityId:string}=>c.opportunityId!==null);
+    const results=withOpportunity.map(c=>({c,r:decisionPreview(c)!}));
     expect(results.length).toBeGreaterThan(0);
-    expect(results.every(r=>r.changed===false)).toBe(true);
+    const changed=results.filter(({r})=>r.changed);
+    expect(changed).toHaveLength(2);
+    expect(changed.every(({c})=>c.type==="AF01_CANDIDATE"&&c.opportunityId==="qual-amarillo")).toBe(true);
+    expect(changed.every(({r})=>r.current.action==="VERIFY_MANPOWER_ACCEPTANCE"&&r.ifVerified.action==="VERIFY_CONTACT")).toBe(true);
+    expect(changed.every(({r})=>Object.values(r.ifVerified.eligibility).every(e=>!e))).toBe(true);
+    const unchanged=results.filter(({r})=>!r.changed);
+    expect(unchanged.every(({r})=>r.changed===false)).toBe(true);
   });
   it("every real candidate resolves to a real tracked Seed",()=>{
     const ids=new Set(qualificationDossiers().map(d=>d.id));

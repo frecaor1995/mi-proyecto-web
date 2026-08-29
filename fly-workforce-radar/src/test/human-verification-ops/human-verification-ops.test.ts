@@ -45,8 +45,10 @@ describe("Phase 2M: deterministic human-review queue",()=>{
     const priorities=queue().map(x=>x.priority);
     expect(priorities).toEqual([...priorities].sort((a,b)=>a-b));
   });
-  it("real data adversarial self-check: no real queue item unlocks HOT-A, VAMO or HOT-B -- if any did, that would be a bug in this phase's wiring, not a real discovery",()=>{
-    expect(queue().filter(x=>x.wouldUnlockGate!==null)).toHaveLength(0);
+  it("real data adversarial self-check: exactly one real queue item unlocks a gate -- Phase 2Q's Trillium Amarillo contact-authority candidate, per this heuristic's own (grade-blind) logic. This is a real, honest finding, not a bug: wouldUnlock() only checks whether verifying the candidate's TYPE would satisfy the remaining blocker code, it does not model that a CONTACT_AUTHORITY verification must also carry a human-assigned grade to actually take effect -- decisionPreview() (the real pipeline) confirms a grade-less verification of this exact candidate changes nothing",()=>{
+    const unlocking=queue().filter(x=>x.wouldUnlockGate!==null);
+    expect(unlocking).toHaveLength(1);
+    expect(unlocking[0]).toMatchObject({opportunityId:"qual-amarillo",targetType:"CONTACT_AUTHORITY",wouldUnlockGate:"HOT_B_ELIGIBLE"});
   });
   it("every queue item traces back to a real aggregated candidate",()=>{
     const ids=new Set(aggregatedCandidates().map(c=>c.id));
@@ -59,10 +61,11 @@ describe("Phase 2M: deterministic human-review queue",()=>{
     expect(buyerIdx).toBeGreaterThanOrEqual(0);
     expect(conflictIdx).toBeLessThan(buyerIdx);
   });
-  it("buyer candidates rank ahead of AF-01 candidates, which rank ahead of contact-authority candidates, per the specified priority order",()=>{
-    const buyerP=queue().find(x=>x.targetType==="BUYER_CANDIDATE")!.priority;
-    const af01P=queue().find(x=>x.targetType==="AF01_CANDIDATE")!.priority;
-    const contactP=queue().find(x=>x.targetType==="CONTACT_AUTHORITY")!.priority;
+  it("among candidates that do not unlock a gate, buyer candidates rank ahead of AF-01 candidates, which rank ahead of contact-authority candidates, per the specified priority order (Phase 2Q's Amarillo contact-authority candidate is the sole exception -- it DOES unlock a gate per this heuristic, so it correctly ranks ahead of everything, per the gate-unlock priority rule tested separately above)",()=>{
+    const nonUnlocking=queue().filter(x=>x.wouldUnlockGate===null);
+    const buyerP=nonUnlocking.find(x=>x.targetType==="BUYER_CANDIDATE")!.priority;
+    const af01P=nonUnlocking.find(x=>x.targetType==="AF01_CANDIDATE")!.priority;
+    const contactP=nonUnlocking.find(x=>x.targetType==="CONTACT_AUTHORITY")!.priority;
     expect(buyerP).toBeLessThan(af01P);
     expect(af01P).toBeLessThan(contactP);
   });
@@ -150,11 +153,11 @@ describe("Phase 2M: phase2mSummary",()=>{
   it("reports zero real HOT/VAMO/scoring/commercial-action results, matching every prior phase's honest finding",()=>{
     expect(summary).toMatchObject({vamo:0,hotA:0,hotB:0,scored:0,commercialActions:0});
   });
-  it("reports the real candidate counts grounded in actual FACTS data",()=>{
-    expect(summary).toMatchObject({buyerCandidates:2,af01Candidates:1,contactAuthorityCandidates:3,companyProjectConflicts:1});
+  it("reports the real candidate counts grounded in actual FACTS data (Phase 2Q added Trillium Amarillo -- 2 buyer, 2 AF-01, merged into 1 contact-authority candidate -- and Port Arthur's re-verification -- 1 buyer, 1 AF-01, 1 additional distinct contact-authority candidate)",()=>{
+    expect(summary).toMatchObject({buyerCandidates:5,af01Candidates:4,contactAuthorityCandidates:4,companyProjectConflicts:1});
   });
-  it("reports zero real queue items that unlock any gate",()=>{
-    expect(summary).toMatchObject({queueUnlocksHotA:0,queueUnlocksVamo:0,queueUnlocksHotB:0});
+  it("reports exactly one real queue item that unlocks a gate: Phase 2Q's Trillium Amarillo contact-authority candidate unlocks HOT_B_ELIGIBLE per this heuristic (see the queue-level test above for why that is honest, not a bug, and why it does not mean the real pipeline promotes anything without a human-assigned grade)",()=>{
+    expect(summary).toMatchObject({queueUnlocksHotA:0,queueUnlocksVamo:0,queueUnlocksHotB:1});
   });
   it("executes no outreach and implements no Contract Economics",()=>{
     expect(summary).toMatchObject({outreachExecuted:false,contractEconomicsImplemented:false});

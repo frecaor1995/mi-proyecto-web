@@ -60,7 +60,7 @@ export function activeHotLeadsForOpportunity(opportunityId:string,actionabilityI
   return activeHotLeadsForGraph(graph(seed),actionabilityInput,asOf);
 }
 
-const TRACKED_OPPORTUNITY_IDS=["qual-freeport","qual-beaumont-port-arthur","qual-permian","qual-corpus"]as const;
+const TRACKED_OPPORTUNITY_IDS=["qual-freeport","qual-beaumont-port-arthur","qual-permian","qual-corpus","qual-amarillo"]as const;
 
 export interface ActiveHotLeadMetrics{
   asOf:Date;

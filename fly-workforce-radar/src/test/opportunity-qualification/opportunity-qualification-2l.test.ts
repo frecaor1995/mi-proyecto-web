@@ -163,11 +163,11 @@ describe("Phase 2L real opportunity replay guardrails -- corrected wiring must n
     expect(dossier.eligibility.VAMO_ELIGIBLE.eligible).toBe(false);
     expect(dossier.eligibility.HOT_A_ELIGIBLE.eligible).toBe(false);
   });
-  it("Trillium Amarillo does not correlate to any tracked qualification dossier",()=>{
+  it("Phase 2Q: Trillium Amarillo now correlates to a real tracked qualification dossier (manager-authorized, real primary evidence -- see the opportunity-qualification-service.ts Seed and its own doc comment)",()=>{
     const amarillo=FACTS_2J.filter(f=>f.sourceKey.startsWith("trillium-amarillo"));
     expect(amarillo.length).toBeGreaterThan(0);
-    expect(amarillo.every(f=>f.opportunityId===null)).toBe(true);
-    expect(rows().map(x=>x.market)).not.toContain("Texas Panhandle");
+    expect(amarillo.every(f=>f.opportunityId==="qual-amarillo")).toBe(true);
+    expect(rows().map(x=>x.market)).toContain("Texas Panhandle");
   });
   it("Trillium Amarillo's real recruiter contact, replayed through the corrected graph, still does not clear eligibility (no route grade exists)",()=>{
     const amarilloLikeSeed=baseSeed({
@@ -229,7 +229,7 @@ describe("Phase 2L controlled positive proof -- corrected wiring lets genuine VE
   });
   it("this fixture is never part of the real tracked dossiers",()=>{
     expect(rows().map(x=>x.id)).not.toContain(verifiedFixture.id);
-    expect(rows()).toHaveLength(4);
+    expect(rows()).toHaveLength(5);
   });
 });
 
@@ -317,9 +317,9 @@ describe("Phase 2L boundary and consistency checks",()=>{
   it("no Phase 2M scoring or outreach capability has leaked into the qualification layer",()=>{
     expect(JSON.stringify(rows())).not.toMatch(/CALL_TODAY|EMAIL_TODAY|automatic.?outreach|phase2m/i);
   });
-  it("all 620+ prior-phase behaviors are untouched: four dossiers, four markets, no fabricated eligibility",()=>{
-    expect(rows()).toHaveLength(4);
-    expect(rows().map(x=>x.market)).toEqual(["Freeport","Beaumont / Port Arthur","Permian Basin","Corpus Christi"]);
+  it("all prior-phase behaviors are untouched except the manager-authorized Phase 2Q addition: five dossiers, five markets, no fabricated eligibility",()=>{
+    expect(rows()).toHaveLength(5);
+    expect(rows().map(x=>x.market)).toEqual(["Freeport","Beaumont / Port Arthur","Permian Basin","Corpus Christi","Texas Panhandle"]);
     expect(rows().every(x=>Object.values(x.eligibility).every(e=>!e.eligible))).toBe(true);
   });
 });

@@ -1,7 +1,7 @@
 import type{ContactRouteType}from"../../../domain/contact";
 import type{AggregatedCandidate}from"../../../domain/evidence-aggregation";
 import type{EvidenceFact}from"../../../domain/targeted-evidence-closure";
-import{FACTS,TARGETED_SOURCES,FACTS_2I,TARGETED_SOURCES_2I,FACTS_2J,TARGETED_SOURCES_2J}from"../targeted-evidence/targeted-evidence-facts";
+import{FACTS,TARGETED_SOURCES,FACTS_2I,TARGETED_SOURCES_2I,FACTS_2J,TARGETED_SOURCES_2J,FACTS_2Q,TARGETED_SOURCES_2Q}from"../targeted-evidence/targeted-evidence-facts";
 import{REAL_CONVERSION_SET}from"../hot-conversion/hot-conversion-service";
 
 /**
@@ -42,18 +42,19 @@ export const RETIRED_SOURCE_KEYS=new Set(["trillium-midland-794201","nes-houston
 // GENERIC_CONTACT_ROUTES convention so a placeholder never masquerades as a real lead.
 const GENERIC_CONTACT_ROUTES=new Set(["Public assignment page"]);
 
-// The only four tracked qualification dossiers this codebase carries (Phase 2G/2L).
-// This mirrors the literal opportunityId strings the FACTS ledgers themselves already
-// use (e.g. FACTS[0].opportunityId==="qual-beaumont-port-arthur") -- it is data, not an
-// import of opportunity-qualification-service.ts.
+// The five tracked qualification dossiers this codebase carries (Phase 2G/2L; Texas
+// Panhandle added Phase 2Q). This mirrors the literal opportunityId strings the FACTS
+// ledgers themselves already use (e.g. FACTS[0].opportunityId==="qual-beaumont-port-
+// arthur") -- it is data, not an import of opportunity-qualification-service.ts.
 export const MARKET_TO_TRACKED_OPPORTUNITY:Record<string,string>={
   "Freeport":"qual-freeport",
   "Beaumont / Port Arthur":"qual-beaumont-port-arthur",
   "Permian Basin":"qual-permian",
   "Corpus Christi":"qual-corpus",
+  "Texas Panhandle":"qual-amarillo",
 };
 
-const ALL_TARGETED_SOURCES=[...TARGETED_SOURCES,...TARGETED_SOURCES_2I,...TARGETED_SOURCES_2J];
+const ALL_TARGETED_SOURCES=[...TARGETED_SOURCES,...TARGETED_SOURCES_2I,...TARGETED_SOURCES_2J,...TARGETED_SOURCES_2Q];
 const sourceDecision=(key:string)=>ALL_TARGETED_SOURCES.find(s=>s.key===key)?.decision??null;
 const reviewStateForSource=(sourceKey:string):"READY_FOR_HUMAN_REVIEW"|"NEEDS_MORE_EVIDENCE"=>sourceDecision(sourceKey)==="ACTIVATE"?"READY_FOR_HUMAN_REVIEW":"NEEDS_MORE_EVIDENCE";
 
@@ -182,7 +183,7 @@ function conflictCandidates():AggregatedCandidate[]{
  * not a bug; the logic itself is exercised with a synthetic future `asOf` in tests. */
 function staleCandidates(asOf:Date):AggregatedCandidate[]{
   const out:AggregatedCandidate[]=[];
-  for(const f of[...FACTS,...FACTS_2I,...FACTS_2J]){
+  for(const f of[...FACTS,...FACTS_2I,...FACTS_2J,...FACTS_2Q]){
     if(RETIRED_SOURCE_KEYS.has(f.sourceKey)||f.freshUntil>asOf)continue;
     const contextId=f.opportunityId??`context:${slug(f.market,f.sourceKey)}`;
     out.push({
@@ -221,6 +222,7 @@ export function aggregatedCandidates(asOf:Date=DEFAULT_AT):AggregatedCandidate[]
     ...FACTS.flatMap(f=>candidatesFromFact(f,"targeted-evidence-facts:2H")),
     ...FACTS_2I.flatMap(f=>candidatesFromFact(f,"targeted-evidence-facts:2I")),
     ...FACTS_2J.flatMap(f=>candidatesFromFact(f,"targeted-evidence-facts:2J")),
+    ...FACTS_2Q.flatMap(f=>candidatesFromFact(f,"targeted-evidence-facts:2Q")),
   ];
   return[...dedupeContacts(factCandidates),...conflictCandidates(),...staleCandidates(asOf)];
 }

@@ -77,15 +77,15 @@ describe("Phase 2P: controlled negative proofs -- eligible does not by itself me
 });
 
 describe("Phase 2P: real production data replay",()=>{
-  it("every real tracked opportunity: eligible=false, active=false, no fabricated Active HOT",()=>{
-    for(const id of["qual-freeport","qual-beaumont-port-arthur","qual-permian","qual-corpus"]){
+  it("every real tracked opportunity (five, since Phase 2Q added Trillium Amarillo): eligible=false, active=false, no fabricated Active HOT",()=>{
+    for(const id of["qual-freeport","qual-beaumont-port-arthur","qual-permian","qual-corpus","qual-amarillo"]){
       const leads=activeHotLeadsForOpportunity(id)!;
       expect(leads.every(l=>!l.eligible)).toBe(true);
       expect(leads.every(l=>!l.active)).toBe(true);
     }
   });
-  it("activeHotLeadsForOpportunity returns undefined for an untracked opportunity (e.g. Trillium Amarillo, which has no tracked Seed)",()=>{
-    expect(activeHotLeadsForOpportunity("qual-amarillo")).toBeUndefined();
+  it("activeHotLeadsForOpportunity returns undefined for a genuinely untracked opportunity id",()=>{
+    expect(activeHotLeadsForOpportunity("qual-does-not-exist")).toBeUndefined();
   });
 });
 
@@ -98,11 +98,11 @@ describe("Phase 2P: real Active HOT metrics -- honest current baseline",()=>{
     expect(m.activeHotB).toBe(0);
     expect(m.technicallyEligibleButInactive).toBe(0);
   });
-  it("blockedByConflict counts the three real conflicted opportunities across both HOT types (6); blockedByAcceptance and blockedByRoute count all four real opportunities' HOT-A lead only, since MANPOWER_ACCEPTANCE_REQUIRED and ACTIONABLE_CONTACT_REQUIRED are not HOT-B requirements (4 each)",()=>{
+  it("blockedByConflict counts the three real conflicted opportunities across both HOT types (6); blockedByAcceptance and blockedByRoute count all five real opportunities' HOT-A lead only (Texas Panhandle added Phase 2Q), since MANPOWER_ACCEPTANCE_REQUIRED and ACTIONABLE_CONTACT_REQUIRED are not HOT-B requirements (5 each)",()=>{
     const m=activeHotLeadMetrics(asOf);
     expect(m.blockedByConflict).toBe(6);
-    expect(m.blockedByAcceptance).toBe(4);
-    expect(m.blockedByRoute).toBe(4);
+    expect(m.blockedByAcceptance).toBe(5);
+    expect(m.blockedByRoute).toBe(5);
   });
   it("repeated computation never mutates real production dossiers or candidates",()=>{
     const dossiersBefore=JSON.stringify(qualificationDossiers());

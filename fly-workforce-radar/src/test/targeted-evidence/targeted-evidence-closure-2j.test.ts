@@ -61,9 +61,10 @@ it("leaves Phase 2I's zero-activation evaluated sources untouched",()=>expect(TA
 
 describe("Phase 2J opportunity enrichment without fuzzy merge",()=>{
 it("attaches the two Strike Midland facts to the existing Permian Basin opportunity by direct market/company match, not by automatic correlate()",()=>expect(FACTS_2J.filter(f=>f.sourceKey.startsWith("strike-midland")).every(f=>f.opportunityId==="qual-permian")).toBe(true));
-it("leaves Houston/Baytown Strike facts and both Trillium Amarillo facts unattached: no fuzzy merge onto a dossier whose market does not match",()=>expect(FACTS_2J.filter(f=>f.sourceKey==="strike-houston-journeyman-electrician"||f.sourceKey==="strike-baytown-journeyman-electrician"||f.sourceKey.startsWith("trillium-amarillo")).every(f=>f.opportunityId===null)).toBe(true));
-it("touches exactly one tracked opportunity (qual-permian) this phase",()=>expect(summary.opportunitiesTouched).toBe(1));
-it("generates no review package this phase: Strike facts carry an opportunityId but no buyer/AF-01 candidate, and Trillium Amarillo facts carry candidates but no matching tracked opportunityId (honest, not an omission)",()=>expect(reviewPackages2j()).toHaveLength(0));
+it("leaves Houston/Baytown Strike facts unattached: no fuzzy merge onto a dossier whose market does not match",()=>expect(FACTS_2J.filter(f=>f.sourceKey==="strike-houston-journeyman-electrician"||f.sourceKey==="strike-baytown-journeyman-electrician").every(f=>f.opportunityId===null)).toBe(true));
+it("Phase 2Q: both Trillium Amarillo facts are now attached to the real qual-amarillo tracked opportunity, added Phase 2Q by explicit manager authorization -- this is a real, non-fuzzy match (same employer, same market, same evidence this file already captured; not a geography-only inference)",()=>expect(FACTS_2J.filter(f=>f.sourceKey.startsWith("trillium-amarillo")).every(f=>f.opportunityId==="qual-amarillo")).toBe(true));
+it("touches exactly two tracked opportunities this phase: qual-permian (Strike) and qual-amarillo (Trillium, Phase 2Q)",()=>expect(summary.opportunitiesTouched).toBe(2));
+it("generates review packages for Trillium's buyer candidate now that it carries a matching tracked opportunityId; still none for Strike, which carries an opportunityId but no buyer/AF-01 candidate",()=>{expect(reviewPackages2j()).toHaveLength(2);expect(reviewPackages2j().every(p=>p.opportunityId==="qual-amarillo")).toBe(true)});
 it("fabricates no VERIFY decision anywhere in Phase 2J review packages",()=>expect(reviewPackages2j().every(p=>(p.proposedDecision as string)!=="VERIFY")).toBe(true));
 });
 

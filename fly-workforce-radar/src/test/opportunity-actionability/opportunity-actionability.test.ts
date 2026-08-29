@@ -142,16 +142,24 @@ describe("gatedCommercialActionForGraph: the gate never rewrites the underlying 
 });
 
 describe("real production data: Port of Port Arthur RFP 2026-01 (qual-beaumont-port-arthur)",()=>{
-  it("the real captured evidence contains no extracted deadline and no explicit status -- REAL_ACTIONABILITY_EVIDENCE for it is genuinely empty, not a placeholder",()=>{
+  it("Phase 2Q: a scoped re-verification of the same already-approved RFP PDF surfaced a real, explicit submission deadline (4/22/26 2:00 PM) that Phase 2H's original capture did not extract -- REAL_ACTIONABILITY_EVIDENCE now carries it",()=>{
     const input=REAL_ACTIONABILITY_EVIDENCE["qual-beaumont-port-arthur"];
     expect(input.explicitStatus).toBeNull();
-    expect(input.deadlines).toEqual([]);
+    expect(input.deadlines).toHaveLength(1);
+    expect(input.deadlines[0].date).toEqual(new Date("2026-04-22T19:00:00Z"));
+    expect(input.deadlines[0].evidenceIds).toEqual(["evidence:port-arthur-rfp-2026-01-2q-reverify"]);
   });
-  it("actionability honestly evaluates to UNKNOWN given the real evidence -- this is a finding, not an assumption of openness",()=>{
+  it("historical asOf correctness: evaluated at this file's default asOf (2026-08-23), BEFORE the Phase 2Q re-verification was even observed (2026-08-27), the deadline evidence is correctly invisible and actionability is still UNKNOWN -- later evidence does not rewrite the past",()=>{
     const r=gatedCommercialActionForOpportunity("qual-beaumont-port-arthur");
     expect(r?.actionability.state).toBe("UNKNOWN");
   });
-  it("today's real underlying commercial action for Port Arthur is RESOLVE_CONFLICT (an internal action, driven by the unresolved ExxonMobil/Port-of-Port-Arthur identity conflict) -- the actionability gate has no effect on it either way, since it was never going to surface as an active external recommendation",()=>{
+  it("evaluated at or after the Phase 2Q observation date, actionability honestly flips to EXPIRED given the real deadline evidence -- this is a finding from real re-verification, not an assumption",()=>{
+    const todayOrLater=new Date("2026-08-27T12:00:00Z");
+    const r=gatedCommercialActionForOpportunity("qual-beaumont-port-arthur",REAL_ACTIONABILITY_EVIDENCE["qual-beaumont-port-arthur"],todayOrLater);
+    expect(r?.actionability.state).toBe("EXPIRED");
+    expect(r?.actionability.governingDeadline?.date).toEqual(new Date("2026-04-22T19:00:00Z"));
+  });
+  it("today's real underlying commercial action for Port Arthur is STILL RESOLVE_CONFLICT (an internal action, driven by the unresolved ExxonMobil/Port-of-Port-Arthur identity conflict, which is checked before actionability) -- the new EXPIRED finding changes the temporal classification but not the recommendation, since it was never going to surface as an active external one anyway",()=>{
     const r=gatedCommercialActionForOpportunity("qual-beaumont-port-arthur");
     expect(r?.underlyingAction).toBe("RESOLVE_CONFLICT");
     expect(r?.gate).toBe("NOT_ACTIVE_EXTERNAL");
@@ -168,13 +176,19 @@ describe("real production data: Port of Port Arthur RFP 2026-01 (qual-beaumont-p
   });
 });
 
-describe("real production data: Trillium Amarillo (no tracked Seed -- opportunityId is null on both real facts)",()=>{
-  it("gatedCommercialActionForOpportunity returns undefined for an opportunityId with no real Seed",()=>{
-    expect(gatedCommercialActionForOpportunity("qual-amarillo")).toBeUndefined();
+describe("real production data: Trillium Amarillo (Phase 2Q: now a real tracked opportunity, qual-amarillo)",()=>{
+  it("gatedCommercialActionForOpportunity returns a real result now that qual-amarillo is tracked",()=>{
+    expect(gatedCommercialActionForOpportunity("qual-amarillo")).toBeDefined();
   });
-  it("evaluated directly, real Trillium Amarillo evidence (no posting-status field, no deadline field in EvidenceFact) yields UNKNOWN -- uncertain posting currentness is reported honestly rather than fabricated as open",()=>{
+  it("gatedCommercialActionForOpportunity still returns undefined for a genuinely untracked opportunity id",()=>{
+    expect(gatedCommercialActionForOpportunity("qual-does-not-exist")).toBeUndefined();
+  });
+  it("evaluated directly, real Trillium Amarillo evidence (no posting-status field, no deadline field in EvidenceFact, and a live re-check today confirms both postings are current but states no explicit OPEN/closed status) yields UNKNOWN -- uncertain posting currentness is reported honestly rather than fabricated as open",()=>{
     const r=assessActionability(NO_ACTIONABILITY_EVIDENCE("trillium-amarillo-journeyman-791374"),asOf);
     expect(r.state).toBe("UNKNOWN");
+  });
+  it("qual-amarillo's real actionability is UNKNOWN, matching the direct-evidence check above",()=>{
+    expect(gatedCommercialActionForOpportunity("qual-amarillo")?.actionability.state).toBe("UNKNOWN");
   });
 });
 
@@ -196,9 +210,9 @@ describe("real production data: Strike Midland (qual-permian) -- demand-only adv
 });
 
 describe("metrics separation across every real tracked opportunity",()=>{
-  it("radarActionabilityMetrics reports the honest current baseline: all four tracked opportunities are UNKNOWN actionability, and zero are counted as active HOT leads (none are currently eligible for anything anyway)",()=>{
+  it("radarActionabilityMetrics reports the honest current baseline at this file's historical asOf (2026-08-23, before the Phase 2Q Port Arthur re-verification was observed): all five tracked opportunities are UNKNOWN actionability, and zero are counted as active HOT leads (none are currently eligible for anything anyway)",()=>{
     const m=radarActionabilityMetrics(asOf);
-    expect(m.byState).toEqual({UNKNOWN:4});
+    expect(m.byState).toEqual({UNKNOWN:5});
     expect(m.activeHotA).toBe(0);
     expect(m.activeHotB).toBe(0);
     expect(m.technicallyEligibleButInactive).toBe(0);
@@ -219,6 +233,6 @@ describe("metrics separation across every real tracked opportunity",()=>{
 describe("no policy drift",()=>{
   it("every real tracked opportunity still resolves through the real, unmodified qualificationDossiers() pipeline (eligibility/scoring rules untouched by this phase)",()=>{
     const ids=qualificationDossiers().map(d=>d.id).sort();
-    expect(ids).toEqual(["qual-beaumont-port-arthur","qual-corpus","qual-freeport","qual-permian"]);
+    expect(ids).toEqual(["qual-amarillo","qual-beaumont-port-arthur","qual-corpus","qual-freeport","qual-permian"]);
   });
 });

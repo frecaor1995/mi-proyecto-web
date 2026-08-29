@@ -2,7 +2,7 @@ import{readFileSync}from"node:fs";
 import{fileURLToPath}from"node:url";
 import{describe,expect,it}from"vitest";
 import{CONTROLLED_TEST_REVIEWER_ID}from"../../domain/evidence-aggregation";
-import{FACTS,FACTS_2I,FACTS_2J,TARGETED_SOURCES_2I}from"../../server/services/targeted-evidence/targeted-evidence-facts";
+import{FACTS,FACTS_2I,FACTS_2J,FACTS_2Q,TARGETED_SOURCES_2I}from"../../server/services/targeted-evidence/targeted-evidence-facts";
 import{REAL_CONVERSION_SET}from"../../server/services/hot-conversion/hot-conversion-service";
 import{DEFAULT_AT,MARKET_TO_TRACKED_OPPORTUNITY,RETIRED_SOURCE_KEYS,aggregatedCandidates,aggregatedCandidatesFor}from"../../server/services/evidence-aggregation/evidence-aggregation-service";
 import{qualificationDossiers}from"../../server/services/opportunity-qualification/opportunity-qualification-service";
@@ -40,7 +40,7 @@ describe("Phase 2M: acyclic dependency direction (TECH-DEBT-04)",()=>{
     expect(qualificationDossiers).toBeTypeOf("function");
     const c=aggregatedCandidates(),d=qualificationDossiers();
     expect(c.length).toBeGreaterThan(0);
-    expect(d).toHaveLength(4);
+    expect(d).toHaveLength(5);
     expect(c.every(x=>x!==undefined&&typeof x.id==="string")).toBe(true);
     expect(d.every(x=>x!==undefined&&typeof x.id==="string")).toBe(true);
   });
@@ -77,18 +77,18 @@ describe("Phase 2M: neutral aggregation contract",()=>{
 });
 
 describe("Phase 2M: buyer/AF-01/contact/conflict candidate aggregation grounded in real FACTS",()=>{
-  it("Port Arthur: exactly three candidates from the same evidence fact -- buyer, AF-01, and contact-authority for Rebecca Underhill",()=>{
+  it("Port Arthur: six candidates from two evidence facts (Phase 2H's original capture + Phase 2Q's re-verification of the same RFP PDF) -- two buyer, two AF-01 (same value, two provenance trails), and two DISTINCT contact-authority candidates, because Phase 2Q's live re-fetch named a different RFP coordinator than Phase 2H captured",()=>{
     const rows=byOpportunity("qual-beaumont-port-arthur");
-    expect(rows).toHaveLength(3);
-    expect(rows.map(r=>r.type).sort()).toEqual(["AF01_CANDIDATE","BUYER_CANDIDATE","CONTACT_AUTHORITY"]);
-    expect(rows.find(r=>r.type==="BUYER_CANDIDATE")?.value).toBe("Port of Port Arthur");
-    expect(rows.find(r=>r.type==="AF01_CANDIDATE")?.value).toMatch(/TEMPORARY PERSONNEL/);
-    expect(rows.find(r=>r.type==="CONTACT_AUTHORITY")?.value).toMatch(/Rebecca Underhill/);
+    expect(rows).toHaveLength(6);
+    expect(rows.map(r=>r.type).sort()).toEqual(["AF01_CANDIDATE","AF01_CANDIDATE","BUYER_CANDIDATE","BUYER_CANDIDATE","CONTACT_AUTHORITY","CONTACT_AUTHORITY"]);
+    expect(rows.filter(r=>r.type==="BUYER_CANDIDATE").every(r=>r.value==="Port of Port Arthur")).toBe(true);
+    expect(rows.filter(r=>r.type==="AF01_CANDIDATE").every(r=>r.value?.match(/TEMPORARY PERSONNEL/))).toBe(true);
+    expect(rows.filter(r=>r.type==="CONTACT_AUTHORITY").map(r=>r.value).sort()).toEqual(["Kaylynn Rizzotto, Director of Accounting","Rebecca Underhill, Director of Accounting"]);
     expect(rows.every(r=>r.reviewState==="READY_FOR_HUMAN_REVIEW")).toBe(true);
   });
-  it("Port Arthur's three targets are independently addressable (a VERIFY on one must not auto-verify the others -- proven structurally: three distinct ids)",()=>{
+  it("Port Arthur's six targets are independently addressable (a VERIFY on one must not auto-verify the others -- proven structurally: six distinct ids)",()=>{
     const ids=new Set(byOpportunity("qual-beaumont-port-arthur").map(r=>r.id));
-    expect(ids.size).toBe(3);
+    expect(ids.size).toBe(6);
   });
   it("Freeport: a buyer and a contact candidate exist, but no AF-01 candidate -- preserving the genuinely insufficient AF-01 evidence Phase 2H/2L both found, not manufacturing convergence",()=>{
     const rows=byOpportunity("qual-freeport");
@@ -100,22 +100,24 @@ describe("Phase 2M: buyer/AF-01/contact/conflict candidate aggregation grounded 
     expect(byOpportunity("qual-freeport").every(r=>r.reviewState==="NEEDS_MORE_EVIDENCE")).toBe(true);
     expect(TARGETED_SOURCES_2I.find(s=>s.key==="port-freeport-epa-electrical-rfq-2025")?.decision).toBe("UNDER_REVIEW");
   });
-  it("Trillium Amarillo: a real, standalone contact-authority candidate for recruiter Roberto Venegas exists, merged from both live postings, with NO opportunityId and explicitly no buyer/AF-01/grade inference",()=>{
-    const rows=candidates().filter(c=>c.market==="Texas Panhandle");
+  it("Phase 2Q: Trillium Amarillo is now a tracked opportunity (qual-amarillo, manager-authorized). Its real, standalone contact-authority candidate for recruiter Roberto Venegas is merged from both live postings, carries the real opportunityId, and still carries no grade -- verification only ever happens through human review",()=>{
+    const rows=candidates().filter(c=>c.market==="Texas Panhandle"&&c.type==="CONTACT_AUTHORITY");
     expect(rows).toHaveLength(1);
     const r=rows[0];
-    expect(r.type).toBe("CONTACT_AUTHORITY");
-    expect(r.opportunityId).toBeNull();
+    expect(r.opportunityId).toBe("qual-amarillo");
     expect(r.contactPersonName).toBe("Roberto Venegas");
     expect(r.evidenceIds.sort()).toEqual(["evidence:trillium-amarillo-791374","evidence:trillium-amarillo-791431"]);
-    expect(r.contraryEvidence.join(" ")).toMatch(/must never be inferred/);
+    expect(r.contraryEvidence.join(" ")).toMatch(/human confirmation before any use for outreach/);
     expect(r.routeGrade).toBeNull();
   });
-  it("Trillium Amarillo's real buyer/AF-01 text exists on the raw FACTS_2J rows but never produces a BUYER_CANDIDATE or AF01_CANDIDATE, because it is not linked to any tracked opportunity",()=>{
+  it("Phase 2Q: Trillium Amarillo's real buyer/AF-01 text now produces real BUYER_CANDIDATE/AF01_CANDIDATE entries (one pair per posting, matching the exact same per-fact mechanism already trusted for the other four opportunities) -- still UNVERIFIED, still no end client or grade invented",()=>{
     const amarillo=FACTS_2J.filter(f=>f.sourceKey.startsWith("trillium-amarillo"));
     expect(amarillo.every(f=>!!f.buyerCandidate&&!!f.af01Candidate)).toBe(true);
-    expect(amarillo.every(f=>f.opportunityId===null)).toBe(true);
-    expect(candidates().some(c=>(c.type==="BUYER_CANDIDATE"||c.type==="AF01_CANDIDATE")&&c.market==="Texas Panhandle")).toBe(false);
+    expect(amarillo.every(f=>f.opportunityId==="qual-amarillo")).toBe(true);
+    const amarilloCandidates=candidates().filter(c=>c.market==="Texas Panhandle");
+    expect(amarilloCandidates.filter(c=>c.type==="BUYER_CANDIDATE")).toHaveLength(2);
+    expect(amarilloCandidates.filter(c=>c.type==="AF01_CANDIDATE")).toHaveLength(2);
+    expect(amarilloCandidates.every(c=>c.verificationState==="UNVERIFIED")).toBe(true);
   });
   it("Corpus Christi: preserves the cross-entity uncertainty between City procurement and PSV demand as a COMPANY_PROJECT_CONFLICT, sourced from hot-conversion's REAL_CONVERSION_SET (the only ledger that actually captures it) -- not fuzzy-merged",()=>{
     const rows=byOpportunity("qual-corpus");
@@ -129,17 +131,17 @@ describe("Phase 2M: buyer/AF-01/contact/conflict candidate aggregation grounded 
   it("Permian Basin / Strike: zero candidates, matching the real Seed's own buyerCandidate:null (direct EPC employer, not a staffing intermediary)",()=>{
     expect(byOpportunity("qual-permian")).toHaveLength(0);
   });
-  it("counts real buyer/AF-01/contact-authority/conflict candidates grounded in the actual FACTS/TARGETED_SOURCES data read directly by this suite",()=>{
-    expect(byType("BUYER_CANDIDATE")).toHaveLength(2);
-    expect(byType("AF01_CANDIDATE")).toHaveLength(1);
-    expect(byType("CONTACT_AUTHORITY")).toHaveLength(3);
+  it("counts real buyer/AF-01/contact-authority/conflict candidates grounded in the actual FACTS/TARGETED_SOURCES data read directly by this suite (Phase 2Q added: 2 buyer, 2 AF-01, 1 contact from Amarillo; 1 buyer, 1 AF-01, 1 contact from Port Arthur's re-verification)",()=>{
+    expect(byType("BUYER_CANDIDATE")).toHaveLength(5);
+    expect(byType("AF01_CANDIDATE")).toHaveLength(4);
+    expect(byType("CONTACT_AUTHORITY")).toHaveLength(4);
     expect(byType("COMPANY_PROJECT_CONFLICT")).toHaveLength(1);
   });
 });
 
 describe("Phase 2M: provenance preservation",()=>{
   it("every candidate's evidenceIds/sourceUrls trace back to a real FACTS or REAL_CONVERSION_SET row",()=>{
-    const allFacts=[...FACTS,...FACTS_2I,...FACTS_2J];
+    const allFacts=[...FACTS,...FACTS_2I,...FACTS_2J,...FACTS_2Q];
     for(const c of candidates()){
       if(c.provenance.originService.startsWith("hot-conversion")){
         expect(REAL_CONVERSION_SET.some(x=>c.evidenceIds.every(id=>x.evidenceIds.includes(id)))).toBe(true);
@@ -163,8 +165,8 @@ describe("Phase 2M: stale-evidence handling",()=>{
     expect(stale.length).toBeGreaterThan(0);
     expect(stale.every(c=>c.staleAfter!<=future)).toBe(true);
   });
-  it("MARKET_TO_TRACKED_OPPORTUNITY covers exactly the four tracked dossiers",()=>{
-    expect(Object.values(MARKET_TO_TRACKED_OPPORTUNITY).sort()).toEqual(["qual-beaumont-port-arthur","qual-corpus","qual-freeport","qual-permian"]);
+  it("MARKET_TO_TRACKED_OPPORTUNITY covers exactly the five tracked dossiers (Texas Panhandle added Phase 2Q)",()=>{
+    expect(Object.values(MARKET_TO_TRACKED_OPPORTUNITY).sort()).toEqual(["qual-amarillo","qual-beaumont-port-arthur","qual-corpus","qual-freeport","qual-permian"]);
   });
 });
 

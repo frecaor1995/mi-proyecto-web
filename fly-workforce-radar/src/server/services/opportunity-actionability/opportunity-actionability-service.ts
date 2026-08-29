@@ -101,16 +101,29 @@ export function gatedCommercialActionForOpportunity(opportunityId:string,actiona
 }
 
 /**
- * The real, current actionability evidence for every tracked opportunity. Every
- * entry is NO_ACTIONABILITY_EVIDENCE today because no real captured fact anywhere
- * in targeted-evidence-facts.ts, the multi-source/commercial-intelligence/hot-
- * evidence registries, or the qualification Seeds themselves states an explicit
- * status or an extracted deadline for Freeport, Beaumont/Port Arthur, Permian
- * Basin, or Corpus Christi. This is a finding of Phase 2O's read-only audit, not a
- * placeholder -- populating a real entry here requires a real observed fact.
+ * The real, current actionability evidence for every tracked opportunity. Freeport,
+ * Permian, and Corpus remain NO_ACTIONABILITY_EVIDENCE -- Phase 2O's audit found no
+ * captured fact stating an explicit status or extracted deadline for them, and that
+ * remains true.
+ *
+ * Beaumont/Port Arthur is the one exception, added in Phase 2Q: a scoped, targeted
+ * re-fetch of the SAME already-approved Port Arthur RFP PDF (see FACTS_2Q in
+ * targeted-evidence-facts.ts) surfaced a real, explicit procurement schedule --
+ * submission deadline 4/22/26 2:00 PM -- that Phase 2H's original capture of the
+ * same document did not extract. This is real primary evidence, not an assumption;
+ * the buyer/AF-01/conflict state is untouched, since this re-verification found
+ * nothing bearing on those.
  */
-const TRACKED_OPPORTUNITY_IDS=["qual-freeport","qual-beaumont-port-arthur","qual-permian","qual-corpus"]as const;
-export const REAL_ACTIONABILITY_EVIDENCE:Record<string,ActionabilityInput>=Object.fromEntries(TRACKED_OPPORTUNITY_IDS.map(id=>[id,NO_ACTIONABILITY_EVIDENCE(id)]));
+const TRACKED_OPPORTUNITY_IDS=["qual-freeport","qual-beaumont-port-arthur","qual-permian","qual-corpus","qual-amarillo"]as const;
+const PORT_ARTHUR_RFP_DEADLINE:ActionabilityInput={
+  opportunityId:"qual-beaumont-port-arthur",
+  explicitStatus:null,
+  explicitStatusFreshUntil:null,
+  deadlines:[{kind:"ORIGINAL",date:new Date("2026-04-22T19:00:00Z"),observedAt:new Date("2026-08-27T12:00:00Z"),evidenceIds:["evidence:port-arthur-rfp-2026-01-2q-reverify"]}],
+  startDate:null,
+  evidenceIds:["evidence:port-arthur-rfp-2026-01-2q-reverify"],
+};
+export const REAL_ACTIONABILITY_EVIDENCE:Record<string,ActionabilityInput>=Object.fromEntries(TRACKED_OPPORTUNITY_IDS.map(id=>[id,id==="qual-beaumont-port-arthur"?PORT_ARTHUR_RFP_DEADLINE:NO_ACTIONABILITY_EVIDENCE(id)]));
 
 export interface ActionabilityMetrics{
   asOf:Date;
