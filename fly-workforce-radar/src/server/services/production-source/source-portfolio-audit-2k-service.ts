@@ -2,6 +2,7 @@ import type{AccessLegitimacyCategory,DuplicateInventoryGroup,HotGapFinding,Marke
 import{FACTS,TARGETED_SOURCES}from"../targeted-evidence/targeted-evidence-closure-service";
 import{FACTS_2I,TARGETED_SOURCES_2I}from"../targeted-evidence/targeted-evidence-closure-2i-service";
 import{FACTS_2J,TARGETED_SOURCES_2J,phase2jSummary}from"../targeted-evidence/targeted-evidence-closure-2j-service";
+import{FACTS_2Q,TARGETED_SOURCES_2Q}from"../targeted-evidence/targeted-evidence-facts";
 import{ACTIVATED_EXPANSION,EVALUATED_EXPANSION}from"./multi-source-strategy";
 import{COMMERCIAL_ACTIVATIONS,COMMERCIAL_EVALUATIONS}from"./commercial-intelligence-strategy";
 import{HOT_EVIDENCE_ACTIVATIONS,HOT_EVIDENCE_EVALUATIONS}from"./hot-evidence-strategy";
@@ -37,6 +38,16 @@ const RAW_SOURCES:RawSource[]=[
   ...TARGETED_SOURCES.map(s=>({key:s.key,name:s.name,endpoint:s.endpoint,family:s.family,markets:[s.market],origin:"PHASE_2H_TARGETED_EVIDENCE"as const,decision:s.decision as SourceDecisionState})),
   ...TARGETED_SOURCES_2I.map(s=>({key:s.key,name:s.name,endpoint:s.endpoint,family:s.family,markets:[s.market],origin:"PHASE_2I_TARGETED_EVIDENCE"as const,decision:s.decision as SourceDecisionState})),
   ...TARGETED_SOURCES_2J.map(s=>({key:s.key,name:s.name,endpoint:s.endpoint,family:s.family,markets:[s.market],origin:"PHASE_2J_TARGETED_EVIDENCE"as const,decision:s.decision as SourceDecisionState})),
+  /* Phase 2R-B accounting fix. Phase 2Q added its own registry
+   * (TARGETED_SOURCES_2Q in targeted-evidence-facts.ts) but never wired it into
+   * RAW_SOURCES, so both of its entries -- the Port Arthur RFP re-verification
+   * and the tradesmenup-aggregator evaluation -- were invisible to every count,
+   * classification and coverage figure this audit produces. They are included
+   * here using the identical mapping shape as Phase 2J above. Consequences are
+   * reported, not smoothed over: the re-verification deliberately reuses Phase
+   * 2H's endpoint, so it is a genuine second duplicate-endpoint group and
+   * rawEntries rises while uniqueByEndpoint correctly does not. */
+  ...TARGETED_SOURCES_2Q.map(s=>({key:s.key,name:s.name,endpoint:s.endpoint,family:s.family,markets:[s.market],origin:"PHASE_2Q_TARGETED_EVIDENCE"as const,decision:s.decision as SourceDecisionState})),
 ];
 
 // ---------------------------------------------------------------------------
@@ -47,16 +58,21 @@ const ENDPOINT_GROUPS=new Map<string,RawSource[]>();
 for(const s of ACTIVATED_RAW){const g=ENDPOINT_GROUPS.get(s.endpoint)??[];g.push(s);ENDPOINT_GROUPS.set(s.endpoint,g)}
 const DUPLICATE_GROUPS:DuplicateInventoryGroup[]=[...ENDPOINT_GROUPS.entries()].filter(([,g])=>g.length>1).map(([endpoint,g])=>({endpoint,keys:g.map(x=>x.key),origins:g.map(x=>x.origin)}));
 
+const STRIKE_DUPLICATE=DUPLICATE_GROUPS.find(g=>g.keys.includes("strike-midland"));
+const PORT_ARTHUR_DUPLICATE=DUPLICATE_GROUPS.find(g=>g.keys.includes("port-arthur-temp-staffing-2026-reverify"));
+
 export function reconstructTrueInventory():SourceInventoryReconstruction{
   const uniqueByEndpoint=ENDPOINT_GROUPS.size,narrativeClaimed=26;
+  const phase2qActivated=TARGETED_SOURCES_2Q.filter(x=>x.decision==="ACTIVATE").length;
   return{
     rawEntries:ACTIVATED_RAW.length,
     uniqueByEndpoint,
+    registryEntriesTotal:RAW_SOURCES.length,
     duplicates:DUPLICATE_GROUPS,
     narrativeClaimed,
     narrativeAccurate:uniqueByEndpoint===narrativeClaimed,
     narrativeDiscrepancyReason:uniqueByEndpoint===narrativeClaimed?null:
-      `The Phase 2H-2J summary chain's sourcesAfter=${narrativeClaimed} is arithmetically consistent with the union of every ACTIVATE-decision entry across Phase 2B (${PHASE_2B_STANDALONE_SOURCES.length}), Phase 2C (${ACTIVATED_EXPANSION.length}), Phase 2D (${COMMERCIAL_ACTIVATIONS.length}), Phase 2F (${HOT_EVIDENCE_ACTIVATIONS.length}), Phase 2H (${TARGETED_SOURCES.filter(x=>x.decision==="ACTIVATE").length}), Phase 2I (0) and Phase 2J (${TARGETED_SOURCES_2J.filter(x=>x.decision==="ACTIVATE").length}) = ${narrativeClaimed}, but it double-counts one real endpoint: Strike Midland Journeyman Electrician (${DUPLICATE_GROUPS[0]?.endpoint}) was activated independently as "${DUPLICATE_GROUPS[0]?.keys[0]}" in Phase 2D's commercial-intelligence-strategy.ts and again as "${DUPLICATE_GROUPS[0]?.keys[1]}" in Phase 2J's targeted-evidence-closure-2j-service.ts. The true distinct-endpoint production source count is ${uniqueByEndpoint}, not ${narrativeClaimed}.`,
+      `The Phase 2H-2J summary chain's sourcesAfter=${narrativeClaimed} is arithmetically consistent with the union of every ACTIVATE-decision entry across Phase 2B (${PHASE_2B_STANDALONE_SOURCES.length}), Phase 2C (${ACTIVATED_EXPANSION.length}), Phase 2D (${COMMERCIAL_ACTIVATIONS.length}), Phase 2F (${HOT_EVIDENCE_ACTIVATIONS.length}), Phase 2H (${TARGETED_SOURCES.filter(x=>x.decision==="ACTIVATE").length}), Phase 2I (0) and Phase 2J (${TARGETED_SOURCES_2J.filter(x=>x.decision==="ACTIVATE").length}) = ${narrativeClaimed}, but that chain both omits a later origin and double-counts real endpoints. Phase 2Q's own registry (TARGETED_SOURCES_2Q) contributes a further ${phase2qActivated} ACTIVATE entry that no earlier count included, bringing raw ACTIVATE registry entries to ${ACTIVATED_RAW.length}. Those raw entries resolve to only ${uniqueByEndpoint} distinct endpoints because ${DUPLICATE_GROUPS.length} endpoints are each registered twice: Strike Midland Journeyman Electrician (${STRIKE_DUPLICATE?.endpoint}) as "${STRIKE_DUPLICATE?.keys[0]}" in Phase 2D's commercial-intelligence-strategy.ts and again as "${STRIKE_DUPLICATE?.keys[1]}" in Phase 2J's targeted-evidence-closure-2j-service.ts; and the Port of Port Arthur Temporary Staffing RFP PDF (${PORT_ARTHUR_DUPLICATE?.endpoint}) as "${PORT_ARTHUR_DUPLICATE?.keys[0]}" in Phase 2H and again as "${PORT_ARTHUR_DUPLICATE?.keys[1]}", Phase 2Q's deliberate re-verification of that same document. The true distinct-endpoint production source count is ${uniqueByEndpoint}, not ${narrativeClaimed}.`,
   };
 }
 
@@ -104,6 +120,9 @@ const ACCESS_LEGITIMACY:Record<string,{category:AccessLegitimacyCategory;rationa
   "zachry-oracle-recruiting-cloud":{category:"BLOCKED",rationale:"Oracle Recruiting Cloud; no public job-search API, requisition endpoints are undocumented and gated (Phase 2J PLATFORM_CLASSIFICATIONS: Oracle Recruiting Cloud / Taleo)."},
   "walker-engineering-taleo":{category:"BLOCKED",rationale:"Oracle Taleo; listings confirmed JS-rendered with no documented public API (Phase 2J PLATFORM_CLASSIFICATIONS: Oracle Recruiting Cloud / Taleo)."},
   "skillforce-adp-recruitment":{category:"BLOCKED",rationale:"ADP Workforce Now recruitment widget keyed by a session-style cid parameter; ADP's documented APIs cover OAuth-authenticated employer HRIS integration only (Phase 2J PLATFORM_CLASSIFICATIONS: ADP)."},
+  // Phase 2Q (made visible to this audit by the Phase 2R-B accounting fix)
+  "port-arthur-temp-staffing-2026-reverify":{category:"PUBLIC_STATIC_DOCUMENT",rationale:"The SAME directly-linked PDF RFP on the port authority's own site as Phase 2H's port-arthur-temp-staffing-2026 (identical endpoint by construction); Phase 2Q re-fetched it to extract the procurement schedule. DUPLICATE endpoint of the Phase 2H entry -- see reconstructTrueInventory()."},
+  "tradesmenup-aggregator":{category:"UNCLEAR",rationale:"Phase 2Q confirmed only that this third-party aggregator republishes at least one real posting as directly-fetchable server-rendered HTML. The robots.txt and terms-of-service review that every ACTIVATE source in this portfolio received has NOT been performed, which is precisely why its decision is UNDER_REVIEW; access legitimacy is therefore genuinely unresolved rather than approved or blocked."},
   // Notable UNDER_REVIEW / DEFER entries with a genuinely investigated basis
   "trillium-midland-794201":{category:"PUBLIC_SERVER_RENDERED_PAGE",rationale:"Trillium's own /jobs/job/ pages are confirmed plain server-rendered HTML (same pattern as the current Trillium Amarillo sources); this specific posting now returns non-success (effectively gone) but the access method itself remains legitimate -- the UNDER_REVIEW/historical decision reflects the posting being dead, not an access-legitimacy problem."},
   "nes-houston-27773":{category:"UNCLEAR",rationale:"Automated live request returned non-success; no bypass attempted; whether this domain's page pattern renders statically was never proven either way."},
@@ -157,7 +176,7 @@ const KEY_ALIASES:Record<string,string>={"exxon-beaumont":"exxonmobil-beaumont"}
 
 function observedEvidenceFor(key:string):{count:number;ledgers:string[]}{
   const aliased=KEY_ALIASES[key]??key;
-  const factsCount=[...FACTS,...FACTS_2I,...FACTS_2J].filter(f=>f.sourceKey===key).length;
+  const factsCount=[...FACTS,...FACTS_2I,...FACTS_2J,...FACTS_2Q].filter(f=>f.sourceKey===key).length;
   const conversionCount=REAL_CONVERSION_SET.flatMap(x=>x.sources).filter(s=>s.key===aliased).length;
   const ledgers=[...(factsCount>0?["targeted-evidence FACTS ledger"]:[]),...(conversionCount>0?["hot-conversion REAL_CONVERSION_SET ledger"]:[])];
   return{count:factsCount+conversionCount,ledgers};
@@ -172,7 +191,7 @@ const GENERIC_CONTACT_ROUTES=new Set(["Public assignment page"]);
 
 function closesScarceGapFor(key:string):boolean{
   const aliased=KEY_ALIASES[key]??key;
-  const factsHit=[...FACTS,...FACTS_2I,...FACTS_2J].some(f=>f.sourceKey===key&&(!!f.buyerCandidate||!!f.af01Candidate||!!f.contactPerson||(!!f.contactRoute&&!GENERIC_CONTACT_ROUTES.has(f.contactRoute))));
+  const factsHit=[...FACTS,...FACTS_2I,...FACTS_2J,...FACTS_2Q].some(f=>f.sourceKey===key&&(!!f.buyerCandidate||!!f.af01Candidate||!!f.contactPerson||(!!f.contactRoute&&!GENERIC_CONTACT_ROUTES.has(f.contactRoute))));
   const conversionHit=REAL_CONVERSION_SET.some(x=>x.sources.some(s=>s.key===aliased&&(s.contribution==="BUYER"||s.contribution==="AF_01"||s.contribution==="CONTACT")));
   return factsHit||conversionHit;
 }
@@ -202,7 +221,7 @@ const MARKET_ALIASES:Record<string,string>={"Houston / Gulf Coast":"Houston / Gu
 interface EvidenceRow{market:string;keys:string[];demand:boolean;buyer:boolean;af01:boolean;contact:boolean;compensation:boolean;perDiem:boolean;headcount:boolean}
 const GAP_PRIORITY=["demand","buyer","af01","contact","compensation","perDiem","headcount"]as const;
 
-function factRows():EvidenceRow[]{return[...FACTS,...FACTS_2I,...FACTS_2J].map(f=>({market:f.market,keys:[f.sourceKey],demand:f.demand,buyer:!!f.buyerCandidate,af01:!!f.af01Candidate,contact:!!(f.contactPerson||f.contactRoute),compensation:f.payMin!=null||f.payMax!=null,perDiem:f.perDiem!=null,headcount:f.headcount!=null}))}
+function factRows():EvidenceRow[]{return[...FACTS,...FACTS_2I,...FACTS_2J,...FACTS_2Q].map(f=>({market:f.market,keys:[f.sourceKey],demand:f.demand,buyer:!!f.buyerCandidate,af01:!!f.af01Candidate,contact:!!(f.contactPerson||f.contactRoute),compensation:f.payMin!=null||f.payMax!=null,perDiem:f.perDiem!=null,headcount:f.headcount!=null}))}
 function conversionRows():EvidenceRow[]{return REAL_CONVERSION_SET.map(x=>({market:x.market,keys:[...new Set(x.sources.map(s=>s.key))],demand:x.demand,buyer:!!x.buyerCandidate,af01:!!(x.af01Category&&x.af01Excerpt),contact:!!x.contactRoute,compensation:x.economics.hourlyPay!=null,perDiem:x.economics.perDiem!=null,headcount:x.economics.headcount!=null}))}
 
 export function marketCoverageMatrix():MarketCoverageEntry[]{
@@ -234,6 +253,10 @@ export const phase2kSummary=()=>{
     sourcesNarrativeClaimed:recon.narrativeClaimed,
     sourcesRawActivated:recon.rawEntries,
     sourcesTrueUniqueActivated:recon.uniqueByEndpoint,
+    // Raw registry size across every decision state, exposed distinctly from
+    // both the activated-entry count and the distinct-endpoint count so the
+    // three can never again be conflated (Phase 2R-B, additive).
+    registryEntriesTotal:recon.registryEntriesTotal,
     narrativeAccurate:recon.narrativeAccurate,
     duplicateEndpointsFound:recon.duplicates.length,
     // Portfolio breakdown scoped to currently ACTIVATE (production-live) sources only.

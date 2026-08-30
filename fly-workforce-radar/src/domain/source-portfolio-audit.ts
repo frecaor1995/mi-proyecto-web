@@ -16,7 +16,7 @@ export const ACCESS_LEGITIMACY_CATEGORIES=["PUBLIC_DOCUMENTED_ENDPOINT","PUBLIC_
 export type AccessLegitimacyCategory=(typeof ACCESS_LEGITIMACY_CATEGORIES)[number];
 
 /** Where a source's ACTIVATE/decision entry actually lives in the codebase today. */
-export const SOURCE_ORIGINS=["PHASE_2B_STANDALONE_ADAPTER","PHASE_2C_MULTI_SOURCE","PHASE_2D_COMMERCIAL_INTELLIGENCE","PHASE_2F_HOT_EVIDENCE","PHASE_2H_TARGETED_EVIDENCE","PHASE_2I_TARGETED_EVIDENCE","PHASE_2J_TARGETED_EVIDENCE"]as const;
+export const SOURCE_ORIGINS=["PHASE_2B_STANDALONE_ADAPTER","PHASE_2C_MULTI_SOURCE","PHASE_2D_COMMERCIAL_INTELLIGENCE","PHASE_2F_HOT_EVIDENCE","PHASE_2H_TARGETED_EVIDENCE","PHASE_2I_TARGETED_EVIDENCE","PHASE_2J_TARGETED_EVIDENCE","PHASE_2Q_TARGETED_EVIDENCE"]as const;
 export type SourceOrigin=(typeof SOURCE_ORIGINS)[number];
 
 export type SourceDecisionState="ACTIVATE"|"UNDER_REVIEW"|"DEFER"|"BLOCKED";
@@ -68,8 +68,16 @@ export interface TechDebtResolution{
 export interface DuplicateInventoryGroup{endpoint:string;keys:string[];origins:SourceOrigin[]}
 
 export interface SourceInventoryReconstruction{
+  /** ACTIVATE-decision registry entries, counted one per entry -- so a single
+   * real endpoint activated under two keys counts twice here, on purpose. */
   rawEntries:number;
+  /** Distinct endpoints behind those entries. This is the honest "how many
+   * production sources are there" number. */
   uniqueByEndpoint:number;
+  /** Every registry entry across every origin and every decision state
+   * (ACTIVATE, UNDER_REVIEW, DEFER, BLOCKED). Added in Phase 2R-B so the raw
+   * registry size is visible distinctly from the activated subset. */
+  registryEntriesTotal:number;
   duplicates:DuplicateInventoryGroup[];
   narrativeClaimed:number;
   narrativeAccurate:boolean;

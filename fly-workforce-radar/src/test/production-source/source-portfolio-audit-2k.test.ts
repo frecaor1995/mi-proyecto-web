@@ -8,16 +8,37 @@ import{TARGETED_SOURCES_2J}from"../../server/services/targeted-evidence/targeted
 const recon=reconstructTrueInventory(),summary=phase2kSummary();
 
 describe("Phase 2K: true source inventory reconstruction",()=>{
-  it("finds the phase-chain narrative's raw activated count is 26, matching the sum of every origin's ACTIVATE entries",()=>expect(recon.rawEntries).toBe(26));
-  it("finds the true distinct-endpoint production source count is 25, not the narrative's 26",()=>{
+  // Phase 2R-B accounting fix: Phase 2Q's registry (TARGETED_SOURCES_2Q) was
+  // never composed into RAW_SOURCES, so its entries were invisible to every
+  // count here. Now that it is included, the raw ACTIVATE count rises by its
+  // one ACTIVATE entry (26 -> 27) while the distinct-endpoint count correctly
+  // does NOT, because that entry deliberately re-verifies a Phase 2H endpoint.
+  it("finds the raw activated entry count is 27 across all eight origins, counting each registry entry once even when two entries share one endpoint",()=>expect(recon.rawEntries).toBe(27));
+  it("finds the true distinct-endpoint production source count is still 25, not the narrative's 26 and not the raw 27",()=>{
     expect(recon.uniqueByEndpoint).toBe(25);
     expect(recon.narrativeClaimed).toBe(26);
     expect(recon.narrativeAccurate).toBe(false);
   });
-  it("identifies exactly one duplicate endpoint: Strike Midland Journeyman activated twice under two keys",()=>{
-    expect(recon.duplicates).toHaveLength(1);
-    expect(recon.duplicates[0].endpoint).toBe("https://strike.applytojob.com/apply/L3Wr0FKloj/Journeyman-Electrician");
-    expect(recon.duplicates[0].keys.sort()).toEqual(["strike-midland","strike-midland-journeyman-electrician"]);
+  it("counts the raw registry entries across every decision state distinctly from the activated subset",()=>{
+    expect(recon.registryEntriesTotal).toBe(SOURCE_PORTFOLIO_INVENTORY.length);
+    expect(recon.registryEntriesTotal).toBeGreaterThan(recon.rawEntries);
+    expect(recon.rawEntries).toBeGreaterThan(recon.uniqueByEndpoint);
+  });
+  it("makes Phase 2Q's own sources visible to the audit at all",()=>{
+    const q=SOURCE_PORTFOLIO_INVENTORY.filter(x=>x.origin==="PHASE_2Q_TARGETED_EVIDENCE");
+    expect(q.map(x=>x.key).sort()).toEqual(["port-arthur-temp-staffing-2026-reverify","tradesmenup-aggregator"]);
+    // TradesmenUp stays genuinely unresolved: fetchability alone is not access legitimacy.
+    expect(q.find(x=>x.key==="tradesmenup-aggregator")!.decision).toBe("UNDER_REVIEW");
+    expect(q.find(x=>x.key==="tradesmenup-aggregator")!.portfolioValue).toBe("UNDER_REVIEW");
+  });
+  it("identifies exactly two duplicate endpoints, each registered twice under different keys, without collapsing either",()=>{
+    expect(recon.duplicates).toHaveLength(2);
+    const strike=recon.duplicates.find(d=>d.keys.includes("strike-midland"))!;
+    expect(strike.endpoint).toBe("https://strike.applytojob.com/apply/L3Wr0FKloj/Journeyman-Electrician");
+    expect(strike.keys.sort()).toEqual(["strike-midland","strike-midland-journeyman-electrician"]);
+    const portArthur=recon.duplicates.find(d=>d.keys.includes("port-arthur-temp-staffing-2026-reverify"))!;
+    expect(portArthur.endpoint).toBe(TARGETED_SOURCES[0].endpoint);
+    expect(portArthur.keys.sort()).toEqual(["port-arthur-temp-staffing-2026","port-arthur-temp-staffing-2026-reverify"]);
   });
   it("explains the discrepancy in prose rather than silently forcing the number to match",()=>{
     expect(recon.narrativeDiscrepancyReason).toMatch(/25, not 26/);
@@ -31,7 +52,7 @@ describe("Phase 2K: true source inventory reconstruction",()=>{
   });
   it("covers every origin across the true production-source registry",()=>{
     const origins=new Set(SOURCE_PORTFOLIO_INVENTORY.map(x=>x.origin));
-    expect(origins).toEqual(new Set(["PHASE_2B_STANDALONE_ADAPTER","PHASE_2C_MULTI_SOURCE","PHASE_2D_COMMERCIAL_INTELLIGENCE","PHASE_2F_HOT_EVIDENCE","PHASE_2H_TARGETED_EVIDENCE","PHASE_2I_TARGETED_EVIDENCE","PHASE_2J_TARGETED_EVIDENCE"]));
+    expect(origins).toEqual(new Set(["PHASE_2B_STANDALONE_ADAPTER","PHASE_2C_MULTI_SOURCE","PHASE_2D_COMMERCIAL_INTELLIGENCE","PHASE_2F_HOT_EVIDENCE","PHASE_2H_TARGETED_EVIDENCE","PHASE_2I_TARGETED_EVIDENCE","PHASE_2J_TARGETED_EVIDENCE","PHASE_2Q_TARGETED_EVIDENCE"]));
   });
 });
 
