@@ -14,11 +14,27 @@ export const CLAIM_PREDICATES = [
   "schedule", "headcount", "publisher_identity_text", "project_identity",
   "company_role", "vendor_route", "external_manpower_acceptance_category",
   "contact_identity", "contact_role", "source_recency_status", "demand_intensity_indicator",
+  "contractor_project_participation", "commercial_ecosystem_relationship",
+  "manpower_vendor_relationship", "workforce_partner_subvendor_relationship",
+  "qualification_requirement",
 ] as const;
 
 export type ClaimSubjectType = (typeof CLAIM_SUBJECT_TYPES)[number];
 export type ClaimPredicate = (typeof CLAIM_PREDICATES)[number];
 export type ClaimValue = null | boolean | number | string | ClaimValue[] | { [key: string]: ClaimValue };
+
+export const QUALIFICATION_REQUIREMENT_TYPES = [
+  "LICENSE", "GENERAL_LIABILITY", "WORKERS_COMPENSATION", "BONDING", "EMR_TRIR",
+  "ISNETWORLD", "AVETTA", "PAYROLL_CAPACITY", "SAFETY_PROGRAM",
+  "BACKGROUND_DRUG_SCREENING", "OTHER",
+] as const;
+export type QualificationRequirementType = (typeof QUALIFICATION_REQUIREMENT_TYPES)[number];
+export interface QualificationRequirementValue {
+  requirementType: QualificationRequirementType;
+  requirementText: string;
+  flySatisfaction: "UNKNOWN";
+  scope?: Record<string, ClaimValue>;
+}
 
 export interface ClaimSubject {
   type: ClaimSubjectType;

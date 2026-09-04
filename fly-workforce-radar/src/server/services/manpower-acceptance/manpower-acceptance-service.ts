@@ -32,8 +32,11 @@ export class ManpowerAcceptanceService {
       result = "INSUFFICIENT_EVIDENCE";
       reason = "Conflicting current verified evidence requires review";
     } else if (positive.length > 0) {
-      result = "VERIFIED";
+      result = "VERIFIED_POSITIVE";
       reason = "At least one current VERIFIED AF-01 FACT has active supporting evidence";
+    } else if (negative.length > 0) {
+      result = "VERIFIED_NEGATIVE";
+      reason = "At least one current VERIFIED negative AF-01 FACT has active supporting evidence";
     } else if (stalePositive.length > 0) {
       result = "STALE";
       reason = "All otherwise qualifying positive AF-01 claims are stale";
@@ -45,7 +48,7 @@ export class ManpowerAcceptanceService {
       reason = "No AF-01 acceptance claim exists; absence is not denial";
     }
 
-    const supporting = result === "VERIFIED" ? positive : [];
+    const supporting = result === "VERIFIED_POSITIVE" ? positive : result === "VERIFIED_NEGATIVE" ? negative : [];
     const ignored = observations.filter((claim) => !supporting.includes(claim));
     const validDates = supporting.flatMap((claim) => claim.staleAfter ? [claim.staleAfter] : []);
     return this.repository.saveEvaluation({
@@ -60,6 +63,7 @@ export class ManpowerAcceptanceService {
       explanation: {
         evaluatedClaims: observations.length,
         qualifyingPositiveClaims: positive.map((claim) => claim.claimId),
+        qualifyingNegativeClaims: negative.map((claim) => claim.claimId),
         conflictingNegativeClaims: negative.map((claim) => claim.claimId),
         stalePositiveClaims: stalePositive.map((claim) => claim.claimId),
         ignoredClaims: ignored.map((claim) => ({

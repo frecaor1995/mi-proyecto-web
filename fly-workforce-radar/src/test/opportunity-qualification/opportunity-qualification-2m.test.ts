@@ -147,7 +147,7 @@ describe("Phase 2M: controlled end-to-end positive proof (synthetic candidate ev
   });
   it("the real, unmodified graph() builder produces a VERIFIED acceptance and a graded, VERIFIED contact route",()=>{
     expect(g.acceptance).not.toBeNull();
-    expect(g.acceptance!.result).toBe("VERIFIED");
+    expect(g.acceptance!.result).toBe("VERIFIED_POSITIVE");
     expect(g.routeGrades).toHaveLength(1);
     expect(g.routeGrades[0].grade).toBe("A");
     expect(g.contactRoutes[0].verification_state).toBe("VERIFIED");

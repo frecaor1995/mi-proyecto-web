@@ -20,6 +20,8 @@ const migrations = [
   "20260817030000_source_registry_compliance.sql", "20260817040000_controlled_ingestion.sql",
   "20260817050000_claim_assertions.sql", "20260817060000_company_resolution.sql",
   "20260817070000_manpower_acceptance.sql",
+  "20260817080000_contacts_routes.sql", "20260817090000_opportunity_graph.sql",
+  "20260817100000_human_verification.sql", "20260904010000_human_verification_domain.sql",
 ];
 
 describe("vendor and external manpower acceptance", () => {
@@ -82,11 +84,11 @@ describe("vendor and external manpower acceptance", () => {
     await expect(service.evaluate(ctx.companyId)).resolves.toMatchObject({ result: "NOT_VERIFIED" });
   });
 
-  it("derives VERIFIED only from a verified AF-01 FACT with active evidence", async () => {
+  it("derives VERIFIED_POSITIVE only from a verified AF-01 FACT with active evidence", async () => {
     const ctx = await context();
     const claim = await verified(afCandidate(ctx.companyId, ctx.evidenceId));
     const result = await service.evaluate(ctx.companyId);
-    expect(result).toMatchObject({ result: "VERIFIED", supportingClaimIds: [claim.id], supportingEvidenceIds: [ctx.evidenceId], qualifyingCategories: ["STAFFING_VENDOR_ACCEPTED"] });
+    expect(result).toMatchObject({ result: "VERIFIED_POSITIVE", supportingClaimIds: [claim.id], supportingEvidenceIds: [ctx.evidenceId], qualifyingCategories: ["STAFFING_VENDOR_ACCEPTED"] });
   });
 
   it("does not qualify an UNVERIFIED AF-01 claim", async () => {
@@ -135,13 +137,19 @@ describe("vendor and external manpower acceptance", () => {
     expect(result.explanation).toMatchObject({ qualifyingPositiveClaims: [positive.id], conflictingNegativeClaims: [negative.id] });
   });
 
+  it("represents an authorized verified negative distinctly", async () => {
+    const ctx = await context();
+    const claim = await verified(afCandidate(ctx.companyId, ctx.evidenceId, "STAFFING_VENDOR_ACCEPTED", { value: { accepted: false } }));
+    await expect(service.evaluate(ctx.companyId)).resolves.toMatchObject({ result: "VERIFIED_NEGATIVE", supportingClaimIds: [claim.id], supportingEvidenceIds: [ctx.evidenceId] });
+  });
+
   it("preserves historical evaluation snapshots and rule versions", async () => {
     const ctx = await context();
     await service.evaluate(ctx.companyId);
     const claim = await verified(afCandidate(ctx.companyId, ctx.evidenceId));
     await service.evaluate(ctx.companyId);
     const history = await repository.listEvaluations(ctx.companyId);
-    expect(history.map((item) => item.result)).toEqual(["NOT_VERIFIED", "VERIFIED"]);
+    expect(history.map((item) => item.result)).toEqual(["NOT_VERIFIED", "VERIFIED_POSITIVE"]);
     expect(history.every((item) => item.ruleVersion === MANPOWER_ACCEPTANCE_RULE_VERSION)).toBe(true);
     await expect(db.query("delete from manpower_acceptance_evaluations where company_id = $1", [ctx.companyId])).rejects.toThrow(/append-only/);
     expect(claim.id).toBeTruthy();
@@ -169,7 +177,7 @@ describe("vendor and external manpower acceptance", () => {
   it("does not assign MANPOWER_BUYER from verified acceptance", async () => {
     const ctx = await context();
     await verified(afCandidate(ctx.companyId, ctx.evidenceId));
-    await expect(service.evaluate(ctx.companyId)).resolves.toMatchObject({ result: "VERIFIED" });
+    await expect(service.evaluate(ctx.companyId)).resolves.toMatchObject({ result: "VERIFIED_POSITIVE" });
     const roles = await db.query<{ count: string }>("select count(*)::text as count from company_roles where company_id = $1 and role = 'MANPOWER_BUYER'", [ctx.companyId]);
     expect(roles.rows[0].count).toBe("0");
   });

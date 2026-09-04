@@ -50,6 +50,9 @@ export const CONTACT_ROUTE_GRADES = ["A", "B", "C", "D", "E"] as const;
 
 export const DEMAND_CLUSTER_KINDS = ["POSSIBLE_SHARED_DEMAND_CLUSTER"] as const;
 
+export const HUMAN_INTERACTION_SOURCE_TYPE = "HUMAN_INTERACTION" as const;
+export const HUMAN_INTERACTION_CAPTURE_METHOD = "HUMAN_INTERACTION" as const;
+
 export type AccessClassification = (typeof ACCESS_CLASSIFICATIONS)[number];
 export type CompanyRole = (typeof COMPANY_ROLES)[number];
 export type AssertionKind = (typeof ASSERTION_KINDS)[number];

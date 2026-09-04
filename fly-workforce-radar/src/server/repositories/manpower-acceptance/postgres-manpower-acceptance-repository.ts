@@ -1,4 +1,5 @@
-import type { AcceptanceClaimObservation, AcceptanceContext, AcceptanceEvaluation } from "../../../domain/manpower-acceptance";
+import { normalizeManpowerAcceptanceResult } from "../../../domain/manpower-acceptance";
+import type { AcceptanceClaimObservation, AcceptanceContext, AcceptanceEvaluation, PersistedManpowerAcceptanceResult } from "../../../domain/manpower-acceptance";
 import type { SqlClient } from "../evidence/postgres-evidence-repository";
 import type { ManpowerAcceptanceRepository, SaveAcceptanceEvaluation } from "./manpower-acceptance-repository";
 
@@ -11,7 +12,7 @@ interface ObservationRow {
 }
 interface EvaluationRow {
   id: string; company_id: string; project_id: string | null; opportunity_id: string | null;
-  result: AcceptanceEvaluation["result"];
+  result: PersistedManpowerAcceptanceResult;
   qualifying_categories: AcceptanceEvaluation["qualifyingCategories"] | string;
   supporting_claim_ids: string[]; supporting_evidence_ids: string[]; ignored_claim_ids: string[];
   evaluated_at: string | Date; rule_version: string; valid_until: string | Date | null;
@@ -25,7 +26,7 @@ const decodedCategories = (value: EvaluationRow["qualifying_categories"]): Accep
     : value;
 function evaluation(row: EvaluationRow): AcceptanceEvaluation {
   const context = row.project_id ? { type: "PROJECT" as const, id: row.project_id } : row.opportunity_id ? { type: "OPPORTUNITY" as const, id: row.opportunity_id } : null;
-  return { id: row.id, companyId: row.company_id, context, result: row.result, qualifyingCategories: decodedCategories(row.qualifying_categories), supportingClaimIds: row.supporting_claim_ids, supportingEvidenceIds: row.supporting_evidence_ids, ignoredClaimIds: row.ignored_claim_ids, evaluatedAt: new Date(row.evaluated_at), ruleVersion: row.rule_version, validUntil: row.valid_until === null ? null : new Date(row.valid_until), reason: row.reason, explanation: row.explanation };
+  return { id: row.id, companyId: row.company_id, context, result: normalizeManpowerAcceptanceResult(row.result), qualifyingCategories: decodedCategories(row.qualifying_categories), supportingClaimIds: row.supporting_claim_ids, supportingEvidenceIds: row.supporting_evidence_ids, ignoredClaimIds: row.ignored_claim_ids, evaluatedAt: new Date(row.evaluated_at), ruleVersion: row.rule_version, validUntil: row.valid_until === null ? null : new Date(row.valid_until), reason: row.reason, explanation: row.explanation };
 }
 
 export class PostgresManpowerAcceptanceRepository implements ManpowerAcceptanceRepository {

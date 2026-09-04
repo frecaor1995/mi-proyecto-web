@@ -6,6 +6,9 @@ it("runs eligibility before score and exposes no scoring operation",()=>expect(O
 it("HOT-A fails without current demand",()=>{const g=copy();g.demandSignals=[];expect(result(g,"HOT_A_ELIGIBLE").failedRequirements).toContain("CURRENT_DEMAND_REQUIRED")});
 it("HOT-A fails without company",()=>{const g=copy();g.companies=[];expect(result(g,"HOT_A_ELIGIBLE").failedRequirements).toContain("COMPANY_REQUIRED")});
 it("HOT-A fails without VERIFIED acceptance",()=>{const g=copy();g.acceptance=null;expect(result(g,"HOT_A_ELIGIBLE").failedRequirements).toContain("MANPOWER_ACCEPTANCE_REQUIRED")});
+it("HOT-A accepts canonical VERIFIED_POSITIVE acceptance",()=>{const g=copy();g.acceptance!.result="VERIFIED_POSITIVE";expect(result(g,"HOT_A_ELIGIBLE").eligible).toBe(true)});
+it.each(["VERIFIED_NEGATIVE","NOT_VERIFIED","INSUFFICIENT_EVIDENCE","STALE"])("HOT-A rejects non-positive AF01 result %s",state=>{const g=copy();g.acceptance!.result=state;expect(result(g,"HOT_A_ELIGIBLE").failedRequirements).toContain("MANPOWER_ACCEPTANCE_REQUIRED")});
+it("legacy VERIFIED remains positive through compatibility normalization",()=>{const g=copy();g.acceptance!.result="VERIFIED";expect(result(g,"HOT_A_ELIGIBLE").eligible).toBe(true)});
 it("employer status cannot replace acceptance",()=>{const g=copy();g.acceptance=null;expect(g.companyRoles[0].role).toBe("EMPLOYER");expect(result(g,"HOT_A_ELIGIBLE").eligible).toBe(false)});
 it("supplier portal cannot replace acceptance",()=>{const g=copy();g.acceptance=null;g.vendorRoutes=[{id:"v",route_type:"SUPPLIER_PORTAL"}];expect(result(g,"HOT_A_ELIGIBLE").eligible).toBe(false)});
 it.each(["A","B","C"])("HOT-A accepts explicit grade %s",grade=>{const g=copy();g.routeGrades[0].grade=grade;expect(result(g,"HOT_A_ELIGIBLE").eligible).toBe(true)});

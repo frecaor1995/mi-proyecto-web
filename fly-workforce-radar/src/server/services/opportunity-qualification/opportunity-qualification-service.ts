@@ -31,8 +31,8 @@ const gaps:QualificationGap[]=["DEMAND","COMPANY","PROJECT","BUYER","AF_01","CON
 // A candidate is never promoted to VERIFIED here -- only an explicit "VERIFIED" already
 // recorded on the Seed (which no real production Seed currently carries; only a
 // controlled test fixture would) can produce a VERIFIED acceptance or route.
-export const acceptanceResultFor=(x:Seed):ManpowerAcceptanceResult=>x.af01VerificationState==="VERIFIED"?"VERIFIED":x.af01Candidate?"INSUFFICIENT_EVIDENCE":"NOT_VERIFIED";
-export const acceptanceFor=(x:Seed):Record<string,unknown>|null=>{if(!x.company)return null;const result=acceptanceResultFor(x);return{id:`${x.id}:acceptance`,companyId:x.company,context:{type:"OPPORTUNITY",id:x.id},result,qualifyingCategories:[],supportingClaimIds:[],supportingEvidenceIds:x.af01Candidate?x.evidenceIds:[],ignoredClaimIds:[],evaluatedAt:at,ruleVersion:MANPOWER_ACCEPTANCE_RULE_VERSION,valid_until:result==="VERIFIED"?x.staleAfter:null,reason:x.af01Candidate?`AF-01 candidate "${x.af01Candidate}" is captured but not human-verified`:"No AF-01 acceptance claim exists; absence is not denial"}};
+export const acceptanceResultFor=(x:Seed):ManpowerAcceptanceResult=>x.af01VerificationState==="VERIFIED"?"VERIFIED_POSITIVE":x.af01Candidate?"INSUFFICIENT_EVIDENCE":"NOT_VERIFIED";
+export const acceptanceFor=(x:Seed):Record<string,unknown>|null=>{if(!x.company)return null;const result=acceptanceResultFor(x);return{id:`${x.id}:acceptance`,companyId:x.company,context:{type:"OPPORTUNITY",id:x.id},result,qualifyingCategories:[],supportingClaimIds:[],supportingEvidenceIds:x.af01Candidate?x.evidenceIds:[],ignoredClaimIds:[],evaluatedAt:at,ruleVersion:MANPOWER_ACCEPTANCE_RULE_VERSION,valid_until:result==="VERIFIED_POSITIVE"?x.staleAfter:null,reason:x.af01Candidate?`AF-01 candidate "${x.af01Candidate}" is captured but not human-verified`:"No AF-01 acceptance claim exists; absence is not denial"}};
 export const routeVerificationStateFor=(x:Seed):string=>x.routeVerificationState==="VERIFIED"?"VERIFIED":"UNVERIFIED";
 export const routeGradesFor=(x:Seed):Record<string,unknown>[]=>x.contactRoute&&x.routeGrade?[{id:`${x.id}:grade`,contact_route_id:`${x.id}:route`,grade:x.routeGrade,reason:`Contact-route grade evidence captured for ${x.contactRoute}`,ruleVersion:"contact-route-grade@1.0.0",evaluatedAt:at}]:[];
 // Phase 2P. Real gap derivation, mirroring the already-validated pattern in the
@@ -41,7 +41,7 @@ export const routeGradesFor=(x:Seed):Record<string,unknown>[]=>x.contactRoute&&x
 // of `at`, never merely because a candidate value is captured. This is the fix for
 // the Phase 2O-identified issue where graph() hardcoded MISSING_MANPOWER_ACCEPTANCE
 // and MISSING_ACTIONABLE_ROUTE unconditionally, regardless of real seed state.
-const acceptanceCurrentlyVerified=(x:Seed):boolean=>{const a=acceptanceFor(x);if(!a||a.result!=="VERIFIED")return false;const validUntil=a.valid_until as Date|null;return!validUntil||validUntil>at};
+const acceptanceCurrentlyVerified=(x:Seed):boolean=>{const a=acceptanceFor(x);if(!a||a.result!=="VERIFIED_POSITIVE")return false;const validUntil=a.valid_until as Date|null;return!validUntil||validUntil>at};
 const routeCurrentlyActionable=(x:Seed):boolean=>!!x.contactRoute&&x.routeVerificationState==="VERIFIED"&&!!x.routeGrade&&["A","B","C"].includes(x.routeGrade)&&(!x.staleAfter||x.staleAfter>at);
 const gapsFor=(x:Seed):OpportunityGraph["gaps"]=>[
   ...(x.currentDemand?[]:["MISSING_CURRENT_DEMAND"as const]),

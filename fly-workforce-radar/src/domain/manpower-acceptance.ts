@@ -1,11 +1,16 @@
 import type { ExternalManpowerCategory } from "./database";
 
 export const MANPOWER_ACCEPTANCE_RESULTS = [
-  "VERIFIED", "NOT_VERIFIED", "INSUFFICIENT_EVIDENCE", "STALE",
+  "VERIFIED_POSITIVE", "VERIFIED_NEGATIVE", "NOT_VERIFIED", "INSUFFICIENT_EVIDENCE", "STALE",
 ] as const;
-export const MANPOWER_ACCEPTANCE_RULE_VERSION = "af-01@1.0.0";
+export const MANPOWER_ACCEPTANCE_RULE_VERSION = "af-01@2.0.0";
 
 export type ManpowerAcceptanceResult = (typeof MANPOWER_ACCEPTANCE_RESULTS)[number];
+export type PersistedManpowerAcceptanceResult = ManpowerAcceptanceResult | "VERIFIED";
+export const normalizeManpowerAcceptanceResult = (result: PersistedManpowerAcceptanceResult): ManpowerAcceptanceResult =>
+  result === "VERIFIED" ? "VERIFIED_POSITIVE" : result;
+export const isVerifiedPositiveManpowerAcceptance = (result: unknown): boolean =>
+  result === "VERIFIED_POSITIVE" || result === "VERIFIED";
 export type AcceptanceContext =
   | { type: "PROJECT"; id: string }
   | { type: "OPPORTUNITY"; id: string };

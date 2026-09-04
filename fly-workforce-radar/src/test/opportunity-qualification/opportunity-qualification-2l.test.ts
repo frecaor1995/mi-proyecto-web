@@ -94,7 +94,7 @@ describe("Phase 2L acceptance/routeGrades are wired from real Seed evidence, not
   });
   it("only an explicit VERIFIED af01VerificationState produces a VERIFIED acceptance",()=>{
     const a=acceptanceFor(baseSeed({af01Candidate:"x",af01VerificationState:"VERIFIED"}))!;
-    expect(a.result).toBe("VERIFIED");
+    expect(a.result).toBe("VERIFIED_POSITIVE");
   });
   it("acceptance result always matches the real domain vocabulary",()=>{
     for(const state of["MISSING","UNVERIFIED","VERIFIED","CONFLICTING"]as const){
@@ -147,7 +147,7 @@ describe("Phase 2L real opportunity replay guardrails -- corrected wiring must n
     const dossier=by("qual-beaumont-port-arthur"),g=graph(dossier);
     expect(dossier.af01Candidate).toBe("participation in contracting");
     expect(g.acceptance).not.toBeNull();
-    expect(g.acceptance!.result).not.toBe("VERIFIED");
+    expect(g.acceptance!.result).not.toBe("VERIFIED_POSITIVE");
     expect(g.routeGrades).toEqual([]);
     expect(dossier.eligibility.HOT_A_ELIGIBLE.eligible).toBe(false);
     expect(dossier.eligibility.HOT_A_ELIGIBLE.blockers).toContain("MANPOWER_ACCEPTANCE_REQUIRED");
@@ -217,7 +217,7 @@ describe("Phase 2L controlled positive proof -- corrected wiring lets genuine VE
   });
   it("produces a VERIFIED acceptance and a graded, VERIFIED route",()=>{
     const g=graph(verifiedFixture);
-    expect(g.acceptance!.result).toBe("VERIFIED");
+    expect(g.acceptance!.result).toBe("VERIFIED_POSITIVE");
     expect(g.routeGrades[0].grade).toBe("A");
     expect(g.contactRoutes[0].verification_state).toBe("VERIFIED");
   });
