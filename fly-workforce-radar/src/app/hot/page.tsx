@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="HOT Opportunities" description="Display only opportunities that satisfy the governed HOT requirements." icon="flame" backendReady/>}

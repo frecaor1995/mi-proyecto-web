@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Sources" description="Review source governance and operational capability without implying live scanning." icon="source" backendReady/>}

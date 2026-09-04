@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Commercial Actions" description="Prioritize evidence-backed operator work without executing outreach." icon="action" backendReady/>}

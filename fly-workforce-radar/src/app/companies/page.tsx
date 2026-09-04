@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Companies" description="Understand what is commercially known, verified, scoped, and current for each company." icon="building" backendReady/>}

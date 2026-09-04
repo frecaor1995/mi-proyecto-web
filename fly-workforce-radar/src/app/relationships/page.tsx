@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Relationships" description="Examine evidence-backed project, contractor, vendor, and workforce relationships." icon="relation" backendReady/>}

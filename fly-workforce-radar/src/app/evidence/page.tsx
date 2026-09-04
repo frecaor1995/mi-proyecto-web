@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Evidence" description="Trace commercial statements to claims, sources, currentness, and provenance." icon="evidence" backendReady/>}

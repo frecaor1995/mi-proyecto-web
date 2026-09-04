@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Contacts" description="Inspect business contact routes, authority, grades, scope, and currentness." icon="users" backendReady/>}

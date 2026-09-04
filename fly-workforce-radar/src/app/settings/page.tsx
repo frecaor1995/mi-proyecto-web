@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Settings" description="Workspace configuration will remain unavailable until access control is approved." icon="settings"/>}

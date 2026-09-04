@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Human Verification" description="Prepare governed verification work; interaction and assessment workflows are not implemented." icon="verify" backendReady/>}

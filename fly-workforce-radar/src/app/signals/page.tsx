@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Signals" description="Triage market observations without presenting a signal as a verified opportunity." icon="signal" backendReady/>}

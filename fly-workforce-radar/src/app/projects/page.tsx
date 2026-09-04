@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Projects" description="Review project identity, participants, workforce demand, and commercial ecosystem evidence." icon="project" backendReady/>}

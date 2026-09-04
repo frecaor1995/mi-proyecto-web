@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Opportunity Radar" description="Explore governed workforce demand and commercial readiness without losing evidence context." icon="radar" backendReady/>}

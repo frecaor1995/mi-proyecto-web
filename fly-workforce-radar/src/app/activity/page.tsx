@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Activity" description="A future audit-oriented view of governed system and operator events." icon="activity"/>}

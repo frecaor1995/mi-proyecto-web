@@ -1,0 +1,7 @@
+import { Icon } from "./icon";
+export const TRUST_STATES={VERIFIED:["Verified","check"],UNVERIFIED:["Not verified","info"],CANDIDATE:["Candidate evidence","radar"],INFERENCE:["Inference","relation"],STALE:["Stale","clock"],CONFLICT:["Conflicting evidence","warning"],MISSING_EVIDENCE:["Missing evidence","evidence"],HUMAN_VERIFICATION_REQUIRED:["Human verification required","verify"],BLOCKED:["Blocked","minus"],NOT_APPLICABLE:["Not applicable","minus"]}as const;
+export const CURRENTNESS_STATES={CURRENT:"Current",AGING:"Aging",STALE:"Stale",UNKNOWN:"Currentness unknown"}as const;
+export const SCOPE_STATES={COMPANY:"Company scope",DIVISION:"Division scope",PROJECT:"Project scope",TRADE:"Trade scope",UNKNOWN:"Scope unknown — not global"}as const;
+export function TrustState({state}:{state:keyof typeof TRUST_STATES}){const[label,icon]=TRUST_STATES[state];return <span className={`state-chip state-${state.toLowerCase()}`} aria-label={`Trust state: ${label}`}><Icon name={icon}/>{label}</span>}
+export function CurrentnessBadge({state}:{state:keyof typeof CURRENTNESS_STATES}){return <span className={`currentness currentness-${state.toLowerCase()}`} aria-label={`Currentness: ${CURRENTNESS_STATES[state]}`}><Icon name="clock"/>{CURRENTNESS_STATES[state]}</span>}
+export function ScopeBadge({scope}:{scope:keyof typeof SCOPE_STATES}){return <span className={`scope-badge scope-${scope.toLowerCase()}`} aria-label={`Scope: ${SCOPE_STATES[scope]}`}><Icon name={scope==="UNKNOWN"?"warning":"project"}/>{SCOPE_STATES[scope]}</span>}

@@ -1,0 +1,1 @@
+import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Near Ready" description="Identify opportunities with a small number of governed blockers remaining." icon="near" backendReady/>}
