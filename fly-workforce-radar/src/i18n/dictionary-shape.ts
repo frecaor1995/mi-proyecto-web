@@ -127,6 +127,22 @@ export interface Dictionary {
     readonly state: { readonly unavailableTitle: string; readonly unavailableDescription: string; readonly notFoundTitle: string; readonly notFoundDescription: string; readonly errorTitle: string; readonly errorDescription: string };
     readonly gap: Readonly<Record<string, string>>;
   };
+  readonly companyIntelligence: {
+    readonly eyebrow: string; readonly filtersLabel: string; readonly searchLabel: string; readonly searchPlaceholder: string;
+    readonly applyFilters: string; readonly clearFilters: string; readonly results: string; readonly page: string; readonly paginationLabel: string; readonly previous: string; readonly next: string;
+    readonly unavailableValue: string; readonly openCompany: string; readonly emptyOverline: string; readonly noResultsTitle: string; readonly noResultsDescription: string;
+    readonly noCompaniesTitle: string; readonly noCompaniesDescription: string; readonly capabilityOverline: string; readonly capabilityTitle: string; readonly capabilityDescription: string; readonly capabilityBoundary: string; readonly queryErrorTitle: string; readonly queryErrorDescription: string;
+    readonly column: { readonly company: string; readonly opportunities: string; readonly contactRoute: string; readonly manpowerAcceptance: string; readonly verification: string; readonly currentness: string; readonly nextStep: string };
+  };
+  readonly companyDetail: {
+    readonly eyebrow: string; readonly description: string; readonly back: string; readonly reference: string; readonly asOf: string; readonly unknown: string; readonly unavailable: string; readonly readOnly: string;
+    readonly section: { readonly overview: string; readonly opportunities: string; readonly contacts: string; readonly vendorRoute: string; readonly manpower: string; readonly verification: string; readonly evidence: string; readonly gaps: string };
+    readonly label: { readonly company: string; readonly identifier: string; readonly location: string; readonly role: string; readonly currentness: string; readonly project: string; readonly opportunity: string; readonly lifecycle: string; readonly name: string; readonly title: string; readonly routeType: string; readonly routeTarget: string; readonly grade: string; readonly result: string; readonly reason: string; readonly source: string; readonly captured: string; readonly claim: string; readonly provenance: string; readonly status: string; readonly due: string; readonly nextStep: string };
+    readonly manpower: { readonly positive: string; readonly negative: string; readonly candidate: string; readonly unknown: string };
+    readonly empty: { readonly opportunities: string; readonly contacts: string; readonly vendorRoute: string; readonly manpower: string; readonly verification: string; readonly evidence: string; readonly gaps: string };
+    readonly state: { readonly unavailableTitle: string; readonly unavailableDescription: string; readonly notFoundTitle: string; readonly notFoundDescription: string; readonly errorTitle: string; readonly errorDescription: string };
+    readonly gap: Readonly<Record<string, string>>;
+  };
   readonly verificationDesk: {
     readonly eyebrow:string;readonly title:string;readonly description:string;readonly results:string;readonly readOnly:string;readonly responseDisabled:string;readonly open:string;readonly back:string;readonly exactQuestion:string;readonly originalLanguage:string;readonly why:string;readonly nextStep:string;readonly context:string;readonly contactRoute:string;readonly evidence:string;readonly instructions:string;readonly unresolved:string;readonly followUp:string;readonly unknown:string;readonly unavailable:string;
     readonly column:{readonly verification:string;readonly context:string;readonly route:string;readonly status:string;readonly due:string;readonly next:string};

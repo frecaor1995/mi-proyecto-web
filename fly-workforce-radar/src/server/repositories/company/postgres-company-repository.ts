@@ -1,6 +1,6 @@
 import type { CompanyAliasRecord, CompanyRecord, CompanyResolution, CompanyRoleAssignment, CompanyRoleRecord } from "../../../domain/company";
 import type { SqlClient } from "../evidence/postgres-evidence-repository";
-import type { CompanyRepository, ResolutionAuditInput } from "./company-repository";
+import type { CompanyEnumerationEntry, CompanyEnumerationQuery, CompanyRepository, ResolutionAuditInput } from "./company-repository";
 
 interface CompanyRow { id: string; legal_name: string | null; common_name: string | null; normalized_legal_name: string | null; normalized_common_name: string | null; merged_into_company_id: string | null; first_seen_at: string | Date | null; last_seen_at: string | Date | null }
 interface AliasRow { id: string; company_id: string; alias: string; normalized_alias: string; verification_state: CompanyAliasRecord["verificationState"]; evidence_id: string | null; first_seen_at: string | Date; last_seen_at: string | Date; superseded_by_alias_id: string | null }
@@ -20,6 +20,49 @@ function role(row: RoleRow): CompanyRoleRecord {
 
 export class PostgresCompanyRepository implements CompanyRepository {
   constructor(private readonly client: SqlClient) {}
+  /**
+   * UI-7 addition, mirroring PostgresOpportunityRepository.enumerate() (UI-4).
+   * Every aggregate is a real join over an existing FK (opportunity_companies,
+   * contact_routes, manpower_acceptance_evaluations, human_verification_tasks
+   * all carry company_id) -- no aggregate here is invented or estimated.
+   */
+  async enumerate(input: CompanyEnumerationQuery) {
+    const search = input.search ? `%${input.search}%` : null;
+    const params = [search, input.limit, input.offset];
+    const result = await this.client.query<CompanyRow & { related_opportunity_count: string; contact_route_count: string; has_verified_contact_route: boolean; latest_manpower_result: string | null; pending_verification_count: string; total_count: string }>(
+      `select c.*,
+              coalesce(opp.count, 0)::text related_opportunity_count,
+              coalesce(rt.count, 0)::text contact_route_count,
+              coalesce(rt.has_verified, false) has_verified_contact_route,
+              af.result latest_manpower_result,
+              coalesce(hv.count, 0)::text pending_verification_count,
+              count(*) over()::text total_count
+         from companies c
+         left join lateral (select count(distinct opportunity_id) count from opportunity_companies where company_id = c.id) opp on true
+         left join lateral (select count(*) count, bool_or(verification_state = 'VERIFIED') has_verified from contact_routes where company_id = c.id) rt on true
+         left join lateral (select result from manpower_acceptance_evaluations where company_id = c.id order by evaluated_at desc limit 1) af on true
+         left join lateral (select count(*) count from human_verification_tasks where company_id = c.id and status not in ('COMPLETED','CANCELLED','DUPLICATE','UNRESOLVABLE')) hv on true
+        where c.merged_into_company_id is null
+          and ($1::text is null or c.legal_name ilike $1 or c.common_name ilike $1)
+        order by c.last_seen_at desc nulls last, c.id
+        limit $2 offset $3`,
+      params,
+    );
+    const items: CompanyEnumerationEntry[] = result.rows.map((row) => ({
+      company: company(row),
+      relatedOpportunityCount: Number(row.related_opportunity_count),
+      contactRouteCount: Number(row.contact_route_count),
+      hasVerifiedContactRoute: row.has_verified_contact_route,
+      latestManpowerResult: row.latest_manpower_result,
+      pendingVerificationCount: Number(row.pending_verification_count),
+    }));
+    return { items, total: result.rows.length ? Number(result.rows[0].total_count) : 0 };
+  }
+  /** UI-7 addition -- no by-id lookup existed on this repository before. */
+  async getById(id: string) {
+    const result = await this.client.query<CompanyRow>(`select ${companyColumns} from companies where id = $1`, [id]);
+    return result.rows[0] ? company(result.rows[0]) : null;
+  }
   async findByNormalizedName(normalized: string) {
     const result = await this.client.query<CompanyRow>(`select ${companyColumns} from companies where merged_into_company_id is null and (normalized_legal_name = $1 or normalized_common_name = $1) order by id`, [normalized]);
     return result.rows.map(company);

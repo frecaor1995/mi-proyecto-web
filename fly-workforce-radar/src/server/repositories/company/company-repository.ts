@@ -24,7 +24,21 @@ export interface ResolutionAuditInput {
   supersedesResolutionId?: string | null;
 }
 
+export interface CompanyEnumerationQuery { search: string; asOf: Date; limit: number; offset: number }
+export interface CompanyEnumerationEntry {
+  company: CompanyRecord;
+  relatedOpportunityCount: number;
+  contactRouteCount: number;
+  hasVerifiedContactRoute: boolean;
+  latestManpowerResult: string | null;
+  pendingVerificationCount: number;
+}
+
 export interface CompanyRepository {
+  /** UI-7 addition, mirrors OpportunityRepository.enumerate() (added for UI-4): canonical repositories could resolve a company by name/alias but could not enumerate or load one by its own id. */
+  enumerate(input: CompanyEnumerationQuery): Promise<{ items: CompanyEnumerationEntry[]; total: number }>;
+  /** UI-7 addition -- no by-id lookup existed on this repository before. */
+  getById(id: string): Promise<CompanyRecord | null>;
   findByNormalizedName(normalized: string): Promise<CompanyRecord[]>;
   findByVerifiedAlias(normalized: string): Promise<CompanyRecord[]>;
   createCompany(input: { legalName?: string | null; commonName?: string | null; normalized: string; observedAt: Date }): Promise<CompanyRecord>;
