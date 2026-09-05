@@ -134,6 +134,17 @@ export interface Dictionary {
     readonly noCompaniesTitle: string; readonly noCompaniesDescription: string; readonly capabilityOverline: string; readonly capabilityTitle: string; readonly capabilityDescription: string; readonly capabilityBoundary: string; readonly queryErrorTitle: string; readonly queryErrorDescription: string;
     readonly column: { readonly company: string; readonly opportunities: string; readonly contactRoute: string; readonly manpowerAcceptance: string; readonly verification: string; readonly currentness: string; readonly nextStep: string };
   };
+  readonly projectIntelligence: {
+    readonly eyebrow:string;readonly searchLabel:string;readonly searchPlaceholder:string;readonly apply:string;readonly clear:string;readonly results:string;readonly page:string;readonly previous:string;readonly next:string;readonly open:string;readonly unknown:string;
+    readonly column:{readonly project:string;readonly location:string;readonly companies:string;readonly opportunities:string;readonly trades:string;readonly headcount:string;readonly verification:string;readonly currentness:string;readonly next:string};
+    readonly empty:{readonly title:string;readonly filtered:string;readonly description:string};readonly unavailable:{readonly title:string;readonly description:string;readonly boundary:string};readonly error:{readonly title:string;readonly description:string};
+  };
+  readonly projectDetail: {
+    readonly eyebrow:string;readonly description:string;readonly back:string;readonly readOnly:string;readonly reference:string;readonly unknown:string;readonly relatedOnly:string;readonly routeCaution:string;
+    readonly section:{readonly overview:string;readonly companies:string;readonly demand:string;readonly opportunities:string;readonly contacts:string;readonly vendor:string;readonly acceptance:string;readonly verification:string;readonly evidence:string;readonly gaps:string;readonly next:string};
+    readonly label:{readonly location:string;readonly firstSeen:string;readonly lastSeen:string;readonly role:string;readonly trade:string;readonly headcount:string;readonly perDiem:string;readonly schedule:string;readonly company:string;readonly lifecycle:string;readonly route:string;readonly grade:string;readonly source:string;readonly captured:string};
+    readonly acceptance:{readonly positive:string;readonly negative:string;readonly unresolved:string};readonly empty:Readonly<Record<string,string>>;readonly gap:Readonly<Record<string,string>>;readonly state:{readonly unavailableTitle:string;readonly unavailableDescription:string;readonly notFoundTitle:string;readonly notFoundDescription:string;readonly errorTitle:string;readonly errorDescription:string};
+  };
   readonly companyDetail: {
     readonly eyebrow: string; readonly description: string; readonly back: string; readonly reference: string; readonly asOf: string; readonly unknown: string; readonly unavailable: string; readonly readOnly: string;
     readonly section: { readonly overview: string; readonly opportunities: string; readonly contacts: string; readonly vendorRoute: string; readonly manpower: string; readonly verification: string; readonly evidence: string; readonly gaps: string };

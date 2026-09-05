@@ -1,52 +1,20 @@
-import type { ProjectRelationship } from "@/domain/temporal-project-intelligence";
-import type { ReadModelCapabilityState } from "./shared";
+import type { ReadModelCurrentness, ReadModelTrustState } from "./shared";
+import type { ProjectBundle, ProjectListRow } from "../repositories/project-intelligence/postgres-project-intelligence-repository";
+import type { ProjectRelationship } from "../../domain/temporal-project-intelligence";
 
-export interface ProjectRelationshipView {
-  readonly companyName: string | null;
-  readonly relationship: ProjectRelationship;
-  readonly evidenceRefs: readonly string[];
-}
+export interface ProjectRelationshipView { readonly companyName:string|null;readonly relationship:ProjectRelationship;readonly evidenceRefs:readonly string[] }
+export interface ProjectIntelligenceAssemblyInput {readonly projectId:string;readonly projectName?:string|null;readonly relationships?:readonly ProjectRelationshipView[];readonly location?:string|null;readonly startDate?:Date|null;readonly completionDate?:Date|null}
+export function assembleProjectIntelligenceProfile(input:ProjectIntelligenceAssemblyInput){return{projectId:input.projectId,projectName:input.projectName??null,capabilityState:"UNAVAILABLE" as const,relationships:input.relationships??[],location:{capabilityState:input.location?"PARTIAL" as const:"UNAVAILABLE" as const,value:input.location??null},timeline:{capabilityState:input.startDate||input.completionDate?"PARTIAL" as const:"UNAVAILABLE" as const,startDate:input.startDate?.toISOString()??null,completionDate:input.completionDate?.toISOString()??null}}}
 
-/**
- * There is no canonical Project entity in the backend today (UI-2 research
- * finding 2): OpportunityRecord.projectId and HumanVerificationScope.projectId
- * are opaque id/string references with nothing to join against, and
- * temporal-project-intelligence.ts's ProjectEvidenceCandidate is evidence
- * ABOUT a project, not a resolved Project record. This contract exists so a
- * future backend phase has a stable shape to populate; today's assembler can
- * only echo the opaque reference it was given and marks the profile
- * UNAVAILABLE at the top level -- never OPERATIONAL -- regardless of which
- * optional fields a caller happens to supply.
- */
-export interface ProjectIntelligenceProfile {
-  readonly projectId: string;
-  readonly projectName: string | null;
-  readonly capabilityState: ReadModelCapabilityState;
-  readonly relationships: readonly ProjectRelationshipView[];
-  readonly location: { readonly capabilityState: ReadModelCapabilityState; readonly value: string | null };
-  readonly timeline: { readonly capabilityState: ReadModelCapabilityState; readonly startDate: string | null; readonly completionDate: string | null };
-}
-
-export interface ProjectIntelligenceAssemblyInput {
-  readonly projectId: string;
-  readonly projectName?: string | null;
-  readonly relationships?: readonly ProjectRelationshipView[];
-  readonly location?: string | null;
-  readonly startDate?: Date | null;
-  readonly completionDate?: Date | null;
-}
-
-export function assembleProjectIntelligenceProfile(input: ProjectIntelligenceAssemblyInput): ProjectIntelligenceProfile {
-  return {
-    projectId: input.projectId,
-    projectName: input.projectName ?? null,
-    capabilityState: "UNAVAILABLE",
-    relationships: input.relationships ?? [],
-    location: { capabilityState: input.location ? "PARTIAL" : "UNAVAILABLE", value: input.location ?? null },
-    timeline: {
-      capabilityState: input.startDate || input.completionDate ? "PARTIAL" : "UNAVAILABLE",
-      startDate: input.startDate ? input.startDate.toISOString() : null,
-      completionDate: input.completionDate ? input.completionDate.toISOString() : null,
-    },
-  };
+const iso=(v:string|Date|null)=>v?new Date(v).toISOString():null;
+const currentness=(last:string|Date|null,stale:string|Date|null,now:Date):ReadModelCurrentness=>!last?"UNKNOWN":stale&&new Date(stale)<=now?"STALE":now.getTime()-new Date(last).getTime()>1000*60*60*24*90?"AGING":"CURRENT";
+export interface ProjectListItem {projectId:string;name:string|null;location:string|null;companyCount:number;opportunityCount:number;tradeCount:number;knownHeadcount:number|null;pendingVerificationCount:number;evidenceCount:number;currentness:ReadModelCurrentness;nextNeed:string}
+export interface ProjectDetailView {overview:{projectId:string;name:string|null;location:string|null;ownerCompanyId:string|null;firstSeenAt:string|null;lastSeenAt:string|null;currentness:ReadModelCurrentness};companies:readonly {companyId:string;name:string|null;role:string;trust:ReadModelTrustState;evidenceId:string|null;buyerVerified:false}[];demands:readonly {id:string;title:string|null;trade:string|null;location:string|null;headcount:number|null;perDiem:number|null;perDiemKnown:boolean;schedule:string|null;publishedAt:string|null;currentness:ReadModelCurrentness}[];opportunities:readonly {id:string;title:string|null;companyName:string|null;lifecycle:string;currentness:ReadModelCurrentness}[];contacts:readonly {id:string;companyId:string;companyName:string|null;name:string;title:string|null;routeType:string|null;target:string|null;grade:string|null;trust:ReadModelTrustState;buyerVerified:false;currentness:ReadModelCurrentness}[];vendorRoutes:readonly {id:string;companyName:string|null;type:string;target:string|null;instructions:string|null;lifecycle:string;manpowerAcceptance:false;currentness:ReadModelCurrentness}[];acceptance:{result:"VERIFIED_POSITIVE"|"VERIFIED_NEGATIVE"|"UNRESOLVED";reason:string|null;evaluatedAt:string|null}|null;verification:readonly {id:string;status:string;objective:string;question:string;dueAt:string|null}[];evidence:readonly {id:string;source:string|null;url:string;type:string;capturedAt:string}[];gaps:readonly string[];nextNeeds:readonly string[];asOf:string}
+export const assembleProjectListItem=(r:ProjectListRow,now:Date):ProjectListItem=>({projectId:r.id,name:r.name,location:r.location_text??([r.city,r.county,r.state].filter(Boolean).join(", ")||null),companyCount:Number(r.company_count),opportunityCount:Number(r.opportunity_count),tradeCount:Number(r.trade_count),knownHeadcount:r.known_headcount===null?null:Number(r.known_headcount),pendingVerificationCount:Number(r.pending_verification_count),evidenceCount:Number(r.evidence_count),currentness:currentness(r.last_seen_at,null,now),nextNeed:Number(r.company_count)===0?"IDENTIFY_COMPANIES":r.known_headcount===null?"VERIFY_WORKFORCE_QUANTITY":Number(r.evidence_count)===0?"SOURCE_EVIDENCE":"REVIEW_PROJECT"});
+export function assembleProjectDetail(b:ProjectBundle,now:Date):ProjectDetailView{
+  const latest=b.acceptance[0];
+  const acceptance=latest?{result:latest.result==="VERIFIED"?"VERIFIED_POSITIVE" as const:latest.result==="NOT_VERIFIED"?"VERIFIED_NEGATIVE" as const:"UNRESOLVED" as const,reason:latest.reason,evaluatedAt:iso(latest.evaluated_at)}:null;
+  const gaps:string[]=[];
+  if(!b.project.owner_company_id)gaps.push("OWNER_UNVERIFIED"); if(!b.companies.length)gaps.push("COMPANY_RELATIONSHIPS_INCOMPLETE"); if(b.demands.some(x=>x.headcount_estimate===null)||!b.demands.length)gaps.push("WORKFORCE_QUANTITY_UNKNOWN"); if(!acceptance||acceptance.result==="UNRESOLVED")gaps.push("MANPOWER_ACCEPTANCE_UNRESOLVED"); if(!b.contacts.length)gaps.push("BUYER_ROUTE_UNVERIFIED"); if(!b.vendorRoutes.length)gaps.push("VENDOR_ROUTE_UNAVAILABLE"); if(!b.evidence.length)gaps.push("EVIDENCE_UNAVAILABLE"); if(b.verification.some(x=>!["COMPLETED","CANCELLED","DUPLICATE"].includes(x.status)))gaps.push("HUMAN_VERIFICATION_REQUIRED");
+  return {overview:{projectId:b.project.id,name:b.project.name,location:b.project.location_text??([b.project.city,b.project.county,b.project.state].filter(Boolean).join(", ")||null),ownerCompanyId:b.project.owner_company_id,firstSeenAt:iso(b.project.first_seen_at),lastSeenAt:iso(b.project.last_seen_at),currentness:currentness(b.project.last_seen_at,null,now)},companies:b.companies.map(x=>({companyId:x.company_id,name:x.company_name,role:x.role,trust:x.verification_state as ReadModelTrustState,evidenceId:x.evidence_id,buyerVerified:false as const})),demands:b.demands.map(x=>({id:x.id,title:x.title,trade:x.role_type,location:[x.city,x.state].filter(Boolean).join(", ")||null,headcount:x.headcount_estimate,perDiem:x.per_diem_amount,perDiemKnown:x.per_diem_available!==null,schedule:x.schedule,publishedAt:iso(x.published_at),currentness:currentness(x.last_seen_at,x.stale_after,now)})),opportunities:b.opportunities.map(x=>({id:x.id,title:x.title,companyName:x.company_name,lifecycle:x.lifecycle,currentness:currentness(x.last_seen_at,null,now)})),contacts:b.contacts.map(x=>({id:x.id,companyId:x.company_id,companyName:x.company_name,name:x.name,title:x.title,routeType:x.route_type,target:x.target,grade:x.route_grade,trust:(x.route_verification_state??x.verification_state) as ReadModelTrustState,buyerVerified:false as const,currentness:currentness(x.route_last_seen_at,x.route_stale_after,now)})),vendorRoutes:b.vendorRoutes.map(x=>({id:x.id,companyName:x.company_name,type:x.route_type,target:x.target,instructions:x.instructions,lifecycle:x.lifecycle,manpowerAcceptance:false as const,currentness:currentness(x.last_seen_at,x.stale_after,now)})),acceptance,verification:b.verification.map(x=>({id:x.id,status:x.status,objective:x.verification_objective,question:x.primary_question,dueAt:iso(x.due_at)})),evidence:b.evidence.map(x=>({id:x.id,source:x.source_name,url:x.source_url,type:x.supported_context,capturedAt:iso(x.captured_at)!})),gaps,nextNeeds:gaps.slice(0,4),asOf:now.toISOString()};
 }
