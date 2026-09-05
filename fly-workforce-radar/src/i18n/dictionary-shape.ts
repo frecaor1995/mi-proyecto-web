@@ -118,6 +118,15 @@ export interface Dictionary {
     readonly currentnessOption: { readonly all: string; readonly CURRENT: string; readonly AGING: string; readonly STALE: string; readonly UNKNOWN: string };
     readonly sortOption: { readonly company: string; readonly project: string; readonly currentness: string; readonly commercial: string };
   };
+  readonly opportunityDetail: {
+    readonly eyebrow: string; readonly description: string; readonly back: string; readonly reference: string; readonly asOf: string; readonly unknown: string; readonly unavailable: string; readonly readOnly: string;
+    readonly section: { readonly demand: string; readonly route: string; readonly acceptance: string; readonly verification: string; readonly evidence: string; readonly gaps: string };
+    readonly label: { readonly company: string; readonly project: string; readonly location: string; readonly lifecycle: string; readonly currentness: string; readonly trade: string; readonly occupation: string; readonly specialty: string; readonly headcount: string; readonly hours: string; readonly duration: string; readonly start: string; readonly perDiem: string; readonly demandStatus: string; readonly buyer: string; readonly role: string; readonly contact: string; readonly authority: string; readonly route: string; readonly grade: string; readonly vendorRoute: string; readonly result: string; readonly reason: string; readonly source: string; readonly captured: string; readonly published: string; readonly claim: string; readonly provenance: string };
+    readonly acceptance: { readonly positive: string; readonly negative: string; readonly candidate: string; readonly unknown: string };
+    readonly empty: { readonly demand: string; readonly route: string; readonly verification: string; readonly evidence: string; readonly gaps: string };
+    readonly state: { readonly unavailableTitle: string; readonly unavailableDescription: string; readonly notFoundTitle: string; readonly notFoundDescription: string; readonly errorTitle: string; readonly errorDescription: string };
+    readonly gap: Readonly<Record<string, string>>;
+  };
   readonly commercialAction: {
     readonly CALL_TODAY: string;
     readonly EMAIL_TODAY: string;

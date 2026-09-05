@@ -1,60 +1,36 @@
-import type { OpportunityRadarItem } from "./opportunity-radar";
-import type { ProvenanceRef, ReadModelCapabilityState } from "./shared";
+import type { OpportunityGraph, OpportunityGap } from "@/domain/opportunity";
+import type { ReadModelCapabilityState, ReadModelCurrentness, ReadModelTrustState } from "./shared";
+import { currentnessFromStaleAfter, mapDatabaseVerificationState, mapManpowerAcceptanceTrustState } from "./shared";
 
-/**
- * Detail-view contract for a future UI-5 opportunity page. UI-2 defines the
- * shape only -- it does not implement the detail UI (section 12) and does
- * not fetch evidence/verification data on its own. Nested sections carry
- * explicit id references rather than embedded read models, so this contract
- * stays cheap to construct today and can be filled in incrementally without
- * a breaking shape change.
- */
+export interface DetailField { readonly value: string | number | boolean | null; readonly state: "KNOWN" | "UNKNOWN" }
+export interface OpportunityDetailEvidence { readonly id: string; readonly sourceUrl: string | null; readonly source: string | null; readonly type: string | null; readonly capturedAt: string | null; readonly publishedAt: string | null; readonly claim: string | null; readonly trust: ReadModelTrustState; readonly currentness: ReadModelCurrentness }
 export interface OpportunityIntelligenceDetail {
-  readonly overview: OpportunityRadarItem;
-  readonly workforceDemand: { readonly capabilityState: ReadModelCapabilityState; readonly summary: string | null };
-  readonly commercialRoute: { readonly capabilityState: ReadModelCapabilityState; readonly vendorRouteId: string | null; readonly bestContactRouteId: string | null };
-  readonly externalManpowerAcceptance: OpportunityRadarItem["externalManpowerAcceptance"];
-  readonly qualificationRoute: { readonly capabilityState: ReadModelCapabilityState; readonly requirementIds: readonly string[] };
-  readonly evidenceRefs: readonly ProvenanceRef[];
-  readonly conflictSummaries: readonly string[];
-  readonly humanVerificationTaskIds: readonly string[];
-  readonly nextCommercialActionId: string | null;
-  readonly technicalMetadata: { readonly ruleVersions: Readonly<Record<string, string>> };
+  readonly opportunityId: string; readonly reference: string; readonly title: string | null; readonly lifecycle: string; readonly company: string | null; readonly project: string | null; readonly location: string | null; readonly currentness: ReadModelCurrentness; readonly asOf: string;
+  readonly demand: readonly { readonly id: string; readonly trade: DetailField; readonly occupation: DetailField; readonly specialty: DetailField; readonly headcount: DetailField; readonly hoursPerWeek: DetailField; readonly duration: DetailField; readonly startTiming: DetailField; readonly perDiem: DetailField; readonly status: string }[];
+  readonly commercialRoute: { readonly capability: ReadModelCapabilityState; readonly buyerOrganizations: readonly { readonly name: string | null; readonly role: string | null; readonly trust: ReadModelTrustState }[]; readonly people: readonly { readonly id: string; readonly name: string; readonly title: string | null; readonly function: string | null; readonly trust: ReadModelTrustState }[]; readonly routes: readonly { readonly id: string; readonly type: string; readonly target: string; readonly grade: string | null; readonly trust: ReadModelTrustState; readonly currentness: ReadModelCurrentness }[]; readonly vendorRoutes: readonly { readonly id: string; readonly type: string; readonly target: string | null; readonly instructions: string | null; readonly lifecycle: string; readonly currentness: ReadModelCurrentness }[] };
+  readonly acceptance: null | { readonly result: string; readonly accepted: boolean | null; readonly reason: string | null; readonly trust: ReadModelTrustState; readonly currentness: ReadModelCurrentness; readonly categories: readonly string[]; readonly evidenceIds: readonly string[] };
+  readonly humanVerification: { readonly capability: ReadModelCapabilityState; readonly decisions: readonly { readonly id: string; readonly targetType: string; readonly decision: string; readonly reason: string; readonly decidedAt: string; readonly evidenceIds: readonly string[] }[] };
+  readonly evidence: readonly OpportunityDetailEvidence[]; readonly gaps: readonly OpportunityGap[]; readonly conflicts: readonly string[];
 }
-
-export interface OpportunityIntelligenceDetailInput {
-  readonly overview: OpportunityRadarItem;
-  readonly workforceDemandSummary?: string | null;
-  readonly vendorRouteId?: string | null;
-  readonly bestContactRouteId?: string | null;
-  readonly qualificationRequirementIds?: readonly string[];
-  readonly conflictSummaries?: readonly string[];
-  readonly humanVerificationTaskIds?: readonly string[];
-  readonly nextCommercialActionId?: string | null;
-  readonly ruleVersions?: Readonly<Record<string, string>>;
-}
-
-export function assembleOpportunityIntelligenceDetail(input: OpportunityIntelligenceDetailInput): OpportunityIntelligenceDetail {
+const text = (row: Record<string, unknown> | null, ...keys: string[]) => { for (const key of keys) { const value = row?.[key]; if (typeof value === "string" && value.trim()) return value; } return null; };
+const date = (row: Record<string, unknown> | null, ...keys: string[]) => { const value = keys.map(key => row?.[key]).find(Boolean); return value ? new Date(value as string | Date) : null; };
+const field = (value: string | number | boolean | null | undefined): DetailField => value === null || value === undefined || value === "" ? { value: null, state: "UNKNOWN" } : { value, state: "KNOWN" };
+export function assembleOpportunityIntelligenceDetail(graph: Omit<OpportunityGraph, "gaps" | "conflicts" | "descriptiveOnly"> & { readonly gaps?: readonly OpportunityGap[]; readonly conflicts?: readonly string[] }, asOf: Date): OpportunityIntelligenceDetail {
+  const company = graph.companies[0] ?? null, project = graph.project, acceptance = graph.acceptance;
+  const claimByEvidence = new Map<string, Record<string, unknown>>(); for (const claim of graph.claims) { const id = text(claim, "supporting_evidence_id", "supportingEvidenceId"); if (id && !claimByEvidence.has(id)) claimByEvidence.set(id, claim); }
+  const gradeByRoute = new Map(graph.routeGrades.map(grade => [text(grade, "contact_route_id", "contactRouteId"), text(grade, "grade")]));
+  const cityState = [text(project, "city"), text(project, "state")].filter(Boolean).join(", ");
   return {
-    overview: input.overview,
-    workforceDemand: {
-      capabilityState: input.workforceDemandSummary ? "PARTIAL" : "UNAVAILABLE",
-      summary: input.workforceDemandSummary ?? null,
-    },
-    commercialRoute: {
-      capabilityState: input.vendorRouteId || input.bestContactRouteId ? "PARTIAL" : "UNAVAILABLE",
-      vendorRouteId: input.vendorRouteId ?? null,
-      bestContactRouteId: input.bestContactRouteId ?? null,
-    },
-    externalManpowerAcceptance: input.overview.externalManpowerAcceptance,
-    qualificationRoute: {
-      capabilityState: (input.qualificationRequirementIds?.length ?? 0) > 0 ? "PARTIAL" : "UNAVAILABLE",
-      requirementIds: input.qualificationRequirementIds ?? [],
-    },
-    evidenceRefs: input.overview.provenanceRefs,
-    conflictSummaries: input.conflictSummaries ?? [],
-    humanVerificationTaskIds: input.humanVerificationTaskIds ?? [],
-    nextCommercialActionId: input.nextCommercialActionId ?? null,
-    technicalMetadata: { ruleVersions: input.ruleVersions ?? {} },
-  };
+    opportunityId: graph.opportunity.id, reference: graph.opportunity.identityKey, title: graph.opportunity.title, lifecycle: graph.opportunity.lifecycle,
+    company: text(company, "common_name", "commonName", "legal_name", "legalName") ?? graph.opportunity.unresolvedCompanyContext, project: text(project, "name") ?? graph.opportunity.title, location: text(project, "location_text", "locationText") ?? (cityState || null),
+    currentness: currentnessFromStaleAfter(asOf, graph.opportunity.staleAfter), asOf: asOf.toISOString(),
+    demand: graph.demandSignals.map(signal => ({ id: String(signal.id), trade: field(text(signal, "trade_id", "trade", "role_type")), occupation: field(text(signal, "occupation_id", "occupation")), specialty: field(text(signal, "specialty")), headcount: field(signal.headcount_estimate as number | null), hoursPerWeek: field(signal.hours_per_week as number | null), duration: field(text(signal, "duration")), startTiming: field(text(signal, "start_date", "start_timing")), perDiem: field(signal.per_diem_available === false ? false : signal.per_diem_amount as number | null), status: currentnessFromStaleAfter(asOf, date(signal, "stale_after")) })),
+    commercialRoute: { capability: graph.companyRoles.length || graph.contactPeople.length || graph.contactRoutes.length || graph.vendorRoutes.length ? "PARTIAL" : "UNAVAILABLE",
+      buyerOrganizations: graph.companyRoles.map(role => ({ name: text(company, "common_name", "commonName", "legal_name", "legalName"), role: text(role, "role"), trust: role.verification_state ? mapDatabaseVerificationState(role.verification_state as "UNVERIFIED" | "VERIFIED" | "REJECTED" | "STALE") : "UNVERIFIED" })),
+      people: graph.contactPeople.map(person => ({ id: String(person.id), name: text(person, "name", "full_name") ?? "", title: text(person, "title"), function: text(person, "contact_function", "department"), trust: mapDatabaseVerificationState((person.verification_state ?? "UNVERIFIED") as "UNVERIFIED" | "VERIFIED" | "REJECTED" | "STALE") })),
+      routes: graph.contactRoutes.map(route => ({ id: String(route.id), type: text(route, "route_type") ?? "UNKNOWN", target: text(route, "target", "observed_target") ?? "", grade: gradeByRoute.get(String(route.id)) ?? text(route, "route_grade"), trust: mapDatabaseVerificationState((route.verification_state ?? "UNVERIFIED") as "UNVERIFIED" | "VERIFIED" | "REJECTED" | "STALE"), currentness: currentnessFromStaleAfter(asOf, date(route, "stale_after")) })),
+      vendorRoutes: graph.vendorRoutes.map(route => ({ id: String(route.id), type: text(route, "route_type") ?? "UNKNOWN", target: text(route, "target"), instructions: text(route, "instructions"), lifecycle: text(route, "lifecycle") ?? "UNKNOWN", currentness: currentnessFromStaleAfter(asOf, date(route, "stale_after")) })) },
+    acceptance: acceptance ? { result: text(acceptance, "result") ?? "NOT_VERIFIED", accepted: acceptance.result === "VERIFIED_POSITIVE" ? true : acceptance.result === "VERIFIED_NEGATIVE" ? false : null, reason: text(acceptance, "reason"), trust: mapManpowerAcceptanceTrustState((acceptance.result ?? "NOT_VERIFIED") as never), currentness: currentnessFromStaleAfter(asOf, date(acceptance, "valid_until")), categories: Array.isArray(acceptance.qualifying_categories) ? acceptance.qualifying_categories as string[] : [], evidenceIds: Array.isArray(acceptance.supporting_evidence_ids) ? acceptance.supporting_evidence_ids as string[] : [] } : null,
+    humanVerification: { capability: graph.verificationReviews.length ? "PARTIAL" : "UNAVAILABLE", decisions: graph.verificationReviews.map(review => ({ id: String(review.id), targetType: text(review, "target_type") ?? "UNKNOWN", decision: text(review, "decision") ?? "UNKNOWN", reason: text(review, "reason") ?? "", decidedAt: date(review, "decided_at")?.toISOString() ?? asOf.toISOString(), evidenceIds: Array.isArray(review.evidence_ids) ? review.evidence_ids as string[] : [] })) },
+    evidence: graph.evidence.map(item => { const id = String(item.id), claim = claimByEvidence.get(id) ?? null; return { id, sourceUrl: text(item, "source_url"), source: text(item, "source_id"), type: text(item, "capture_method"), capturedAt: date(item, "captured_at")?.toISOString() ?? null, publishedAt: date(item, "published_at")?.toISOString() ?? null, claim: text(claim, "predicate"), trust: claim?.verification_state ? mapDatabaseVerificationState(claim.verification_state as "UNVERIFIED" | "VERIFIED" | "REJECTED" | "STALE") : "UNVERIFIED", currentness: currentnessFromStaleAfter(asOf, date(claim, "stale_after")) }; }), gaps: graph.gaps ?? [], conflicts: graph.conflicts ?? [] };
 }
