@@ -127,6 +127,12 @@ export interface Dictionary {
     readonly state: { readonly unavailableTitle: string; readonly unavailableDescription: string; readonly notFoundTitle: string; readonly notFoundDescription: string; readonly errorTitle: string; readonly errorDescription: string };
     readonly gap: Readonly<Record<string, string>>;
   };
+  readonly verificationDesk: {
+    readonly eyebrow:string;readonly title:string;readonly description:string;readonly results:string;readonly readOnly:string;readonly responseDisabled:string;readonly open:string;readonly back:string;readonly exactQuestion:string;readonly originalLanguage:string;readonly why:string;readonly nextStep:string;readonly context:string;readonly contactRoute:string;readonly evidence:string;readonly instructions:string;readonly unresolved:string;readonly followUp:string;readonly unknown:string;readonly unavailable:string;
+    readonly column:{readonly verification:string;readonly context:string;readonly route:string;readonly status:string;readonly due:string;readonly next:string};
+    readonly empty:{readonly title:string;readonly description:string;readonly route:string;readonly evidence:string;readonly packet:string};
+    readonly state:{readonly unavailableTitle:string;readonly unavailableDescription:string;readonly errorTitle:string;readonly errorDescription:string;readonly notFoundTitle:string;readonly notFoundDescription:string};
+  };
   readonly commercialAction: {
     readonly CALL_TODAY: string;
     readonly EMAIL_TODAY: string;
