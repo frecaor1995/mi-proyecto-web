@@ -1,1 +1,2 @@
-import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Settings" description="Workspace configuration will remain unavailable until access control is approved." icon="settings"/>}
+import{CapabilityPage}from"../../components/ui/capability-page";import{resolveServerLocale}from"../../i18n/server-locale";import{t}from"../../i18n/translate";
+export default async function Page(){const locale=await resolveServerLocale();return <CapabilityPage title={t(locale,"routes.settings.title")} description={t(locale,"routes.settings.description")} icon="settings" locale={locale}/>}

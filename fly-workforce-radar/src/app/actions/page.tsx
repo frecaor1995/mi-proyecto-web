@@ -1,1 +1,2 @@
-import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Commercial Actions" description="Prioritize evidence-backed operator work without executing outreach." icon="action" backendReady/>}
+import{CapabilityPage}from"../../components/ui/capability-page";import{resolveServerLocale}from"../../i18n/server-locale";import{t}from"../../i18n/translate";
+export default async function Page(){const locale=await resolveServerLocale();return <CapabilityPage title={t(locale,"routes.actions.title")} description={t(locale,"routes.actions.description")} icon="action" backendReady locale={locale}/>}

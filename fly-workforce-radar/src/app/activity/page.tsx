@@ -1,1 +1,2 @@
-import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Activity" description="A future audit-oriented view of governed system and operator events." icon="activity"/>}
+import{CapabilityPage}from"../../components/ui/capability-page";import{resolveServerLocale}from"../../i18n/server-locale";import{t}from"../../i18n/translate";
+export default async function Page(){const locale=await resolveServerLocale();return <CapabilityPage title={t(locale,"routes.activity.title")} description={t(locale,"routes.activity.description")} icon="activity" locale={locale}/>}

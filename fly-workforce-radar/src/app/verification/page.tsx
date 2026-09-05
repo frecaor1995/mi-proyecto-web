@@ -1,1 +1,2 @@
-import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Human Verification" description="Prepare governed verification work; interaction and assessment workflows are not implemented." icon="verify" backendReady/>}
+import{CapabilityPage}from"../../components/ui/capability-page";import{resolveServerLocale}from"../../i18n/server-locale";import{t}from"../../i18n/translate";
+export default async function Page(){const locale=await resolveServerLocale();return <CapabilityPage title={t(locale,"routes.verification.title")} description={t(locale,"routes.verification.description")} icon="verify" backendReady locale={locale}/>}

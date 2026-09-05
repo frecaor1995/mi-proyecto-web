@@ -1,1 +1,2 @@
-import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Evidence" description="Trace commercial statements to claims, sources, currentness, and provenance." icon="evidence" backendReady/>}
+import{CapabilityPage}from"../../components/ui/capability-page";import{resolveServerLocale}from"../../i18n/server-locale";import{t}from"../../i18n/translate";
+export default async function Page(){const locale=await resolveServerLocale();return <CapabilityPage title={t(locale,"routes.evidence.title")} description={t(locale,"routes.evidence.description")} icon="evidence" backendReady locale={locale}/>}

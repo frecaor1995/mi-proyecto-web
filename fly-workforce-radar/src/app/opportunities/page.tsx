@@ -1,1 +1,2 @@
-import{CapabilityPage}from"../../components/ui/capability-page";export default function Page(){return <CapabilityPage title="Opportunity Radar" description="Explore governed workforce demand and commercial readiness without losing evidence context." icon="radar" backendReady/>}
+import{CapabilityPage}from"../../components/ui/capability-page";import{resolveServerLocale}from"../../i18n/server-locale";import{t}from"../../i18n/translate";
+export default async function Page(){const locale=await resolveServerLocale();return <CapabilityPage title={t(locale,"routes.opportunities.title")} description={t(locale,"routes.opportunities.description")} icon="radar" backendReady locale={locale}/>}
