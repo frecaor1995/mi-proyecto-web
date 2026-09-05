@@ -75,6 +75,46 @@ export interface Dictionary {
     readonly trustPreviewOverline: string;
     readonly trustPreviewTitle: string;
     readonly trustPreviewDescription: string;
+    readonly metricKindLabel: {
+      readonly HOT_OPPORTUNITIES: string;
+      readonly NEAR_READY_OPPORTUNITIES: string;
+      readonly VERIFICATION_WORK: string;
+      readonly ACTIONABLE_ROUTES: string;
+      readonly STALE_EVIDENCE: string;
+      readonly CONFLICTS: string;
+      readonly BLOCKED_ITEMS: string;
+      readonly PRIORITIZED_ACTIONS: string;
+    };
+    readonly metricsSectionTitle: string;
+    readonly knownZeroTemplate: string;
+    readonly unknownCountTemplate: string;
+    readonly unavailableMetricTemplate: string;
+    readonly noAttentionItems: string;
+    readonly attentionMissingEvidenceLabel: string;
+    readonly opportunityStateTitle: string;
+    readonly opportunityStateHot: string;
+    readonly opportunityStateNearReady: string;
+    readonly opportunityStateVerificationRequired: string;
+    readonly commercialActionsTitle: string;
+    readonly commercialActionsEmpty: string;
+    readonly verificationSectionTitle: string;
+    readonly verificationReadOnlyNote: string;
+    readonly verificationViewLink: string;
+    readonly radarCapabilityTitle: string;
+    readonly radarCapabilityStatement: string;
+    readonly dataTrustTitle: string;
+    readonly asOfLabel: string;
+  };
+  readonly commercialAction: {
+    readonly CALL_TODAY: string;
+    readonly EMAIL_TODAY: string;
+    readonly CONTACT_RECRUITER: string;
+    readonly REGISTER_AS_VENDOR: string;
+    readonly VERIFY_CONTACT: string;
+    readonly VERIFY_MANPOWER_ACCEPTANCE: string;
+    readonly RESEARCH_PROJECT: string;
+    readonly RESOLVE_CONFLICT: string;
+    readonly WAIT: string;
   };
   readonly capability: {
     readonly notConnectedYetTemplate: string;
@@ -127,6 +167,13 @@ export interface Dictionary {
     readonly trustPrefix: string;
     readonly currentnessPrefix: string;
     readonly scopePrefix: string;
+  };
+  readonly capabilityState: {
+    readonly OPERATIONAL: string;
+    readonly PARTIAL: string;
+    readonly PLANNED: string;
+    readonly UNAVAILABLE: string;
+    readonly UNKNOWN: string;
   };
   readonly emptyState: { readonly dataIntegrationPending: string };
   readonly loading: { readonly default: string };
