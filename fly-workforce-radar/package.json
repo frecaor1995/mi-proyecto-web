@@ -2,7 +2,10 @@
   "name": "fly-workforce-radar",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": "24.15.0", "npm": "11.12.1" },
+  "engines": {
+    "node": "24.15.0",
+    "npm": "11.12.1"
+  },
   "packageManager": "npm@11.12.1",
   "scripts": {
     "dev": "next dev",
@@ -43,12 +46,14 @@
   },
   "dependencies": {
     "next": "16.3.1",
+    "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.5",
     "@types/node": "26.2.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "eslint": "9.39.5",

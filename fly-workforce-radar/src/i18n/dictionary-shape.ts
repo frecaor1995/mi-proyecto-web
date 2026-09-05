@@ -105,6 +105,19 @@ export interface Dictionary {
     readonly dataTrustTitle: string;
     readonly asOfLabel: string;
   };
+  readonly opportunityRadar: {
+    readonly eyebrow: string; readonly filtersLabel: string; readonly searchLabel: string; readonly searchPlaceholder: string;
+    readonly statusFilter: string; readonly verificationFilter: string; readonly acceptanceFilter: string; readonly currentnessFilter: string; readonly sortLabel: string;
+    readonly applyFilters: string; readonly clearFilters: string; readonly results: string; readonly page: string; readonly paginationLabel: string; readonly previous: string; readonly next: string;
+    readonly unavailableValue: string; readonly openOpportunity: string; readonly emptyOverline: string; readonly noResultsTitle: string; readonly noResultsDescription: string;
+    readonly noOpportunitiesTitle: string; readonly noOpportunitiesDescription: string; readonly capabilityOverline: string; readonly capabilityTitle: string; readonly capabilityDescription: string; readonly capabilityBoundary: string; readonly queryErrorTitle: string; readonly queryErrorDescription: string;
+    readonly column: { readonly company: string; readonly project: string; readonly location: string; readonly trade: string; readonly demand: string; readonly acceptance: string; readonly buyerRoute: string; readonly verification: string; readonly currentness: string; readonly commercialStatus: string };
+    readonly statusOption: { readonly all: string; readonly hot: string; readonly "near-ready": string; readonly other: string };
+    readonly verificationOption: { readonly all: string; readonly VERIFIED: string; readonly UNVERIFIED: string; readonly HUMAN_VERIFICATION_REQUIRED: string; readonly CONFLICT: string; readonly STALE: string };
+    readonly acceptanceOption: { readonly all: string; readonly accepted: string; readonly "not-accepted": string; readonly unknown: string; readonly unavailable: string };
+    readonly currentnessOption: { readonly all: string; readonly CURRENT: string; readonly AGING: string; readonly STALE: string; readonly UNKNOWN: string };
+    readonly sortOption: { readonly company: string; readonly project: string; readonly currentness: string; readonly commercial: string };
+  };
   readonly commercialAction: {
     readonly CALL_TODAY: string;
     readonly EMAIL_TODAY: string;
