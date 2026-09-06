@@ -11,6 +11,7 @@ class MemoryRepository implements HumanVerificationRepository {
   async createTask(input:PersistHumanVerificationTaskInput){const task:HumanVerificationTask={...input,id:`task-${this.tasks.length+1}`,status:"OPEN",createdAt:now,closedAt:null};this.tasks.push(task);this.events.push({id:`event-${this.events.length+1}`,verificationTaskId:task.id,eventType:"CREATED",oldState:null,newState:"OPEN",reason:"Task created",operatorId:input.createdBy,occurredAt:now,evidenceIds:[],claimIds:[],metadata:{},createdAt:now});return task}
   async getTask(id:string){return this.tasks.find(x=>x.id===id)??null}
   async transitionTask(id:string,status:HumanVerificationTaskStatus){const task=(await this.getTask(id))!;task.status=status;return task}
+  async transitionTaskIfCurrentStatus(id:string,expectedStatus:HumanVerificationTaskStatus,newStatus:HumanVerificationTaskStatus){const task=await this.getTask(id);if(!task||task.status!==expectedStatus)return null;task.status=newStatus;return task}
   async createTaskEvent(input:CreateHumanVerificationTaskEventInput){const event:HumanVerificationTaskEvent={...input,id:`event-${this.events.length+1}`,createdAt:now};this.events.push(event);return event}
   async listTaskEvents(id:string){return this.events.filter(x=>x.verificationTaskId===id)}
   async createInteraction():Promise<HumanInteraction>{throw new Error("B2 must not create interactions")}

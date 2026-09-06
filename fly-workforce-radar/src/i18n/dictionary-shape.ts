@@ -234,6 +234,21 @@ export interface Dictionary {
   readonly loading: { readonly default: string };
   readonly error: { readonly defaultTitle: string; readonly defaultDescription: string };
   readonly languageSelector: { readonly english: string; readonly spanish: string };
+  readonly auth: {
+    readonly signInTitle: string;
+    readonly signInDescription: string;
+    readonly emailLabel: string;
+    readonly passwordLabel: string;
+    readonly signInAction: string;
+    readonly signInPending: string;
+    readonly signInError: string;
+    readonly signInUnavailable: string;
+    readonly signOutAction: string;
+    readonly unauthenticatedLabel: string;
+    readonly unauthorizedTitle: string;
+    readonly unauthorizedDescription: string;
+    readonly sessionEmailLabel: string;
+  };
 }
 
 type Join<K extends string, P extends string> = P extends "" ? K : `${K}.${P}`;

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AppShell } from "../components/shell/app-shell";
 import { resolveServerLocale } from "../i18n/server-locale";
 import { t } from "../i18n/translate";
+import { resolveServerSession } from "../server/auth/session";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -14,12 +15,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const locale = await resolveServerLocale();
+  const [locale, session] = await Promise.all([resolveServerLocale(), resolveServerSession()]);
+  const authState = { authenticated: !!session, email: session?.email ?? null };
   return (
     <html lang={locale}>
       <body>
         <a className="skip-link" href="#main-content">{t(locale, "a11y.skipToContent")}</a>
-        <AppShell locale={locale}>{children}</AppShell>
+        <AppShell locale={locale} authState={authState}>{children}</AppShell>
       </body>
     </html>
   );

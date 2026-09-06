@@ -11,6 +11,8 @@ export interface HumanVerificationRepository {
   createTask(input: PersistHumanVerificationTaskInput): Promise<HumanVerificationTask>;
   getTask(id: string): Promise<HumanVerificationTask | null>;
   transitionTask(id: string, status: HumanVerificationTaskStatus, event: Omit<CreateHumanVerificationTaskEventInput, "verificationTaskId">): Promise<HumanVerificationTask>;
+  /** 3I-B3A addition: like transitionTask, but only applies when the task's current status still equals expectedStatus (optimistic concurrency reusing the existing status column, no new column added) -- returns null on a stale/mismatched expectation instead of overwriting newer state. Preserves the existing protect_human_verification_task trigger (closed tasks still cannot be reopened). */
+  transitionTaskIfCurrentStatus(id: string, expectedStatus: HumanVerificationTaskStatus, newStatus: HumanVerificationTaskStatus, event: Omit<CreateHumanVerificationTaskEventInput, "verificationTaskId">): Promise<HumanVerificationTask | null>;
   createInteraction(input: CreateHumanInteractionInput): Promise<HumanInteraction>;
   listInteractions(taskId: string): Promise<HumanInteraction[]>;
   createAssessment(input: CreateHumanResponseAssessmentInput): Promise<HumanResponseAssessment>;
