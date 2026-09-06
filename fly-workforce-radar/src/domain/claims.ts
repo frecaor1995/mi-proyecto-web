@@ -17,6 +17,11 @@ export const CLAIM_PREDICATES = [
   "contractor_project_participation", "commercial_ecosystem_relationship",
   "manpower_vendor_relationship", "workforce_partner_subvendor_relationship",
   "qualification_requirement",
+  // Phase 4C addition: the smallest new predicates required for the
+  // client/billing side of commercial economics -- "compensation"/
+  // "overtime_terms"/"per_diem"/"headcount" above already cover the
+  // worker-pay side and are reused unchanged, not duplicated.
+  "client_bill_rate", "payment_terms",
 ] as const;
 
 export type ClaimSubjectType = (typeof CLAIM_SUBJECT_TYPES)[number];
