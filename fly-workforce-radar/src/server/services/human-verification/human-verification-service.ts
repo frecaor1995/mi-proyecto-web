@@ -11,7 +11,8 @@ import type { HumanVerificationRepository } from "../../repositories/human-verif
 
 export const HUMAN_VERIFICATION_RULE_VERSION = "human-verification@2.0.0";
 const terminal = new Set<string>(TERMINAL_HUMAN_VERIFICATION_TASK_STATUSES);
-const transitions: Record<HumanVerificationTaskStatus, HumanVerificationTaskStatus[]> = {
+/** Exported (3I-B3 addition, no behavior change) so the response-capture closure planner can reuse this exact policy instead of redefining it. */
+export const HUMAN_VERIFICATION_TASK_TRANSITIONS: Record<HumanVerificationTaskStatus, HumanVerificationTaskStatus[]> = {
   OPEN: ["ASSIGNED", "ATTEMPTED", "CANCELLED", "DUPLICATE", "UNRESOLVABLE"],
   ASSIGNED: ["ATTEMPTED", "CANCELLED", "DUPLICATE", "UNRESOLVABLE"],
   ATTEMPTED: ["ATTEMPTED", "AWAITING_RESPONSE", "FOLLOW_UP_REQUIRED", "READY_FOR_ASSESSMENT", "CANCELLED", "UNRESOLVABLE"],
@@ -52,7 +53,7 @@ export class HumanVerificationService {
     required(operatorId, "Operator"); required(reason, "Transition reason");
     const task = await this.repository.getTask(taskId); if (!task) throw new Error("Human verification task does not exist");
     if (terminal.has(task.status)) throw new Error("Closed human verification task cannot be reopened or changed");
-    if (!transitions[task.status].includes(newState)) throw new Error(`Invalid human verification transition ${task.status} -> ${newState}`);
+    if (!HUMAN_VERIFICATION_TASK_TRANSITIONS[task.status].includes(newState)) throw new Error(`Invalid human verification transition ${task.status} -> ${newState}`);
     return this.repository.transitionTask(taskId, newState, { eventType: "STATE_CHANGED", oldState: task.status, newState, reason, operatorId, occurredAt: new Date() });
   }
 

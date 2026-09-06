@@ -147,6 +147,14 @@ export class PostgresSourceRepository implements SourceRepository {
     return result.rows[0] ? mapSource(result.rows[0]) : null;
   }
 
+  async findByName(name: string): Promise<SourceRecord | null> {
+    const result = await this.client.query<SourceRow>(
+      `select ${sourceColumns} from sources where name = $1`,
+      [name],
+    );
+    return result.rows[0] ? mapSource(result.rows[0]) : null;
+  }
+
   async getCurrentDecision(sourceId: string, method: CaptureMethod) {
     const result = await this.client.query<DecisionRow>(
       `select ${decisionColumns}

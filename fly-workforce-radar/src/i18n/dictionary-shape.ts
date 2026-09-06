@@ -155,7 +155,7 @@ export interface Dictionary {
     readonly gap: Readonly<Record<string, string>>;
   };
   readonly verificationDesk: {
-    readonly eyebrow:string;readonly title:string;readonly description:string;readonly results:string;readonly readOnly:string;readonly responseDisabled:string;readonly open:string;readonly back:string;readonly exactQuestion:string;readonly originalLanguage:string;readonly why:string;readonly nextStep:string;readonly context:string;readonly contactRoute:string;readonly evidence:string;readonly instructions:string;readonly unresolved:string;readonly followUp:string;readonly unknown:string;readonly unavailable:string;
+    readonly eyebrow:string;readonly title:string;readonly description:string;readonly results:string;readonly readOnly:string;readonly responseDisabled:string;readonly responseRequiresSignIn:string;readonly responseRequiresOperator:string;readonly open:string;readonly back:string;readonly exactQuestion:string;readonly originalLanguage:string;readonly why:string;readonly nextStep:string;readonly context:string;readonly contactRoute:string;readonly evidence:string;readonly instructions:string;readonly unresolved:string;readonly followUp:string;readonly unknown:string;readonly unavailable:string;
     readonly column:{readonly verification:string;readonly context:string;readonly route:string;readonly status:string;readonly due:string;readonly next:string};
     readonly empty:{readonly title:string;readonly description:string;readonly route:string;readonly evidence:string;readonly packet:string};
     readonly state:{readonly unavailableTitle:string;readonly unavailableDescription:string;readonly errorTitle:string;readonly errorDescription:string;readonly notFoundTitle:string;readonly notFoundDescription:string};
@@ -248,6 +248,41 @@ export interface Dictionary {
     readonly unauthorizedTitle: string;
     readonly unauthorizedDescription: string;
     readonly sessionEmailLabel: string;
+  };
+  readonly verificationResponse: {
+    readonly unavailable: string;
+    readonly invalidInput: string;
+    readonly attemptSection: string;
+    readonly classificationSection: string;
+    readonly interactionMethod: string;
+    readonly interactionOutcome: string;
+    readonly respondentName: string;
+    readonly respondentTitle: string;
+    readonly knownRoute: string;
+    readonly responseVerbatim: string;
+    readonly responseSummary: string;
+    readonly answerDisposition: string;
+    readonly authorityLevel: string;
+    readonly authorityBasis: string;
+    readonly commercialMechanism: string;
+    readonly notApplicable: string;
+    readonly followUpTarget: string;
+    readonly followUpTargetPlaceholder: string;
+    readonly assessmentNotes: string;
+    readonly selectOne: string;
+    readonly nonSubstantiveNote: string;
+    readonly submit: string;
+    readonly submitting: string;
+    readonly submitted: string;
+    readonly newStatus: string;
+    readonly af01Updated: string;
+    readonly noCanonicalChange: string;
+    readonly method: Readonly<Record<string, string>>;
+    readonly outcome: Readonly<Record<string, string>>;
+    readonly disposition: Readonly<Record<string, string>>;
+    readonly authority: Readonly<Record<string, string>>;
+    readonly mechanism: Readonly<Record<string, string>>;
+    readonly rejected: Readonly<Record<string, string>>;
   };
 }
 
