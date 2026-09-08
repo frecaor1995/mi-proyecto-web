@@ -222,6 +222,52 @@ export interface Dictionary {
     readonly trustPrefix: string;
     readonly currentnessPrefix: string;
     readonly scopePrefix: string;
+    readonly economicFactTierPrefix: string;
+  };
+  readonly economicFactTier: {
+    readonly VERIFIED: string;
+    readonly UNVERIFIED_SOURCED: string;
+    readonly OPERATOR_ASSUMPTION: string;
+    readonly UNKNOWN: string;
+  };
+  readonly economics: {
+    readonly sectionTitle: string;
+    readonly railTitle: string;
+    readonly unknown: string;
+    readonly unavailable: string;
+    readonly empty: string;
+    readonly scenarioLabel: { readonly BASE: string; readonly CONSERVATIVE: string; readonly TARGET: string };
+    readonly labelNote: string;
+    readonly overview: {
+      readonly completeLabel: string; readonly laborOnlyLabel: string; readonly laborOnlyNotice: string;
+      readonly revenue: string; readonly employerCost: string; readonly grossProfit: string; readonly grossMargin: string;
+      readonly workingCapital: string; readonly fundingNeededWeek: string; readonly noFundingNeeded: string;
+      readonly recoveryStatus: string; readonly recoveryWeek: string; readonly weakestTier: string;
+    };
+    readonly recovery: { readonly NOT_APPLICABLE: string; readonly RECOVERED: string; readonly NOT_REACHED_WITHIN_HORIZON: string };
+    readonly commercialTerms: {
+      readonly title: string; readonly billRate: string; readonly overtimeBillBasis: string; readonly reimbursablePerDiem: string;
+      readonly perDiemMarkup: string; readonly paymentTermsDays: string; readonly billingCadence: string;
+      readonly ruleVersion: string; readonly evaluatedAt: string; readonly none: string;
+    };
+    readonly billingCadenceOption: { readonly WEEKLY: string; readonly BIWEEKLY: string; readonly MONTHLY: string };
+    readonly overtimeBillBasisKind: { readonly RATE: string; readonly MULTIPLIER: string };
+    readonly laborBurden: {
+      readonly title: string; readonly basePayRate: string; readonly overtimeMultiplier: string; readonly workerPerDiem: string;
+      readonly regularHours: string; readonly overtimeHours: string; readonly headcount: string;
+      readonly burdenComponents: string; readonly burdenScope: string; readonly appliesTo: string; readonly none: string;
+    };
+    readonly burdenComponentType: { readonly PAYROLL_TAX: string; readonly WORKERS_COMPENSATION: string; readonly GENERAL_LIABILITY: string; readonly BENEFITS: string; readonly OTHER: string };
+    readonly wagePortion: { readonly REGULAR_WAGES: string; readonly OVERTIME_BASE_PORTION: string; readonly OVERTIME_PREMIUM_PORTION: string };
+    readonly burdenScopeLevel: { readonly PLATFORM_DEFAULT: string; readonly JURISDICTION: string; readonly TRADE_OCCUPATION: string; readonly COMPANY_OVERRIDE: string; readonly SCENARIO_OVERRIDE: string };
+    readonly cashFlow: { readonly title: string; readonly week: string; readonly cashOut: string; readonly cashIn: string; readonly cumulative: string; readonly none: string; readonly monthlyLimitation: string };
+    readonly comparison: {
+      readonly title: string; readonly revenueDelta: string; readonly employerCostDelta: string; readonly grossProfitDelta: string;
+      readonly grossMarginDelta: string; readonly workingCapitalDelta: string; readonly recoveryWeekDelta: string;
+      readonly crossCurrencyUnavailable: string; readonly none: string;
+    };
+    readonly blockers: { readonly title: string; readonly none: string };
+    readonly sensitivity: { readonly title: string; readonly notice: string };
   };
   readonly capabilityState: {
     readonly OPERATIONAL: string;

@@ -16,3 +16,13 @@ export const SCOPE_STATES={COMPANY:"Company scope",DIVISION:"Division scope",PRO
 export function TrustState({state,locale=DEFAULT_LOCALE}:{state:keyof typeof TRUST_STATES;locale?:Locale}){const icon=TRUST_STATES[state][1];const label=t(locale,`trust.${state}`);return <span className={`state-chip state-${state.toLowerCase()}`} aria-label={`${t(locale,"a11yStatus.trustPrefix")} ${label}`}><Icon name={icon}/>{label}</span>}
 export function CurrentnessBadge({state,locale=DEFAULT_LOCALE}:{state:keyof typeof CURRENTNESS_STATES;locale?:Locale}){const label=t(locale,`currentness.${state}`);return <span className={`currentness currentness-${state.toLowerCase()}`} aria-label={`${t(locale,"a11yStatus.currentnessPrefix")} ${label}`}><Icon name="clock"/>{label}</span>}
 export function ScopeBadge({scope,locale=DEFAULT_LOCALE}:{scope:keyof typeof SCOPE_STATES;locale?:Locale}){const label=t(locale,`scope.${scope}`);return <span className={`scope-badge scope-${scope.toLowerCase()}`} aria-label={`${t(locale,"a11yStatus.scopePrefix")} ${label}`}><Icon name={scope==="UNKNOWN"?"warning":"project"}/>{label}</span>}
+
+/**
+ * Phase 4H. Mirrors TrustState exactly (same state-chip shape/class naming
+ * convention), for the certified 4B EconomicFactTier vocabulary
+ * (VERIFIED/UNVERIFIED_SOURCED/OPERATOR_ASSUMPTION/UNKNOWN --
+ * src/domain/economic-value.ts). This is a presentation-only mirror: it
+ * never reinterprets or upgrades the canonical tier value it is given.
+ */
+export const ECONOMIC_FACT_TIER_ICONS={VERIFIED:"check",UNVERIFIED_SOURCED:"radar",OPERATOR_ASSUMPTION:"info",UNKNOWN:"minus"}as const;
+export function EconomicFactTierBadge({tier,locale=DEFAULT_LOCALE}:{tier:keyof typeof ECONOMIC_FACT_TIER_ICONS;locale?:Locale}){const icon=ECONOMIC_FACT_TIER_ICONS[tier];const label=t(locale,`economicFactTier.${tier}`);return <span className={`state-chip state-${tier.toLowerCase().replaceAll("_","-")}`} aria-label={`${t(locale,"a11yStatus.economicFactTierPrefix")} ${label}`}><Icon name={icon}/>{label}</span>}
