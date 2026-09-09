@@ -15,8 +15,35 @@ import { PostgresSourceRepository } from "../../server/repositories/source/postg
 import { ClaimService } from "../../server/services/claims/claim-service";
 import { HumanVerificationClosureService } from "../../server/services/human-verification/human-verification-closure-service";
 import { HUMAN_VERIFICATION_RULE_VERSION, HumanVerificationService } from "../../server/services/human-verification/human-verification-service";
+import type { HumanVerificationTransactionalAccess } from "../../server/services/human-verification/human-verification-service";
 import { ManpowerAcceptanceService } from "../../server/services/manpower-acceptance/manpower-acceptance-service";
 import type { ServerSession } from "../../server/auth/session";
+import type { TransactionRunner } from "../../server/database/transaction";
+
+/**
+ * TX-INTEGRITY-02. This `service` is the TEST'S OWN setup helper (used only
+ * by newTask()/newIsolatedTask() below to seed tasks) -- it is a distinct
+ * instance from the one protected-human-verification-response-capture.ts
+ * constructs internally for its own recordInteraction/assessResponse calls,
+ * which never invoke createTask/transitionTask. Giving this test-local
+ * instance a transactional boundary does not touch that production file.
+ * PGlite has no real connection pooling, so reusing the single client for
+ * the whole transactional callback is correct and sufficient.
+ */
+function pgliteTransactional(client: SqlClient): HumanVerificationTransactionalAccess {
+  const run: TransactionRunner = async (fn) => {
+    await client.query("begin");
+    try {
+      const result = await fn(client);
+      await client.query("commit");
+      return result;
+    } catch (error) {
+      await client.query("rollback").catch(() => {});
+      throw error;
+    }
+  };
+  return { run, repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) };
+}
 
 const migrations = [
   "20260817010000_canonical_model.sql", "20260817020000_evidence_provenance.sql", "20260817030000_source_registry_compliance.sql",
@@ -47,7 +74,7 @@ describe("3I-B3 protected human verification response capture (full stack, real 
     for (const migration of migrations) await db.exec(await readFile(resolve(process.cwd(), "supabase/migrations", migration), "utf8"));
     const client = db as unknown as SqlClient;
     humanVerificationRepository = new PostgresHumanVerificationRepository(client);
-    service = new HumanVerificationService(humanVerificationRepository);
+    service = new HumanVerificationService(humanVerificationRepository, pgliteTransactional(client));
     operatorRepository = new PostgresOperatorRepository(client);
     idempotencyRepository = new PostgresIdempotencyRepository(client);
     const evidenceRepository = new PostgresEvidenceRepository(client);

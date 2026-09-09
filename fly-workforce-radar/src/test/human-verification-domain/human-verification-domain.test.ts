@@ -9,6 +9,24 @@ import { normalizeManpowerAcceptanceResult } from "../../domain/manpower-accepta
 import { PostgresHumanVerificationRepository } from "../../server/repositories/human-verification/postgres-human-verification-repository";
 import type { SqlClient } from "../../server/repositories/evidence/postgres-evidence-repository";
 import { HUMAN_VERIFICATION_RULE_VERSION, HumanVerificationService, humanVerificationTaskDeduplicationKey } from "../../server/services/human-verification/human-verification-service";
+import type { HumanVerificationTransactionalAccess } from "../../server/services/human-verification/human-verification-service";
+import type { TransactionRunner } from "../../server/database/transaction";
+
+/** PGlite has no real connection pooling -- reusing the single client for the whole transactional callback is correct and sufficient (same rationale as the certified 4G/3I-B3R1 tests). */
+function pgliteTransactional(client: SqlClient): HumanVerificationTransactionalAccess {
+  const run: TransactionRunner = async (fn) => {
+    await client.query("begin");
+    try {
+      const result = await fn(client);
+      await client.query("commit");
+      return result;
+    } catch (error) {
+      await client.query("rollback").catch(() => {});
+      throw error;
+    }
+  };
+  return { run, repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) };
+}
 
 const migrations = [
   "20260817010000_canonical_model.sql", "20260817020000_evidence_provenance.sql",
@@ -28,7 +46,7 @@ describe("Phase 3I-B1 human verification domain and persistence", () => {
     db = new PGlite();
     for (const migration of migrations) await db.exec(await readFile(resolve(process.cwd(), "supabase/migrations", migration), "utf8"));
     repository = new PostgresHumanVerificationRepository(db as unknown as SqlClient);
-    service = new HumanVerificationService(repository);
+    service = new HumanVerificationService(repository, pgliteTransactional(db as unknown as SqlClient));
     companyId = (await db.query<{id:string}>("insert into companies(common_name)values('B1 Company')returning id")).rows[0].id;
     opportunityId = (await db.query<{id:string}>("insert into opportunities(title)values('B1 Opportunity')returning id")).rows[0].id;
   });

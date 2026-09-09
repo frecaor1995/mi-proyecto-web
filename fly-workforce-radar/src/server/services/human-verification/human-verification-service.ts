@@ -7,7 +7,29 @@ import type {
   CreateHumanInteractionInput, CreateHumanResponseAssessmentInput, CreateHumanVerificationTaskInput,
   HumanVerificationScope, HumanVerificationTaskStatus,
 } from "../../../domain/human-verification";
+import type { TransactionRunner } from "../../database/transaction";
+import type { SqlClient } from "../../repositories/evidence/postgres-evidence-repository";
 import type { HumanVerificationRepository } from "../../repositories/human-verification/human-verification-repository";
+
+/**
+ * TX-INTEGRITY-02. The narrow seam through which createTask/transitionTask
+ * obtain genuine cross-statement atomicity, without making this otherwise
+ * Postgres-agnostic service depend on the concrete PostgresHumanVerification-
+ * Repository class (a fake used by non-Postgres tests, e.g. the B2 planning
+ * service's in-memory repository, has no real client/transaction to scope in
+ * the first place -- forcing it to import a Postgres-specific class here
+ * would break that abstraction for no benefit). The composition root (a
+ * real production caller, or a test) supplies `run` (the certified
+ * TransactionRunner) and `repositoryFor` (how to build a repository bound to
+ * one transaction-scoped client) -- for a real Postgres-backed repository
+ * that is `(client) => new PostgresHumanVerificationRepository(client)`; for
+ * an in-memory fake with nothing to scope, it can be a no-op that ignores
+ * the client and returns the same repository instance.
+ */
+export interface HumanVerificationTransactionalAccess {
+  readonly run: TransactionRunner;
+  readonly repositoryFor: (client: SqlClient) => HumanVerificationRepository;
+}
 
 export const HUMAN_VERIFICATION_RULE_VERSION = "human-verification@2.0.0";
 const terminal = new Set<string>(TERMINAL_HUMAN_VERIFICATION_TASK_STATUSES);
@@ -39,22 +61,39 @@ function validateScope(scope: HumanVerificationScope) {
 }
 
 export class HumanVerificationService {
-  constructor(private readonly repository: HumanVerificationRepository) {}
+  constructor(
+    private readonly repository: HumanVerificationRepository,
+    private readonly transactional?: HumanVerificationTransactionalAccess,
+  ) {}
 
+  /**
+   * TX-INTEGRITY-02. The pre-check (findOpenTaskByDeduplicationKey) stays
+   * outside the transaction exactly as before -- it is a read-only
+   * early-return optimization, not part of the atomic unit that was
+   * corrected. The atomic unit is task INSERT + its required initial
+   * CREATED event INSERT: that unit now genuinely runs inside one real
+   * transaction via the caller-supplied TransactionRunner, rather than
+   * silently running with no transactional guarantee at all.
+   */
   async createTask(input: CreateHumanVerificationTaskInput) {
     required(input.verificationObjective, "Verification objective"); required(input.primaryQuestion, "Primary question"); required(input.createdBy, "Creator"); required(input.ruleVersion, "Rule version"); validateScope(input.scope);
     const deduplicationKey = humanVerificationTaskDeduplicationKey(input);
     const existing = await this.repository.findOpenTaskByDeduplicationKey(deduplicationKey);
     if (existing) return { task: existing, created: false as const };
-    return { task: await this.repository.createTask({ ...input, deduplicationKey }), created: true as const };
+    if (!this.transactional) throw new Error("HumanVerificationService.createTask requires transactional access to atomically create the task and its required initial audit event");
+    const task = await this.transactional.run((client) => this.transactional!.repositoryFor(client).createTask({ ...input, deduplicationKey }));
+    return { task, created: true as const };
   }
 
+  /** TX-INTEGRITY-02. Same correction: the event INSERT + status UPDATE atomic unit now runs inside one real transaction via the caller-supplied TransactionRunner. Contract otherwise unchanged -- still the unguarded transition, distinct from transitionTaskIfCurrentStatus. */
   async transitionTask(taskId: string, newState: HumanVerificationTaskStatus, operatorId: string, reason: string) {
     required(operatorId, "Operator"); required(reason, "Transition reason");
     const task = await this.repository.getTask(taskId); if (!task) throw new Error("Human verification task does not exist");
     if (terminal.has(task.status)) throw new Error("Closed human verification task cannot be reopened or changed");
     if (!HUMAN_VERIFICATION_TASK_TRANSITIONS[task.status].includes(newState)) throw new Error(`Invalid human verification transition ${task.status} -> ${newState}`);
-    return this.repository.transitionTask(taskId, newState, { eventType: "STATE_CHANGED", oldState: task.status, newState, reason, operatorId, occurredAt: new Date() });
+    if (!this.transactional) throw new Error("HumanVerificationService.transitionTask requires transactional access to atomically apply the status change and its audit event");
+    const occurredAt = new Date();
+    return this.transactional.run((client) => this.transactional!.repositoryFor(client).transitionTask(taskId, newState, { eventType: "STATE_CHANGED", oldState: task.status, newState, reason, operatorId, occurredAt }));
   }
 
   async recordInteraction(input: CreateHumanInteractionInput) {

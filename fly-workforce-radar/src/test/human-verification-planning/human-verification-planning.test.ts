@@ -3,6 +3,7 @@ import type { CreateHumanVerificationTaskEventInput, HumanInteraction, HumanResp
 import type { HumanVerificationPlanningInput } from "../../domain/human-verification-planning";
 import type { HumanVerificationRepository, PersistHumanVerificationTaskInput } from "../../server/repositories/human-verification/human-verification-repository";
 import { HumanVerificationPlanningService } from "../../server/services/human-verification/human-verification-planning-service";
+import type { HumanVerificationTransactionalAccess } from "../../server/services/human-verification/human-verification-service";
 
 const now = new Date("2026-09-05T12:00:00Z");
 class MemoryRepository implements HumanVerificationRepository {
@@ -21,7 +22,15 @@ class MemoryRepository implements HumanVerificationRepository {
 }
 const contact={personId:"person-1",name:"Commercial Contact",title:"Manager",department:"Procurement",routeId:"route-1",routeType:"PROFESSIONAL_PHONE",routeTarget:"555-0100",routeVerificationState:"VERIFIED",routeCurrent:true,preferredMethod:"PHONE"as const};
 const input=(overrides:Partial<HumanVerificationPlanningInput>={}):HumanVerificationPlanningInput=>({need:"EXTERNAL_MANPOWER_ACCEPTANCE_UNKNOWN",companyId:"company-1",companyName:"Example Contractor",opportunityId:"opportunity-1",projectId:"project-1",projectName:"Example Project",blockerCode:"MISSING_MANPOWER_ACCEPTANCE",tradeId:"ELECTRICAL",occupationId:"ELECTRICIAN",scope:{companyScope:"UNKNOWN",projectId:"project-1",tradeId:"ELECTRICAL",occupationId:"ELECTRICIAN",geographicScope:"Texas"},sourceBasis:[{evidenceId:"evidence-1",claimId:"claim-1",sourceUrl:"https://example.com",observedAt:"2026-09-01",current:true,summary:"Public evidence does not resolve AF01."}],contact,publicEvidenceExhausted:true,commerciallyMaterial:true,createdBy:"planner-1",...overrides});
-const setup=()=>{const repository=new MemoryRepository();return{repository,service:new HumanVerificationPlanningService(repository,()=>now)}};
+// TX-INTEGRITY-02: MemoryRepository has no real database/connection to scope a transaction
+// against -- its createTask already applies the task+event pair atomically in synchronous
+// JS (see above), so `run` simply invokes the callback directly and `repositoryFor` ignores
+// the (nonexistent) client and returns the same in-memory repository instance.
+const setup=()=>{
+  const repository=new MemoryRepository();
+  const transactional:HumanVerificationTransactionalAccess={run:(fn)=>fn(undefined as never),repositoryFor:()=>repository};
+  return{repository,service:new HumanVerificationPlanningService(repository,()=>now,transactional)};
+};
 
 describe("Phase 3I-B2 verification planning and packet",()=>{
   it("1 valid governed blocker creates a ready verification plan",async()=>expect((await setup().service.plan(input())).disposition).toBe("READY"));

@@ -70,21 +70,32 @@ export class PostgresHumanVerificationRepository implements HumanVerificationRep
   constructor(private readonly client: SqlClient) {}
   async findOpenTaskByDeduplicationKey(key: string) { const q = await this.client.query<Row>(`select ${taskColumns} from human_verification_tasks where deduplication_key=$1 and status in('OPEN','ASSIGNED','ATTEMPTED','AWAITING_RESPONSE','FOLLOW_UP_REQUIRED','READY_FOR_ASSESSMENT','READY_FOR_APPROVAL') limit 1`, [key]); return q.rows[0] ? task(q.rows[0]) : null }
   async getTask(id: string) { const q = await this.client.query<Row>(`select ${taskColumns} from human_verification_tasks where id=$1`, [id]); return q.rows[0] ? task(q.rows[0]) : null }
+  /**
+   * TX-INTEGRITY-02 (mirrors the 3I-B3R1 correction on transitionTaskIfCurrentStatus).
+   * No longer owns BEGIN/COMMIT/ROLLBACK -- under getProductionSqlClient() (pool.query()
+   * per call, no connection affinity), a locally-owned transaction here did not actually
+   * scope the task INSERT and its required initial 'CREATED' audit event together. The
+   * caller must invoke this with a `client` that is already transaction-scoped (from
+   * inside a TransactionRunner callback) so the two inserts commit or roll back as one
+   * atomic unit -- a task must never exist without its required initial event.
+   */
   async createTask(input: PersistHumanVerificationTaskInput) {
-    await this.client.query("begin");
-    try {
-      const q = await this.client.query<Row>(`insert into human_verification_tasks(company_id,opportunity_id,project_id,claim_id,blocker_code,contact_person_id,contact_route_id,follow_up_question,preferred_method,assigned_operator_id,due_at,parent_task_id,trade_id,occupation_id,scope,packet_snapshot,target_type,target_id,verification_objective,question_type,primary_question,deduplication_key,created_by,rule_version)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24)returning ${taskColumns}`,
-        [input.companyId,input.opportunityId??null,input.projectId??null,input.claimId??null,input.blockerCode??null,input.contactPersonId??null,input.contactRouteId??null,input.followUpQuestion??null,input.preferredMethod??null,input.assignedOperatorId??null,input.dueAt?.toISOString()??null,input.parentTaskId??null,input.tradeId??null,input.occupationId??null,JSON.stringify(input.scope),JSON.stringify(input.packetSnapshot??{}),input.targetType,input.targetId,input.verificationObjective,input.questionType,input.primaryQuestion,input.deduplicationKey,input.createdBy,input.ruleVersion]);
-      await this.client.query("insert into human_verification_task_events(verification_task_id,event_type,old_state,new_state,reason,operator_id,occurred_at)values($1,'CREATED',null,'OPEN','Task created',$2,$3)",[q.rows[0].id,input.createdBy,q.rows[0].created_at]);
-      await this.client.query("commit"); return task(q.rows[0]);
-    } catch(error) { await this.client.query("rollback"); throw error }
+    const q = await this.client.query<Row>(`insert into human_verification_tasks(company_id,opportunity_id,project_id,claim_id,blocker_code,contact_person_id,contact_route_id,follow_up_question,preferred_method,assigned_operator_id,due_at,parent_task_id,trade_id,occupation_id,scope,packet_snapshot,target_type,target_id,verification_objective,question_type,primary_question,deduplication_key,created_by,rule_version)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24)returning ${taskColumns}`,
+      [input.companyId,input.opportunityId??null,input.projectId??null,input.claimId??null,input.blockerCode??null,input.contactPersonId??null,input.contactRouteId??null,input.followUpQuestion??null,input.preferredMethod??null,input.assignedOperatorId??null,input.dueAt?.toISOString()??null,input.parentTaskId??null,input.tradeId??null,input.occupationId??null,JSON.stringify(input.scope),JSON.stringify(input.packetSnapshot??{}),input.targetType,input.targetId,input.verificationObjective,input.questionType,input.primaryQuestion,input.deduplicationKey,input.createdBy,input.ruleVersion]);
+    await this.client.query("insert into human_verification_task_events(verification_task_id,event_type,old_state,new_state,reason,operator_id,occurred_at)values($1,'CREATED',null,'OPEN','Task created',$2,$3)",[q.rows[0].id,input.createdBy,q.rows[0].created_at]);
+    return task(q.rows[0]);
   }
+  /**
+   * TX-INTEGRITY-02. Same correction as createTask above, applied to the unguarded
+   * transition path (distinct from the guarded transitionTaskIfCurrentStatus, already
+   * corrected in 3I-B3R1): no longer owns its own transaction. The caller must supply an
+   * already transaction-scoped client so the event INSERT and the status UPDATE commit or
+   * roll back together -- a status change must never exist without its transition event.
+   */
   async transitionTask(id: string,status: HumanVerificationTaskStatus,input: Omit<CreateHumanVerificationTaskEventInput,"verificationTaskId">) {
-    await this.client.query("begin"); try {
-      await this.client.query("insert into human_verification_task_events(verification_task_id,event_type,old_state,new_state,reason,operator_id,occurred_at,interaction_id,assessment_id,evidence_ids,claim_ids,metadata)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::uuid[],$11::uuid[],$12::jsonb)",[id,input.eventType,input.oldState,input.newState,input.reason,input.operatorId,input.occurredAt.toISOString(),input.interactionId??null,input.assessmentId??null,input.evidenceIds??[],input.claimIds??[],JSON.stringify(input.metadata??{})]);
-      const q=await this.client.query<Row>(`update human_verification_tasks set status=$2::human_verification_task_status,closed_at=case when $2::human_verification_task_status in('COMPLETED','CANCELLED','DUPLICATE','UNRESOLVABLE')then $3::timestamptz else null end where id=$1 returning ${taskColumns}`,[id,status,input.occurredAt.toISOString()]);
-      await this.client.query("commit"); return task(q.rows[0]);
-    }catch(error){await this.client.query("rollback");throw error}
+    await this.client.query("insert into human_verification_task_events(verification_task_id,event_type,old_state,new_state,reason,operator_id,occurred_at,interaction_id,assessment_id,evidence_ids,claim_ids,metadata)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::uuid[],$11::uuid[],$12::jsonb)",[id,input.eventType,input.oldState,input.newState,input.reason,input.operatorId,input.occurredAt.toISOString(),input.interactionId??null,input.assessmentId??null,input.evidenceIds??[],input.claimIds??[],JSON.stringify(input.metadata??{})]);
+    const q=await this.client.query<Row>(`update human_verification_tasks set status=$2::human_verification_task_status,closed_at=case when $2::human_verification_task_status in('COMPLETED','CANCELLED','DUPLICATE','UNRESOLVABLE')then $3::timestamptz else null end where id=$1 returning ${taskColumns}`,[id,status,input.occurredAt.toISOString()]);
+    return task(q.rows[0]);
   }
   /**
    * 3I-B3R1. Deliberately does NOT own BEGIN/COMMIT/ROLLBACK itself -- under

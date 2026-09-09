@@ -5,12 +5,29 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { CreateHumanVerificationTaskInput } from "../../domain/human-verification";
 import type { SqlClient } from "../../server/repositories/evidence/postgres-evidence-repository";
 import { PostgresHumanVerificationRepository } from "../../server/repositories/human-verification/postgres-human-verification-repository";
-import { HUMAN_VERIFICATION_RULE_VERSION, HumanVerificationService } from "../../server/services/human-verification/human-verification-service";
+import { HUMAN_VERIFICATION_RULE_VERSION, HumanVerificationService, humanVerificationTaskDeduplicationKey } from "../../server/services/human-verification/human-verification-service";
 import { PostgresOperatorRepository } from "../../server/repositories/operator/postgres-operator-repository";
 import { PostgresIdempotencyRepository } from "../../server/repositories/idempotency/postgres-idempotency-repository";
 import { executeProtectedHumanVerificationTransition } from "../../server/mutation/protected-human-verification-transition";
 import type { ServerSession } from "../../server/auth/session";
 import type { TransactionRunner } from "../../server/database/transaction";
+import type { HumanVerificationTransactionalAccess } from "../../server/services/human-verification/human-verification-service";
+
+/** PGlite has no real connection pooling -- reusing the single client for the whole transactional callback is correct and sufficient (see the identical rationale on the TransactionRunner definitions further below in this file). */
+function pgliteTransactional(client: SqlClient): HumanVerificationTransactionalAccess {
+  const run: TransactionRunner = async (fn) => {
+    await client.query("begin");
+    try {
+      const result = await fn(client);
+      await client.query("commit");
+      return result;
+    } catch (error) {
+      await client.query("rollback").catch(() => {});
+      throw error;
+    }
+  };
+  return { run, repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) };
+}
 
 const migrations = [
   "20260817010000_canonical_model.sql", "20260817020000_evidence_provenance.sql", "20260817030000_source_registry_compliance.sql",
@@ -35,7 +52,7 @@ describe("3I-B3A concurrency and protected-mutation foundation", () => {
     for (const migration of migrations) await db.exec(await readFile(resolve(process.cwd(), "supabase/migrations", migration), "utf8"));
     const client = db as unknown as SqlClient;
     humanVerificationRepository = new PostgresHumanVerificationRepository(client);
-    service = new HumanVerificationService(humanVerificationRepository);
+    service = new HumanVerificationService(humanVerificationRepository, pgliteTransactional(client));
     operatorRepository = new PostgresOperatorRepository(client);
     idempotencyRepository = new PostgresIdempotencyRepository(client);
     companyId = (await db.query<{ id: string }>("insert into companies(common_name)values('B3A Company')returning id")).rows[0].id;
@@ -258,6 +275,309 @@ describe("3I-B3A concurrency and protected-mutation foundation", () => {
       // constructed -- if the call site had instead used some other (non-transaction-scoped)
       // client for either statement, these two references would not be identical.
       expect(usedBy.get("update")).toBe(usedBy.get("insert"));
+    });
+  });
+
+  /**
+   * TX-INTEGRITY-02. The same architectural defect class as 3I-B3R1
+   * (own BEGIN/COMMIT/ROLLBACK via an ambient client, no connection
+   * affinity under getProductionSqlClient()), found in createTask (task
+   * INSERT + required initial 'CREATED' event INSERT) and the unguarded
+   * transitionTask (event INSERT + status UPDATE). Neither method has a
+   * live production caller today (HumanVerificationService and
+   * HumanVerificationPlanningService are both interface-based, reused by
+   * an in-memory test fake elsewhere, and have no wired production entry
+   * point) -- exactly the same situation transitionTaskIfCurrentStatus was
+   * in before 3I-B3R1. The fix mirrors it exactly: the repository methods
+   * no longer own a transaction; a caller that needs real atomicity must
+   * invoke them with an already transaction-scoped client. These tests
+   * exercise the repository directly (not through HumanVerificationService,
+   * which is deliberately left untouched -- see TX-INTEGRITY-02 report)
+   * using the same certified TransactionRunner pattern as 3I-B3R1.
+   *
+   * createTask's task INSERT and its event INSERT share the same
+   * `createdBy` value under the same non-empty check constraint, so an
+   * invalid-payload failure on the event insert alone (task insert already
+   * succeeded) cannot be forced through a real constraint without also
+   * failing the task insert first. A deterministic spy-client failure
+   * injection is used instead for both methods' rollback tests, matching
+   * this file's own established "test-double connection identity" pattern
+   * (already used above for the same-connection proof).
+   */
+  describe("TX-INTEGRITY-02 transaction integrity remediation", () => {
+    function scopedRunner(base: SqlClient): TransactionRunner {
+      return async (fn) => {
+        await base.query("begin");
+        try {
+          const result = await fn(base);
+          await base.query("commit");
+          return result;
+        } catch (error) {
+          await base.query("rollback").catch(() => {});
+          throw error;
+        }
+      };
+    }
+    function failingRunner(base: SqlClient, failWhen: RegExp): TransactionRunner {
+      return async (fn) => {
+        const scoped: SqlClient = {
+          async query<Row>(text: string, values?: unknown[]) {
+            if (failWhen.test(text)) throw new Error("INJECTED_FAILURE");
+            return base.query<Row>(text, values);
+          },
+        };
+        await base.query("begin");
+        try {
+          const result = await fn(scoped);
+          await base.query("commit");
+          return result;
+        } catch (error) {
+          await base.query("rollback").catch(() => {});
+          throw error;
+        }
+      };
+    }
+    const taskInput = (): Parameters<PostgresHumanVerificationRepository["createTask"]>[0] => ({
+      companyId, targetType: "OPPORTUNITY_CONFLICT", targetId: companyId,
+      verificationObjective: `TX-INTEGRITY-02 task ${++sequence}`, questionType: "MANPOWER_ACCEPTANCE",
+      primaryQuestion: "Does this company accept external manpower?", createdBy: "human:operator",
+      ruleVersion: HUMAN_VERIFICATION_RULE_VERSION, scope: { companyScope: "UNKNOWN" },
+      deduplicationKey: `dedup-${++sequence}`,
+    });
+
+    describe("createTask", () => {
+      it("succeeds atomically: exactly one task and exactly one required initial event", async () => {
+        const client = db as unknown as SqlClient;
+        const created = await scopedRunner(client)(async (scoped) => new PostgresHumanVerificationRepository(scoped).createTask(taskInput()));
+        expect(created.status).toBe("OPEN");
+        const events = await humanVerificationRepository.listTaskEvents(created.id);
+        expect(events.filter((event) => event.eventType === "CREATED")).toHaveLength(1);
+      });
+
+      it("event-insert failure rolls back the task insert -- the task does not exist afterward, no orphan event", async () => {
+        const client = db as unknown as SqlClient;
+        const input = taskInput();
+        await expect(
+          failingRunner(client, /^\s*insert into human_verification_task_events/i)(async (scoped) => new PostgresHumanVerificationRepository(scoped).createTask(input)),
+        ).rejects.toThrow("INJECTED_FAILURE");
+
+        const byDedup = await humanVerificationRepository.findOpenTaskByDeduplicationKey(input.deduplicationKey);
+        expect(byDedup).toBeNull(); // the task insert was rolled back together with the failed event insert
+      });
+
+      it("the task insert and the initial event insert are issued on the same transaction-scoped client", async () => {
+        const client = db as unknown as SqlClient;
+        const usedBy = new Map<"task" | "event", unknown>();
+        const spyRunner: TransactionRunner = async (fn) => {
+          const scoped: SqlClient = {
+            async query<Row>(text: string, values?: unknown[]) {
+              if (/^\s*insert into human_verification_tasks/i.test(text)) usedBy.set("task", scoped);
+              if (/^\s*insert into human_verification_task_events/i.test(text)) usedBy.set("event", scoped);
+              return client.query<Row>(text, values);
+            },
+          };
+          await client.query("begin");
+          try {
+            const result = await fn(scoped);
+            await client.query("commit");
+            return result;
+          } catch (error) {
+            await client.query("rollback").catch(() => {});
+            throw error;
+          }
+        };
+        await spyRunner(async (scoped) => new PostgresHumanVerificationRepository(scoped).createTask(taskInput()));
+        expect(usedBy.get("task")).toBeDefined();
+        expect(usedBy.get("event")).toBeDefined();
+        expect(usedBy.get("task")).toBe(usedBy.get("event"));
+      });
+
+      /**
+       * Manager Correction R1. The repository-level tests above prove the
+       * repository methods are correct when given a scoped client; these
+       * prove HumanVerificationService -- the real caller -- actually
+       * invokes that boundary, not merely that the boundary works in
+       * isolation.
+       */
+      describe("via HumanVerificationService (real caller path)", () => {
+        const serviceInput = (): CreateHumanVerificationTaskInput => ({
+          companyId, targetType: "OPPORTUNITY_CONFLICT", targetId: companyId,
+          verificationObjective: `TX-INTEGRITY-02 service task ${++sequence}`, questionType: "MANPOWER_ACCEPTANCE",
+          primaryQuestion: "Does this company accept external manpower?", createdBy: "human:operator",
+          ruleVersion: HUMAN_VERIFICATION_RULE_VERSION, scope: { companyScope: "UNKNOWN" },
+        });
+
+        it("succeeds atomically through the service: task OPEN, exactly one CREATED event", async () => {
+          const client = db as unknown as SqlClient;
+          const scopedService = new HumanVerificationService(humanVerificationRepository, { run: scopedRunner(client), repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) });
+          const result = await scopedService.createTask(serviceInput());
+          expect(result).toMatchObject({ created: true, task: { status: "OPEN" } });
+          const events = (await humanVerificationRepository.listTaskEvents(result.task.id)).filter((event) => event.eventType === "CREATED");
+          expect(events).toHaveLength(1);
+        });
+
+        it("event-insert failure through the service rolls back the task insert -- no task, no event persisted", async () => {
+          const client = db as unknown as SqlClient;
+          const failingService = new HumanVerificationService(humanVerificationRepository, { run: failingRunner(client, /^\s*insert into human_verification_task_events/i), repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) });
+          const input = serviceInput();
+          const dedupKey = humanVerificationTaskDeduplicationKey(input);
+          await expect(failingService.createTask(input)).rejects.toThrow("INJECTED_FAILURE");
+          expect(await humanVerificationRepository.findOpenTaskByDeduplicationKey(dedupKey)).toBeNull();
+        });
+
+        it("throws a clear error rather than silently running without a transaction when no transactional access is supplied", async () => {
+          const bareService = new HumanVerificationService(humanVerificationRepository);
+          await expect(bareService.createTask(serviceInput())).rejects.toThrow(/requires transactional access/);
+        });
+
+        it("the task insert and the event insert reach the same transaction-scoped client through the service, not a stray one", async () => {
+          const client = db as unknown as SqlClient;
+          const usedBy = new Map<"task" | "event", unknown>();
+          const spyRunner: TransactionRunner = async (fn) => {
+            const scoped: SqlClient = {
+              async query<Row>(text: string, values?: unknown[]) {
+                if (/^\s*insert into human_verification_tasks/i.test(text)) usedBy.set("task", scoped);
+                if (/^\s*insert into human_verification_task_events/i.test(text)) usedBy.set("event", scoped);
+                return client.query<Row>(text, values);
+              },
+            };
+            await client.query("begin");
+            try {
+              const result = await fn(scoped);
+              await client.query("commit");
+              return result;
+            } catch (error) {
+              await client.query("rollback").catch(() => {});
+              throw error;
+            }
+          };
+          const spiedService = new HumanVerificationService(humanVerificationRepository, { run: spyRunner, repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) });
+          await spiedService.createTask(serviceInput());
+          expect(usedBy.get("task")).toBeDefined();
+          expect(usedBy.get("event")).toBeDefined();
+          expect(usedBy.get("task")).toBe(usedBy.get("event"));
+        });
+      });
+    });
+
+    describe("transitionTask (unguarded)", () => {
+      async function seedOpenTask() {
+        const client = db as unknown as SqlClient;
+        return scopedRunner(client)(async (scoped) => new PostgresHumanVerificationRepository(scoped).createTask(taskInput()));
+      }
+
+      it("succeeds atomically: expected final status and exactly one STATE_CHANGED event", async () => {
+        const seeded = await seedOpenTask();
+        const client = db as unknown as SqlClient;
+        const transitioned = await scopedRunner(client)(async (scoped) =>
+          new PostgresHumanVerificationRepository(scoped).transitionTask(seeded.id, "ASSIGNED", { eventType: "STATE_CHANGED", oldState: "OPEN", newState: "ASSIGNED", reason: "claim", operatorId: "human:operator", occurredAt: new Date() }),
+        );
+        expect(transitioned.status).toBe("ASSIGNED");
+        const events = (await humanVerificationRepository.listTaskEvents(seeded.id)).filter((event) => event.eventType === "STATE_CHANGED");
+        expect(events).toHaveLength(1);
+      });
+
+      it("status-update failure rolls back the already-inserted event -- status unchanged, no orphan event", async () => {
+        const seeded = await seedOpenTask();
+        const client = db as unknown as SqlClient;
+        await expect(
+          failingRunner(client, /^\s*update human_verification_tasks/i)(async (scoped) =>
+            new PostgresHumanVerificationRepository(scoped).transitionTask(seeded.id, "ASSIGNED", { eventType: "STATE_CHANGED", oldState: "OPEN", newState: "ASSIGNED", reason: "claim", operatorId: "human:operator", occurredAt: new Date() }),
+          ),
+        ).rejects.toThrow("INJECTED_FAILURE");
+
+        expect((await humanVerificationRepository.getTask(seeded.id))?.status).toBe("OPEN"); // unchanged
+        const events = (await humanVerificationRepository.listTaskEvents(seeded.id)).filter((event) => event.eventType === "STATE_CHANGED");
+        expect(events).toHaveLength(0); // the event insert that ran before the failed update was rolled back too
+      });
+
+      it("the event insert and the status update are issued on the same transaction-scoped client", async () => {
+        const seeded = await seedOpenTask();
+        const client = db as unknown as SqlClient;
+        const usedBy = new Map<"event" | "update", unknown>();
+        const spyRunner: TransactionRunner = async (fn) => {
+          const scoped: SqlClient = {
+            async query<Row>(text: string, values?: unknown[]) {
+              if (/^\s*insert into human_verification_task_events/i.test(text)) usedBy.set("event", scoped);
+              if (/^\s*update human_verification_tasks/i.test(text)) usedBy.set("update", scoped);
+              return client.query<Row>(text, values);
+            },
+          };
+          await client.query("begin");
+          try {
+            const result = await fn(scoped);
+            await client.query("commit");
+            return result;
+          } catch (error) {
+            await client.query("rollback").catch(() => {});
+            throw error;
+          }
+        };
+        await spyRunner(async (scoped) =>
+          new PostgresHumanVerificationRepository(scoped).transitionTask(seeded.id, "ASSIGNED", { eventType: "STATE_CHANGED", oldState: "OPEN", newState: "ASSIGNED", reason: "claim", operatorId: "human:operator", occurredAt: new Date() }),
+        );
+        expect(usedBy.get("event")).toBeDefined();
+        expect(usedBy.get("update")).toBeDefined();
+        expect(usedBy.get("event")).toBe(usedBy.get("update"));
+      });
+
+      /** Manager Correction R1 -- see the equivalent createTask block above for the rationale. */
+      describe("via HumanVerificationService (real caller path)", () => {
+        it("succeeds atomically through the service: expected final status, exactly one STATE_CHANGED event", async () => {
+          const seeded = await seedOpenTask();
+          const client = db as unknown as SqlClient;
+          const scopedService = new HumanVerificationService(humanVerificationRepository, { run: scopedRunner(client), repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) });
+          const transitioned = await scopedService.transitionTask(seeded.id, "ASSIGNED", "human:operator", "claim");
+          expect(transitioned.status).toBe("ASSIGNED");
+          const events = (await humanVerificationRepository.listTaskEvents(seeded.id)).filter((event) => event.eventType === "STATE_CHANGED");
+          expect(events).toHaveLength(1);
+        });
+
+        it("status-update failure through the service rolls back the event insert -- original status remains, no false event", async () => {
+          const seeded = await seedOpenTask();
+          const client = db as unknown as SqlClient;
+          const failingService = new HumanVerificationService(humanVerificationRepository, { run: failingRunner(client, /^\s*update human_verification_tasks/i), repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) });
+          await expect(failingService.transitionTask(seeded.id, "ASSIGNED", "human:operator", "claim")).rejects.toThrow("INJECTED_FAILURE");
+          expect((await humanVerificationRepository.getTask(seeded.id))?.status).toBe("OPEN");
+          const events = (await humanVerificationRepository.listTaskEvents(seeded.id)).filter((event) => event.eventType === "STATE_CHANGED");
+          expect(events).toHaveLength(0);
+        });
+
+        it("throws a clear error rather than silently running without a transaction when no transactional access is supplied", async () => {
+          const seeded = await seedOpenTask();
+          const bareService = new HumanVerificationService(humanVerificationRepository);
+          await expect(bareService.transitionTask(seeded.id, "ASSIGNED", "human:operator", "claim")).rejects.toThrow(/requires transactional access/);
+        });
+
+        it("the event insert and the status update reach the same transaction-scoped client through the service, not a stray one", async () => {
+          const seeded = await seedOpenTask();
+          const client = db as unknown as SqlClient;
+          const usedBy = new Map<"event" | "update", unknown>();
+          const spyRunner: TransactionRunner = async (fn) => {
+            const scoped: SqlClient = {
+              async query<Row>(text: string, values?: unknown[]) {
+                if (/^\s*insert into human_verification_task_events/i.test(text)) usedBy.set("event", scoped);
+                if (/^\s*update human_verification_tasks/i.test(text)) usedBy.set("update", scoped);
+                return client.query<Row>(text, values);
+              },
+            };
+            await client.query("begin");
+            try {
+              const result = await fn(scoped);
+              await client.query("commit");
+              return result;
+            } catch (error) {
+              await client.query("rollback").catch(() => {});
+              throw error;
+            }
+          };
+          const spiedService = new HumanVerificationService(humanVerificationRepository, { run: spyRunner, repositoryFor: (scoped) => new PostgresHumanVerificationRepository(scoped) });
+          await spiedService.transitionTask(seeded.id, "ASSIGNED", "human:operator", "claim");
+          expect(usedBy.get("event")).toBeDefined();
+          expect(usedBy.get("update")).toBeDefined();
+          expect(usedBy.get("event")).toBe(usedBy.get("update"));
+        });
+      });
     });
   });
 });

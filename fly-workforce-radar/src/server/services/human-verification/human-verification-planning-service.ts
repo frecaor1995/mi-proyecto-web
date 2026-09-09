@@ -3,6 +3,7 @@ import type { HumanVerificationNeed, HumanVerificationPacket, HumanVerificationP
 import { isVerifiedPositiveManpowerAcceptance, normalizeManpowerAcceptanceResult } from "../../../domain/manpower-acceptance";
 import type { VerificationTargetType } from "../../../domain/verification";
 import type { HumanVerificationRepository } from "../../repositories/human-verification/human-verification-repository";
+import type { HumanVerificationTransactionalAccess } from "./human-verification-service";
 import { HUMAN_VERIFICATION_RULE_VERSION, HumanVerificationService } from "./human-verification-service";
 
 export const HUMAN_VERIFICATION_PLANNING_RULE_VERSION = "human-verification-planning@1.0.0";
@@ -39,7 +40,20 @@ function af01Resolved(input: HumanVerificationPlanningInput, now: Date) { if (!a
 
 export class HumanVerificationPlanningService {
   private readonly tasks: HumanVerificationService;
-  constructor(private readonly repository: HumanVerificationRepository, private readonly clock: () => Date = () => new Date()) { this.tasks = new HumanVerificationService(repository) }
+  /**
+   * TX-INTEGRITY-02. `transactional` is optional and mechanically threaded
+   * through to the internal HumanVerificationService -- this service has no
+   * live production wiring today (confirmed: referenced only by its own
+   * test), so no production runtime path is affected by this change. A
+   * future activation providing a real TransactionRunner-backed
+   * `transactional` here will receive correct transaction ownership for
+   * task creation automatically, with zero further changes required.
+   */
+  constructor(
+    private readonly repository: HumanVerificationRepository,
+    private readonly clock: () => Date = () => new Date(),
+    private readonly transactional?: HumanVerificationTransactionalAccess,
+  ) { this.tasks = new HumanVerificationService(repository, transactional) }
   async plan(input: HumanVerificationPlanningInput): Promise<HumanVerificationPlan> {
     const base = { verificationRequired: false, priority: priority(input), readinessToExecute: false, missingPrerequisites: [] as string[], blocker: input.blockerCode ?? input.need, targetType: null, targetId: null, packet: null, task: null, created: false };
     if (input.internalSoftwareDefect || !input.commerciallyMaterial) return { ...base, disposition: "NOT_HUMAN_VERIFICATION_PROBLEM" };
