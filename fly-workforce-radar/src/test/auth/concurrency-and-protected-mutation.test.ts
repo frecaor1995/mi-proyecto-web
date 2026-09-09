@@ -10,6 +10,7 @@ import { PostgresOperatorRepository } from "../../server/repositories/operator/p
 import { PostgresIdempotencyRepository } from "../../server/repositories/idempotency/postgres-idempotency-repository";
 import { executeProtectedHumanVerificationTransition } from "../../server/mutation/protected-human-verification-transition";
 import type { ServerSession } from "../../server/auth/session";
+import type { TransactionRunner } from "../../server/database/transaction";
 
 const migrations = [
   "20260817010000_canonical_model.sql", "20260817020000_evidence_provenance.sql", "20260817030000_source_registry_compliance.sql",
@@ -70,7 +71,29 @@ describe("3I-B3A concurrency and protected-mutation foundation", () => {
   });
 
   describe("executeProtectedHumanVerificationTransition (full trust chain)", () => {
-    const deps = () => ({ humanVerificationRepository, idempotencyRepository, operatorRepository });
+    /**
+     * 3I-B3R1. PGlite has no real connection pooling -- reusing the single
+     * `client` for the whole transactional callback is correct and
+     * sufficient here (mirrors commercial-economics-mutation.test.ts's
+     * identical rationale). Real cross-connection proof was already
+     * established against production Postgres in Phase 4I for this exact
+     * TransactionRunner/pool.connect() mechanism; this test file certifies
+     * that executeProtectedHumanVerificationTransition correctly routes
+     * through it, not the mechanism itself.
+     */
+    const transactionRunner: TransactionRunner = async (fn) => {
+      const client = db as unknown as SqlClient;
+      await client.query("begin");
+      try {
+        const result = await fn(client);
+        await client.query("commit");
+        return result;
+      } catch (error) {
+        await client.query("rollback").catch(() => {});
+        throw error;
+      }
+    };
+    const deps = () => ({ transactionRunner, idempotencyRepository, operatorRepository });
     const session = (authUserId: string | null): (() => Promise<ServerSession | null>) => () => Promise.resolve(authUserId ? { authUserId, email: "operator@example.com" } : null);
 
     it("1. unauthenticated request rejected", async () => {
@@ -134,6 +157,107 @@ describe("3I-B3A concurrency and protected-mutation foundation", () => {
       expect(first).toEqual({ kind: "REJECTED", reason: "STALE_STATE" });
       expect(retry).toEqual({ kind: "REJECTED", reason: "STALE_STATE" });
       expect((await humanVerificationRepository.getTask(task.id))?.status).toBe("ASSIGNED");
+    });
+
+    it("12. a stale expected-state attempt produces no false audit event -- zero events from the rejected attempt, not just an unchanged status", async () => {
+      const task = await newTask();
+      await executeProtectedHumanVerificationTransition({ idempotencyKey: `k-${task.id}-first`, taskId: task.id, expectedStatus: "OPEN", newStatus: "ASSIGNED", reason: "claim" }, { ...deps(), getSession: session(authorizedOperatorAuthUserId) });
+      const beforeCount = (await humanVerificationRepository.listTaskEvents(task.id)).length;
+
+      const stale = await executeProtectedHumanVerificationTransition({ idempotencyKey: `k-${task.id}-stale`, taskId: task.id, expectedStatus: "OPEN", newStatus: "ATTEMPTED", reason: "stale caller" }, { ...deps(), getSession: session(authorizedOperatorAuthUserId) });
+      expect(stale).toEqual({ kind: "REJECTED", reason: "STALE_STATE" });
+      expect(await humanVerificationRepository.listTaskEvents(task.id)).toHaveLength(beforeCount); // no event added by the rejected attempt
+    });
+  });
+
+  /**
+   * 3I-B3R1. The confirmed production defect: transitionTaskIfCurrentStatus
+   * previously owned its own BEGIN/COMMIT/ROLLBACK via `this.client`, but
+   * under getProductionSqlClient() (pool.query() per call, no connection
+   * affinity) those statements are not guaranteed to share a connection, so
+   * the "transaction" did not actually scope the guarded UPDATE and the
+   * event INSERT together -- a failure between them could leave a status
+   * change committed with no corresponding audit event. The fix: the
+   * repository method no longer manages its own transaction at all; the
+   * call site now runs it inside the certified TransactionRunner (the same
+   * pool.connect()-backed mechanism already proven against real production
+   * Postgres in Phase 4I), constructing a fresh repository on the
+   * transaction-scoped client for the duration of one call.
+   */
+  describe("3I-B3R1 transaction integrity remediation", () => {
+    const deps = () => ({
+      transactionRunner: (async (fn: Parameters<TransactionRunner>[0]) => {
+        const client = db as unknown as SqlClient;
+        await client.query("begin");
+        try {
+          const result = await fn(client);
+          await client.query("commit");
+          return result;
+        } catch (error) {
+          await client.query("rollback").catch(() => {});
+          throw error;
+        }
+      }) as TransactionRunner,
+      idempotencyRepository, operatorRepository,
+    });
+    const session = (authUserId: string | null): (() => Promise<ServerSession | null>) => () => Promise.resolve(authUserId ? { authUserId, email: "operator@example.com" } : null);
+
+    it("event-insert failure rolls back the already-applied status transition -- exactly zero events, status unchanged (proves the original defect is closed)", async () => {
+      const task = await newTask();
+      // Deliberately requesting expectedStatus === newStatus ("OPEN" -> "OPEN"): the guarded UPDATE
+      // matches and "succeeds" (status column set to the same value), but the certified
+      // human_verification_task_events check constraint (event_type='STATE_CHANGED' requires
+      // old_state<>new_state) then rejects the event insert -- a real, non-mocked failure between
+      // the two statements, exercising the exact failure mode the original defect could not survive.
+      await expect(executeProtectedHumanVerificationTransition(
+        { idempotencyKey: `k-${task.id}-forced-failure`, taskId: task.id, expectedStatus: "OPEN", newStatus: "OPEN", reason: "deliberately invalid self-transition to force the event check constraint" },
+        { ...deps(), getSession: session(authorizedOperatorAuthUserId) },
+      )).rejects.toThrow();
+
+      expect((await humanVerificationRepository.getTask(task.id))?.status).toBe("OPEN"); // guarded UPDATE rolled back together with the failed INSERT
+      // createTask itself inserts one 'CREATED' event -- that's expected and unrelated; the
+      // certified invariant is that the rejected STATE_CHANGED attempt leaves no orphan event.
+      const stateChangedEvents = (await humanVerificationRepository.listTaskEvents(task.id)).filter((event) => event.eventType === "STATE_CHANGED");
+      expect(stateChangedEvents).toHaveLength(0);
+    });
+
+    it("the guarded UPDATE and the event INSERT are issued on the same transaction-scoped client, never a stray/global one", async () => {
+      const task = await newTask();
+      const usedBy = new Map<"update" | "insert", unknown>();
+      let runnerInvocations = 0;
+      const spyRunner: TransactionRunner = async (fn) => {
+        runnerInvocations++;
+        const base = db as unknown as SqlClient;
+        const scoped: SqlClient = {
+          async query<Row>(text: string, values?: unknown[]) {
+            if (/^\s*update human_verification_tasks/i.test(text)) usedBy.set("update", scoped);
+            if (/^\s*insert into human_verification_task_events/i.test(text)) usedBy.set("insert", scoped);
+            return base.query<Row>(text, values);
+          },
+        };
+        await base.query("begin");
+        try {
+          const result = await fn(scoped);
+          await base.query("commit");
+          return result;
+        } catch (error) {
+          await base.query("rollback").catch(() => {});
+          throw error;
+        }
+      };
+
+      const outcome = await executeProtectedHumanVerificationTransition(
+        { idempotencyKey: `k-${task.id}-same-client`, taskId: task.id, expectedStatus: "OPEN", newStatus: "ASSIGNED", reason: "claim" },
+        { idempotencyRepository, operatorRepository, transactionRunner: spyRunner, getSession: session(authorizedOperatorAuthUserId) },
+      );
+      expect(outcome).toMatchObject({ kind: "EXECUTED" });
+      expect(runnerInvocations).toBe(1); // one dedicated transaction for the whole guarded-transition+event unit
+      expect(usedBy.get("update")).toBeDefined();
+      expect(usedBy.get("insert")).toBeDefined();
+      // Both statements recorded against the exact same scoped-client instance the runner
+      // constructed -- if the call site had instead used some other (non-transaction-scoped)
+      // client for either statement, these two references would not be identical.
+      expect(usedBy.get("update")).toBe(usedBy.get("insert"));
     });
   });
 });

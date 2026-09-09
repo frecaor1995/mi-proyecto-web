@@ -86,13 +86,25 @@ export class PostgresHumanVerificationRepository implements HumanVerificationRep
       await this.client.query("commit"); return task(q.rows[0]);
     }catch(error){await this.client.query("rollback");throw error}
   }
+  /**
+   * 3I-B3R1. Deliberately does NOT own BEGIN/COMMIT/ROLLBACK itself -- under
+   * getProductionSqlClient() (pool.query() per call, no connection affinity
+   * across statements), a locally-owned begin/commit here does not actually
+   * scope a real transaction across the guarded UPDATE and the event INSERT
+   * (see production-sql-client.ts / transaction.ts). The caller is required
+   * to invoke this method with a `client` that is already transaction-scoped
+   * (i.e. from inside a TransactionRunner callback) so the guarded status
+   * transition and its audit event commit or roll back together as one
+   * atomic unit. A stale/mismatched expectedStatus matches zero rows and
+   * returns null without writing anything -- the caller's transaction still
+   * commits, which is correct: nothing was changed, so there is nothing to
+   * roll back.
+   */
   async transitionTaskIfCurrentStatus(id: string,expectedStatus: HumanVerificationTaskStatus,newStatus: HumanVerificationTaskStatus,input: Omit<CreateHumanVerificationTaskEventInput,"verificationTaskId">){
-    await this.client.query("begin"); try {
-      const guarded=await this.client.query<Row>(`update human_verification_tasks set status=$3::human_verification_task_status,closed_at=case when $3::human_verification_task_status in('COMPLETED','CANCELLED','DUPLICATE','UNRESOLVABLE')then $4::timestamptz else null end where id=$1 and status=$2::human_verification_task_status returning ${taskColumns}`,[id,expectedStatus,newStatus,input.occurredAt.toISOString()]);
-      if(!guarded.rows[0]){await this.client.query("rollback"); return null;}
-      await this.client.query("insert into human_verification_task_events(verification_task_id,event_type,old_state,new_state,reason,operator_id,occurred_at,interaction_id,assessment_id,evidence_ids,claim_ids,metadata)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::uuid[],$11::uuid[],$12::jsonb)",[id,input.eventType,input.oldState,input.newState,input.reason,input.operatorId,input.occurredAt.toISOString(),input.interactionId??null,input.assessmentId??null,input.evidenceIds??[],input.claimIds??[],JSON.stringify(input.metadata??{})]);
-      await this.client.query("commit"); return task(guarded.rows[0]);
-    }catch(error){await this.client.query("rollback");throw error}
+    const guarded=await this.client.query<Row>(`update human_verification_tasks set status=$3::human_verification_task_status,closed_at=case when $3::human_verification_task_status in('COMPLETED','CANCELLED','DUPLICATE','UNRESOLVABLE')then $4::timestamptz else null end where id=$1 and status=$2::human_verification_task_status returning ${taskColumns}`,[id,expectedStatus,newStatus,input.occurredAt.toISOString()]);
+    if(!guarded.rows[0])return null;
+    await this.client.query("insert into human_verification_task_events(verification_task_id,event_type,old_state,new_state,reason,operator_id,occurred_at,interaction_id,assessment_id,evidence_ids,claim_ids,metadata)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::uuid[],$11::uuid[],$12::jsonb)",[id,input.eventType,input.oldState,input.newState,input.reason,input.operatorId,input.occurredAt.toISOString(),input.interactionId??null,input.assessmentId??null,input.evidenceIds??[],input.claimIds??[],JSON.stringify(input.metadata??{})]);
+    return task(guarded.rows[0]);
   }
   async createInteraction(input:CreateHumanInteractionInput){const q=await this.client.query<Row>("insert into human_interactions(verification_task_id,interaction_method,interaction_outcome,attempted_at,operator_id,route_snapshot,reached_human,contact_route_id,contact_person_id,direction,person_name_snapshot,person_title_snapshot,department_snapshot,company_represented_id,company_represented_text,response_verbatim,response_summary,effective_date_stated,artifact_storage_reference,consent_or_recording_note,metadata)values($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21::jsonb)returning *",[input.verificationTaskId,input.interactionMethod,input.interactionOutcome,input.attemptedAt.toISOString(),input.operatorId,JSON.stringify(input.routeSnapshot),input.reachedHuman,input.contactRouteId??null,input.contactPersonId??null,input.direction??null,input.personNameSnapshot??null,input.personTitleSnapshot??null,input.departmentSnapshot??null,input.companyRepresentedId??null,input.companyRepresentedText??null,input.responseVerbatim??null,input.responseSummary??null,input.effectiveDateStated?.toISOString()??null,input.artifactStorageReference??null,input.consentOrRecordingNote??null,JSON.stringify(input.metadata??{})]);return interaction(q.rows[0])}
   async listInteractions(taskId:string){const q=await this.client.query<Row>("select * from human_interactions where verification_task_id=$1 order by attempted_at,created_at,id",[taskId]);return q.rows.map(interaction)}

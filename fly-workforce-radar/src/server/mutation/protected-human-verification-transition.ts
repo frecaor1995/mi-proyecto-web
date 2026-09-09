@@ -3,7 +3,8 @@ import type { HumanVerificationTaskStatus } from "../../domain/human-verificatio
 import type { AuthorizationResult } from "../auth/authorization";
 import { authorizeOperator } from "../auth/authorization";
 import type { ServerSession } from "../auth/session";
-import type { HumanVerificationRepository } from "../repositories/human-verification/human-verification-repository";
+import type { TransactionRunner } from "../database/transaction";
+import { PostgresHumanVerificationRepository } from "../repositories/human-verification/postgres-human-verification-repository";
 import type { IdempotencyRepository } from "../repositories/idempotency/idempotency-repository";
 import type { OperatorRepository } from "../repositories/operator/operator-repository";
 
@@ -42,7 +43,7 @@ function fingerprint(action: string, payload: unknown): string {
 export async function executeProtectedHumanVerificationTransition(
   input: ProtectedTransitionInput,
   deps: {
-    readonly humanVerificationRepository: HumanVerificationRepository;
+    readonly transactionRunner: TransactionRunner;
     readonly idempotencyRepository: IdempotencyRepository;
     readonly getSession?: () => Promise<ServerSession | null>;
     readonly operatorRepository?: OperatorRepository | null;
@@ -71,9 +72,16 @@ export async function executeProtectedHumanVerificationTransition(
     return stored.kind === "STALE_STATE" ? { kind: "REJECTED", reason: "STALE_STATE" } : { kind: "REPLAYED", taskId: stored.taskId, status: stored.status };
   }
 
-  const transitioned = await deps.humanVerificationRepository.transitionTaskIfCurrentStatus(input.taskId, input.expectedStatus, input.newStatus, {
-    eventType: "STATE_CHANGED", oldState: input.expectedStatus, newState: input.newStatus, reason: input.reason,
-    operatorId: operator.operatorId, occurredAt: new Date(),
+  // 3I-B3R1: the guarded status transition and its audit event must commit or roll back together as
+  // one atomic unit -- run them inside the certified TransactionRunner (see production-sql-client.ts /
+  // transaction.ts) rather than on the plain per-call pooled client, which cannot scope a real
+  // transaction across the two statements transitionTaskIfCurrentStatus issues.
+  const transitioned = await deps.transactionRunner(async (client) => {
+    const humanVerificationRepository = new PostgresHumanVerificationRepository(client);
+    return humanVerificationRepository.transitionTaskIfCurrentStatus(input.taskId, input.expectedStatus, input.newStatus, {
+      eventType: "STATE_CHANGED", oldState: input.expectedStatus, newState: input.newStatus, reason: input.reason,
+      operatorId: operator.operatorId, occurredAt: new Date(),
+    });
   });
   if (!transitioned) {
     await deps.idempotencyRepository.complete(input.idempotencyKey, { kind: "STALE_STATE" } satisfies StoredResult);
