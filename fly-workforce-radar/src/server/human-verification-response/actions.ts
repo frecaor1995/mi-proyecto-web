@@ -4,9 +4,10 @@ import type {
   HumanAnswerDisposition, HumanAuthorityLevel, HumanCommercialMechanism,
   HumanInteractionMethod, HumanInteractionOutcome, HumanVerificationTaskStatus,
 } from "../../domain/human-verification";
-import { getProductionSqlClient } from "../database/production-sql-client";
+import { getProductionSqlClient, getProductionTransactionRunner } from "../database/production-sql-client";
 import { executeProtectedHumanVerificationResponseCapture, type ResponseCaptureOutcome } from "../mutation/protected-human-verification-response-capture";
 import { PostgresClaimRepository } from "../repositories/claims/postgres-claim-repository";
+import type { SqlClient } from "../repositories/evidence/postgres-evidence-repository";
 import { PostgresEvidenceRepository } from "../repositories/evidence/postgres-evidence-repository";
 import { PostgresHumanVerificationRepository } from "../repositories/human-verification/postgres-human-verification-repository";
 import { PostgresIdempotencyRepository } from "../repositories/idempotency/postgres-idempotency-repository";
@@ -15,6 +16,20 @@ import { PostgresSourceRepository } from "../repositories/source/postgres-source
 import { ClaimService } from "../services/claims/claim-service";
 import { HumanVerificationClosureService } from "../services/human-verification/human-verification-closure-service";
 import { ManpowerAcceptanceService } from "../services/manpower-acceptance/manpower-acceptance-service";
+
+/**
+ * TX-INTEGRITY-03B. Builds a fresh HumanVerificationClosureService bound to
+ * whatever single transaction-scoped client a TransactionRunner callback
+ * provides -- this is the composition root's job, not the closure service's
+ * (which stays entirely Postgres/transaction-agnostic).
+ */
+function closureServiceFor(client: SqlClient): HumanVerificationClosureService {
+  const evidenceRepository = new PostgresEvidenceRepository(client);
+  const sourceRepository = new PostgresSourceRepository(client);
+  const claimService = new ClaimService(new PostgresClaimRepository(client), evidenceRepository);
+  const manpowerAcceptanceService = new ManpowerAcceptanceService(new PostgresManpowerAcceptanceRepository(client));
+  return new HumanVerificationClosureService(evidenceRepository, sourceRepository, claimService, manpowerAcceptanceService);
+}
 
 export interface ResponseCaptureFormState {
   readonly outcome: ResponseCaptureOutcome | null;
@@ -28,7 +43,8 @@ function str(formData: FormData, key: string): string | null {
 
 export async function submitHumanVerificationResponseAction(_previous: ResponseCaptureFormState, formData: FormData): Promise<ResponseCaptureFormState> {
   const client = getProductionSqlClient();
-  if (!client) return { outcome: null, error: "verificationResponse.unavailable" };
+  const transactionRunner = getProductionTransactionRunner();
+  if (!client || !transactionRunner) return { outcome: null, error: "verificationResponse.unavailable" };
 
   const taskId = str(formData, "taskId");
   const idempotencyKey = str(formData, "idempotencyKey");
@@ -46,11 +62,6 @@ export async function submitHumanVerificationResponseAction(_previous: ResponseC
 
   const humanVerificationRepository = new PostgresHumanVerificationRepository(client);
   const idempotencyRepository = new PostgresIdempotencyRepository(client);
-  const evidenceRepository = new PostgresEvidenceRepository(client);
-  const sourceRepository = new PostgresSourceRepository(client);
-  const claimService = new ClaimService(new PostgresClaimRepository(client), evidenceRepository);
-  const manpowerAcceptanceService = new ManpowerAcceptanceService(new PostgresManpowerAcceptanceRepository(client));
-  const closureService = new HumanVerificationClosureService(evidenceRepository, sourceRepository, claimService, manpowerAcceptanceService);
 
   const outcome = await executeProtectedHumanVerificationResponseCapture(
     {
@@ -64,7 +75,7 @@ export async function submitHumanVerificationResponseAction(_previous: ResponseC
       followUpRequired: formData.get("followUpRequired") === "true", followUpTarget: str(formData, "followUpTarget"),
       assessmentNotes: str(formData, "assessmentNotes"),
     },
-    { humanVerificationRepository, idempotencyRepository, closureService },
+    { humanVerificationRepository, idempotencyRepository, transactionRunner, closureServiceFor },
   );
 
   if (outcome.kind === "EXECUTED" || outcome.kind === "REPLAYED") revalidatePath(`/verification/${taskId}`);

@@ -7,7 +7,10 @@ import { desiredResponseTaskStatus, planTaskStatusHops } from "../../domain/huma
 import type { AcceptanceContext } from "../../domain/manpower-acceptance";
 import { authorizeOperator } from "../auth/authorization";
 import type { ServerSession } from "../auth/session";
+import type { TransactionRunner } from "../database/transaction";
+import type { SqlClient } from "../repositories/evidence/postgres-evidence-repository";
 import type { HumanVerificationRepository } from "../repositories/human-verification/human-verification-repository";
+import { PostgresHumanVerificationRepository } from "../repositories/human-verification/postgres-human-verification-repository";
 import type { IdempotencyRepository } from "../repositories/idempotency/idempotency-repository";
 import type { OperatorRepository } from "../repositories/operator/operator-repository";
 import type { HumanVerificationClosureService } from "../services/human-verification/human-verification-closure-service";
@@ -42,7 +45,27 @@ export interface ResponseCaptureInput {
 export interface ResponseCaptureDeps {
   readonly humanVerificationRepository: HumanVerificationRepository;
   readonly idempotencyRepository: IdempotencyRepository;
-  readonly closureService: HumanVerificationClosureService;
+  /**
+   * TX-INTEGRITY-03B. The certified TransactionRunner (see TX-INTEGRITY-02/
+   * 3I-B3R1) -- used to scope the canonical closure unit (evidence create ->
+   * claim createOrGet -> evidence link -> claim transition -> AF01
+   * evaluate+save) as one real transaction, and to scope each individual
+   * task-transition hop as its own separate transaction. Never nested: the
+   * closure call and each transition-hop call are each their own top-level
+   * invocation of this runner, never inside one another.
+   */
+  readonly transactionRunner: TransactionRunner;
+  /**
+   * TX-INTEGRITY-03B. A transaction-scoped-repository factory (mirrors
+   * HumanVerificationTransactionalAccess.repositoryFor from TX-INTEGRITY-02)
+   * -- builds a fresh HumanVerificationClosureService bound to the one
+   * SqlClient a given TransactionRunner callback provides, so every write
+   * inside close() lands on the same connection. HumanVerificationClosure-
+   * Service itself remains entirely transaction-agnostic; only the
+   * composition root (a real caller, or a test) knows how to construct one
+   * from a client.
+   */
+  readonly closureServiceFor: (client: SqlClient) => HumanVerificationClosureService;
   readonly getSession?: () => Promise<ServerSession | null>;
   readonly operatorRepository?: OperatorRepository | null;
 }
@@ -163,6 +186,11 @@ export async function executeProtectedHumanVerificationResponseCapture(
   let af01Result: string | undefined;
 
   if (substantive && input.answerDisposition && input.authorityLevel) {
+    // Captured into locals: TypeScript's narrowing of input.answerDisposition/input.authorityLevel from the
+    // `if` above does not persist inside the nested transactionRunner callback below (a closure over a
+    // property access, not a plain narrowed variable) -- these consts keep the narrowed, non-null type.
+    const answerDisposition = input.answerDisposition;
+    const authorityLevel = input.authorityLevel;
     const assessment = await service.assessResponse({
       interactionId: interaction.id,
       answerDisposition: input.answerDisposition,
@@ -189,32 +217,43 @@ export async function executeProtectedHumanVerificationResponseCapture(
     const context: AcceptanceContext | null = task.projectId
       ? { type: "PROJECT", id: task.projectId }
       : task.opportunityId ? { type: "OPPORTUNITY", id: task.opportunityId } : null;
-    const closure = await deps.closureService.close({
+    // TX-INTEGRITY-03B: the canonical closure unit (evidence create -> claim createOrGet ->
+    // evidence link -> claim transition -> AF01 evaluate+save, all inside HumanVerificationClosureService.close)
+    // now runs as one real transaction. The interaction and assessment recorded above are NOT part of
+    // this transaction and are unaffected if it rolls back -- both are independently durable historical facts.
+    const closure = await deps.transactionRunner((client) => deps.closureServiceFor(client).close({
       companyId: task.companyId,
       context,
       interactionId: interaction.id,
       assessmentId: assessment.id,
       attemptedAt: input.attemptedAt,
       reachedHuman: input.reachedHuman,
-      answerDisposition: input.answerDisposition,
-      authorityLevel: input.authorityLevel,
+      answerDisposition,
+      authorityLevel,
       commercialMechanism: input.commercialMechanism ?? null,
       scope: task.scope,
       responseSummary: input.responseSummary ?? input.responseVerbatim ?? "",
       operatorId: operator.operatorId,
-    });
+    }));
     if (closure.kind === "AF01_EVALUATED") {
       canonicalOutcome = "AF01_EVALUATED";
       af01Result = closure.evaluation.result;
     }
   }
 
+  // TX-INTEGRITY-03B: each hop runs as its own separate transaction (never combined with
+  // canonical closure, never combined with another hop) via the same certified TransactionRunner
+  // pattern 3I-B3R1 established for transitionTaskIfCurrentStatus -- the event insert and the
+  // status update inside one hop commit or roll back together; a failed hop never affects the
+  // already-committed interaction, assessment, or canonical closure from earlier phases.
   let currentStatus = task.status;
   for (const hop of hops) {
-    const transitioned = await deps.humanVerificationRepository.transitionTaskIfCurrentStatus(input.taskId, currentStatus, hop, {
-      eventType: "STATE_CHANGED", oldState: currentStatus, newState: hop,
-      reason: "Human verification response captured", operatorId: operator.operatorId, occurredAt: input.attemptedAt,
-    });
+    const transitioned = await deps.transactionRunner((client) =>
+      new PostgresHumanVerificationRepository(client).transitionTaskIfCurrentStatus(input.taskId, currentStatus, hop, {
+        eventType: "STATE_CHANGED", oldState: currentStatus, newState: hop,
+        reason: "Human verification response captured", operatorId: operator.operatorId, occurredAt: input.attemptedAt,
+      }),
+    );
     if (!transitioned) {
       await deps.idempotencyRepository.complete(input.idempotencyKey, { kind: "STALE_STATE" } satisfies StoredResult);
       return { kind: "REJECTED", reason: "STALE_STATE" };
