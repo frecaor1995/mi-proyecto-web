@@ -4,7 +4,7 @@ import type {
   HumanAnswerDisposition, HumanAuthorityLevel, HumanCommercialMechanism,
   HumanInteractionMethod, HumanInteractionOutcome, HumanVerificationTaskStatus,
 } from "../../domain/human-verification";
-import { getProductionSqlClient, getProductionTransactionRunner } from "../database/production-sql-client";
+import { getProductionResponseCaptureOwnershipRunner, getProductionSqlClient, getProductionTransactionRunner } from "../database/production-sql-client";
 import { executeProtectedHumanVerificationResponseCapture, type ResponseCaptureOutcome } from "../mutation/protected-human-verification-response-capture";
 import { PostgresClaimRepository } from "../repositories/claims/postgres-claim-repository";
 import type { SqlClient } from "../repositories/evidence/postgres-evidence-repository";
@@ -44,7 +44,8 @@ function str(formData: FormData, key: string): string | null {
 export async function submitHumanVerificationResponseAction(_previous: ResponseCaptureFormState, formData: FormData): Promise<ResponseCaptureFormState> {
   const client = getProductionSqlClient();
   const transactionRunner = getProductionTransactionRunner();
-  if (!client || !transactionRunner) return { outcome: null, error: "verificationResponse.unavailable" };
+  const ownershipRunner = getProductionResponseCaptureOwnershipRunner();
+  if (!client || !transactionRunner || !ownershipRunner) return { outcome: null, error: "verificationResponse.unavailable" };
 
   const taskId = str(formData, "taskId");
   const idempotencyKey = str(formData, "idempotencyKey");
@@ -75,7 +76,7 @@ export async function submitHumanVerificationResponseAction(_previous: ResponseC
       followUpRequired: formData.get("followUpRequired") === "true", followUpTarget: str(formData, "followUpTarget"),
       assessmentNotes: str(formData, "assessmentNotes"),
     },
-    { humanVerificationRepository, idempotencyRepository, transactionRunner, closureServiceFor },
+    { humanVerificationRepository, idempotencyRepository, transactionRunner, ownershipRunner, closureServiceFor },
   );
 
   if (outcome.kind === "EXECUTED" || outcome.kind === "REPLAYED") revalidatePath(`/verification/${taskId}`);

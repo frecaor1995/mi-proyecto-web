@@ -1,20 +1,20 @@
 import { createHash } from "node:crypto";
 import type {
-  HumanAnswerDisposition, HumanAuthorityLevel, HumanCommercialMechanism,
-  HumanInteractionMethod, HumanInteractionOutcome, HumanVerificationTaskStatus,
+  CreateHumanInteractionInput, CreateHumanResponseAssessmentInput, HumanAnswerDisposition, HumanAuthorityLevel,
+  HumanCommercialMechanism, HumanInteractionMethod, HumanInteractionOutcome, HumanVerificationTask, HumanVerificationTaskStatus,
 } from "../../domain/human-verification";
-import { desiredResponseTaskStatus, planTaskStatusHops } from "../../domain/human-verification-closure";
 import type { AcceptanceContext } from "../../domain/manpower-acceptance";
 import { authorizeOperator } from "../auth/authorization";
 import type { ServerSession } from "../auth/session";
-import type { TransactionRunner } from "../database/transaction";
+import type { ResponseCaptureOwnershipRunner, TransactionRunner } from "../database/transaction";
 import type { SqlClient } from "../repositories/evidence/postgres-evidence-repository";
 import type { HumanVerificationRepository } from "../repositories/human-verification/human-verification-repository";
 import { PostgresHumanVerificationRepository } from "../repositories/human-verification/postgres-human-verification-repository";
 import type { IdempotencyRepository } from "../repositories/idempotency/idempotency-repository";
+import { PostgresIdempotencyRepository } from "../repositories/idempotency/postgres-idempotency-repository";
 import type { OperatorRepository } from "../repositories/operator/operator-repository";
-import type { HumanVerificationClosureService } from "../services/human-verification/human-verification-closure-service";
-import { HUMAN_VERIFICATION_TASK_TRANSITIONS, HumanVerificationService } from "../services/human-verification/human-verification-service";
+import type { CloseHumanVerificationResponseInput, HumanVerificationClosureService } from "../services/human-verification/human-verification-closure-service";
+import { attemptResponseCaptureRecovery } from "./response-capture-recovery";
 
 export interface ResponseCaptureInput {
   readonly idempotencyKey: string;
@@ -52,9 +52,14 @@ export interface ResponseCaptureDeps {
    * evaluate+save) as one real transaction, and to scope each individual
    * task-transition hop as its own separate transaction. Never nested: the
    * closure call and each transition-hop call are each their own top-level
-   * invocation of this runner, never inside one another.
+   * invocation of this runner, never inside one another. TX-INTEGRITY-04B
+   * reuses the same runner for its own recovery-scoped transactions (one
+   * per phase being recovered), for the identical reason.
    */
   readonly transactionRunner: TransactionRunner;
+  /** TX-INTEGRITY-04B-R1: continuous, same-session ownership shared by the
+   * fresh CLAIMED path and every IN_PROGRESS recovery path. */
+  readonly ownershipRunner: ResponseCaptureOwnershipRunner;
   /**
    * TX-INTEGRITY-03B. A transaction-scoped-repository factory (mirrors
    * HumanVerificationTransactionalAccess.repositoryFor from TX-INTEGRITY-02)
@@ -83,13 +88,13 @@ export type ResponseCaptureOutcome =
   | ({ readonly kind: "EXECUTED" } & CapturedResponseFields)
   | ({ readonly kind: "REPLAYED" } & CapturedResponseFields);
 
-type StoredResult =
+export type StoredResult =
   | { readonly kind: "INVALID_TRANSITION" }
   | { readonly kind: "STALE_STATE" }
   | { readonly kind: "TASK_NOT_FOUND" }
   | ({ readonly kind: "EXECUTED" } & CapturedResponseFields);
 
-function fingerprint(input: ResponseCaptureInput): string {
+export function fingerprint(input: ResponseCaptureInput): string {
   const material = {
     taskId: input.taskId, expectedTaskStatus: input.expectedTaskStatus,
     interactionMethod: input.interactionMethod, interactionOutcome: input.interactionOutcome,
@@ -98,6 +103,89 @@ function fingerprint(input: ResponseCaptureInput): string {
     authorityLevel: input.authorityLevel ?? null, commercialMechanism: input.commercialMechanism ?? null,
   };
   return createHash("sha256").update(JSON.stringify(material)).digest("hex");
+}
+
+/**
+ * TX-INTEGRITY-04B. Pure, deterministic builders for the interaction/
+ * assessment/closure inputs response capture produces -- shared by the
+ * normal execution path below AND by response-capture-recovery.ts, so a
+ * recovered interaction/assessment/closure attempt is byte-for-byte the
+ * same shape a successful first attempt would have produced from the same
+ * (idempotency-verified-identical) resubmitted payload. This is also where
+ * the recovery correlation stamp is written -- in the SAME object that
+ * becomes the SAME INSERT statement, never a follow-up statement.
+ */
+export function buildInteractionInput(input: ResponseCaptureInput, task: HumanVerificationTask, operatorId: string): CreateHumanInteractionInput {
+  return {
+    verificationTaskId: input.taskId,
+    interactionMethod: input.interactionMethod,
+    interactionOutcome: input.interactionOutcome,
+    attemptedAt: input.attemptedAt,
+    operatorId,
+    routeSnapshot: { contactRouteId: input.contactRouteId ?? null },
+    reachedHuman: input.reachedHuman,
+    contactRouteId: input.contactRouteId ?? null,
+    contactPersonId: input.contactPersonId ?? null,
+    personNameSnapshot: input.personNameSnapshot ?? null,
+    personTitleSnapshot: input.personTitleSnapshot ?? null,
+    departmentSnapshot: input.departmentSnapshot ?? null,
+    companyRepresentedId: task.companyId,
+    companyRepresentedText: input.companyRepresentedText ?? null,
+    responseVerbatim: input.responseVerbatim ?? null,
+    responseSummary: input.responseSummary ?? null,
+    metadata: { idempotencyKey: input.idempotencyKey },
+  };
+}
+
+export function buildAssessmentInput(
+  input: ResponseCaptureInput, task: HumanVerificationTask, interactionId: string, operatorId: string,
+  answerDisposition: HumanAnswerDisposition, authorityLevel: HumanAuthorityLevel,
+): CreateHumanResponseAssessmentInput {
+  return {
+    interactionId,
+    answerDisposition,
+    authorityLevel,
+    authorityBasis: input.authorityBasis ?? "Operator-recorded authority basis",
+    scope: task.scope,
+    confidence: 1,
+    assessedBy: operatorId,
+    assessorKind: "HUMAN",
+    assessedAt: input.attemptedAt,
+    approvalState: "APPROVED",
+    approvedBy: operatorId,
+    ruleVersion: "human-verification-closure@1.0.0",
+    commercialMechanism: input.commercialMechanism ?? null,
+    companyId: task.companyId,
+    projectId: task.projectId ?? null,
+    opportunityId: task.opportunityId ?? null,
+    followUpRequired: input.followUpRequired ?? (input.answerDisposition === "REFERRAL"),
+    followUpTarget: input.followUpTarget ?? null,
+    assessmentNotes: input.assessmentNotes ?? null,
+    idempotencyKey: input.idempotencyKey,
+  };
+}
+
+export function buildClosureInput(
+  input: ResponseCaptureInput, task: HumanVerificationTask, interactionId: string, assessmentId: string, operatorId: string,
+  answerDisposition: HumanAnswerDisposition, authorityLevel: HumanAuthorityLevel,
+): CloseHumanVerificationResponseInput {
+  const context: AcceptanceContext | null = task.projectId
+    ? { type: "PROJECT", id: task.projectId }
+    : task.opportunityId ? { type: "OPPORTUNITY", id: task.opportunityId } : null;
+  return {
+    companyId: task.companyId,
+    context,
+    interactionId,
+    assessmentId,
+    attemptedAt: input.attemptedAt,
+    reachedHuman: input.reachedHuman,
+    answerDisposition,
+    authorityLevel,
+    commercialMechanism: input.commercialMechanism ?? null,
+    scope: task.scope,
+    responseSummary: input.responseSummary ?? input.responseVerbatim ?? "",
+    operatorId,
+  };
 }
 
 /**
@@ -110,6 +198,14 @@ function fingerprint(input: ResponseCaptureInput): string {
  * individually-valid, policy-map-checked hops. Actor identity comes only
  * from the resolved AuthorizedOperator -- ResponseCaptureInput has no actor
  * field for a caller to supply.
+ *
+ * TX-INTEGRITY-04B: an IN_PROGRESS claim (a same-key/same-actor/same-target/
+ * same-payload retry of an operation that did not reach idempotency
+ * completion, whether because it is still executing or because it crashed
+ * partway through) is no longer an unconditional rejection -- it is handed
+ * to attemptResponseCaptureRecovery, which inspects durable correlated
+ * state and resumes only whatever is actually missing. See
+ * response-capture-recovery.ts for the full recovery algorithm.
  */
 export async function executeProtectedHumanVerificationResponseCapture(
   input: ResponseCaptureInput,
@@ -135,135 +231,45 @@ export async function executeProtectedHumanVerificationResponseCapture(
     requestFingerprint: fingerprint(input),
   });
   if (claim.outcome === "CONFLICT") return { kind: "REJECTED", reason: "IDEMPOTENCY_CONFLICT", detail: claim.reason };
-  if (claim.outcome === "IN_PROGRESS") return { kind: "REJECTED", reason: "IDEMPOTENCY_CONFLICT", detail: "IN_PROGRESS" };
   if (claim.outcome === "REPLAY") {
     const stored = claim.result as StoredResult;
     if (stored.kind !== "EXECUTED") return { kind: "REJECTED", reason: stored.kind };
     return { kind: "REPLAYED", taskId: stored.taskId, newTaskStatus: stored.newTaskStatus, interactionId: stored.interactionId, assessmentId: stored.assessmentId, canonicalOutcome: stored.canonicalOutcome, af01Result: stored.af01Result };
   }
 
-  const task = await deps.humanVerificationRepository.getTask(input.taskId);
-  if (!task) {
-    await deps.idempotencyRepository.complete(input.idempotencyKey, { kind: "TASK_NOT_FOUND" } satisfies StoredResult);
-    return { kind: "REJECTED", reason: "TASK_NOT_FOUND" };
-  }
-  if (task.status !== input.expectedTaskStatus) {
-    await deps.idempotencyRepository.complete(input.idempotencyKey, { kind: "STALE_STATE" } satisfies StoredResult);
-    return { kind: "REJECTED", reason: "STALE_STATE" };
-  }
-
-  const service = new HumanVerificationService(deps.humanVerificationRepository);
-  const substantive = input.reachedHuman && !!input.answerDisposition;
-
-  const desiredStatus = desiredResponseTaskStatus(input.reachedHuman, input.answerDisposition ?? null);
-  const hops = planTaskStatusHops(task.status, desiredStatus, HUMAN_VERIFICATION_TASK_TRANSITIONS);
-  if (hops.length === 0 && task.status !== desiredStatus) {
-    await deps.idempotencyRepository.complete(input.idempotencyKey, { kind: "INVALID_TRANSITION" } satisfies StoredResult);
-    return { kind: "REJECTED", reason: "INVALID_TRANSITION" };
-  }
-
-  const interaction = await service.recordInteraction({
-    verificationTaskId: input.taskId,
-    interactionMethod: input.interactionMethod,
-    interactionOutcome: input.interactionOutcome,
-    attemptedAt: input.attemptedAt,
-    operatorId: operator.operatorId,
-    routeSnapshot: { contactRouteId: input.contactRouteId ?? null },
-    reachedHuman: input.reachedHuman,
-    contactRouteId: input.contactRouteId ?? null,
-    contactPersonId: input.contactPersonId ?? null,
-    personNameSnapshot: input.personNameSnapshot ?? null,
-    personTitleSnapshot: input.personTitleSnapshot ?? null,
-    departmentSnapshot: input.departmentSnapshot ?? null,
-    companyRepresentedId: task.companyId,
-    companyRepresentedText: input.companyRepresentedText ?? null,
-    responseVerbatim: input.responseVerbatim ?? null,
-    responseSummary: input.responseSummary ?? null,
-  });
-
-  let assessmentId: string | null = null;
-  let canonicalOutcome: "NO_CANONICAL_CHANGE" | "AF01_EVALUATED" = "NO_CANONICAL_CHANGE";
-  let af01Result: string | undefined;
-
-  if (substantive && input.answerDisposition && input.authorityLevel) {
-    // Captured into locals: TypeScript's narrowing of input.answerDisposition/input.authorityLevel from the
-    // `if` above does not persist inside the nested transactionRunner callback below (a closure over a
-    // property access, not a plain narrowed variable) -- these consts keep the narrowed, non-null type.
-    const answerDisposition = input.answerDisposition;
-    const authorityLevel = input.authorityLevel;
-    const assessment = await service.assessResponse({
-      interactionId: interaction.id,
-      answerDisposition: input.answerDisposition,
-      authorityLevel: input.authorityLevel,
-      authorityBasis: input.authorityBasis ?? "Operator-recorded authority basis",
-      scope: task.scope,
-      confidence: 1,
-      assessedBy: operator.operatorId,
-      assessorKind: "HUMAN",
-      assessedAt: input.attemptedAt,
-      approvalState: "APPROVED",
-      approvedBy: operator.operatorId,
-      ruleVersion: "human-verification-closure@1.0.0",
-      commercialMechanism: input.commercialMechanism ?? null,
-      companyId: task.companyId,
-      projectId: task.projectId ?? null,
-      opportunityId: task.opportunityId ?? null,
-      followUpRequired: input.followUpRequired ?? (input.answerDisposition === "REFERRAL"),
-      followUpTarget: input.followUpTarget ?? null,
-      assessmentNotes: input.assessmentNotes ?? null,
-    });
-    assessmentId = assessment.id;
-
-    const context: AcceptanceContext | null = task.projectId
-      ? { type: "PROJECT", id: task.projectId }
-      : task.opportunityId ? { type: "OPPORTUNITY", id: task.opportunityId } : null;
-    // TX-INTEGRITY-03B: the canonical closure unit (evidence create -> claim createOrGet ->
-    // evidence link -> claim transition -> AF01 evaluate+save, all inside HumanVerificationClosureService.close)
-    // now runs as one real transaction. The interaction and assessment recorded above are NOT part of
-    // this transaction and are unaffected if it rolls back -- both are independently durable historical facts.
-    const closure = await deps.transactionRunner((client) => deps.closureServiceFor(client).close({
-      companyId: task.companyId,
-      context,
-      interactionId: interaction.id,
-      assessmentId: assessment.id,
-      attemptedAt: input.attemptedAt,
-      reachedHuman: input.reachedHuman,
-      answerDisposition,
-      authorityLevel,
-      commercialMechanism: input.commercialMechanism ?? null,
-      scope: task.scope,
-      responseSummary: input.responseSummary ?? input.responseVerbatim ?? "",
+  // TX-INTEGRITY-04B-R1. Both a newly CLAIMED request and a same-key
+  // IN_PROGRESS request enter the identical session-ownership protocol before
+  // any durable business effect. The initial claim is intentionally re-read
+  // on the owned session after lock acquisition because another worker may
+  // have completed while this worker was waiting.
+  return deps.ownershipRunner(input.idempotencyKey, async ({ client, transactionRunner }) => {
+    const ownedIdempotencyRepository = new PostgresIdempotencyRepository(client);
+    const postLockClaim = await ownedIdempotencyRepository.claim({
+      idempotencyKey: input.idempotencyKey,
       operatorId: operator.operatorId,
-    }));
-    if (closure.kind === "AF01_EVALUATED") {
-      canonicalOutcome = "AF01_EVALUATED";
-      af01Result = closure.evaluation.result;
+      action: "human_verification.capture_response",
+      targetType: "HUMAN_VERIFICATION_TASK",
+      targetId: input.taskId,
+      requestFingerprint: fingerprint(input),
+    });
+    if (postLockClaim.outcome === "CONFLICT") {
+      return { kind: "REJECTED", reason: "IDEMPOTENCY_CONFLICT", detail: postLockClaim.reason };
     }
-  }
-
-  // TX-INTEGRITY-03B: each hop runs as its own separate transaction (never combined with
-  // canonical closure, never combined with another hop) via the same certified TransactionRunner
-  // pattern 3I-B3R1 established for transitionTaskIfCurrentStatus -- the event insert and the
-  // status update inside one hop commit or roll back together; a failed hop never affects the
-  // already-committed interaction, assessment, or canonical closure from earlier phases.
-  let currentStatus = task.status;
-  for (const hop of hops) {
-    const transitioned = await deps.transactionRunner((client) =>
-      new PostgresHumanVerificationRepository(client).transitionTaskIfCurrentStatus(input.taskId, currentStatus, hop, {
-        eventType: "STATE_CHANGED", oldState: currentStatus, newState: hop,
-        reason: "Human verification response captured", operatorId: operator.operatorId, occurredAt: input.attemptedAt,
-      }),
-    );
-    if (!transitioned) {
-      await deps.idempotencyRepository.complete(input.idempotencyKey, { kind: "STALE_STATE" } satisfies StoredResult);
-      return { kind: "REJECTED", reason: "STALE_STATE" };
+    if (postLockClaim.outcome === "REPLAY") {
+      const stored = postLockClaim.result as StoredResult;
+      if (stored.kind !== "EXECUTED") return { kind: "REJECTED", reason: stored.kind };
+      return { kind: "REPLAYED", taskId: stored.taskId, newTaskStatus: stored.newTaskStatus, interactionId: stored.interactionId, assessmentId: stored.assessmentId, canonicalOutcome: stored.canonicalOutcome, af01Result: stored.af01Result };
     }
-    currentStatus = hop;
-  }
+    if (postLockClaim.outcome === "CLAIMED") {
+      return { kind: "REJECTED", reason: "RECOVERY_INTEGRITY_CONFLICT", detail: "idempotency row disappeared after the initial claim" };
+    }
 
-  const result: CapturedResponseFields = {
-    taskId: input.taskId, newTaskStatus: currentStatus, interactionId: interaction.id, assessmentId, canonicalOutcome, af01Result,
-  };
-  await deps.idempotencyRepository.complete(input.idempotencyKey, { kind: "EXECUTED", ...result } satisfies StoredResult);
-  return { kind: "EXECUTED", ...result };
+    const ownedDeps: ResponseCaptureDeps = {
+      ...deps,
+      humanVerificationRepository: new PostgresHumanVerificationRepository(client),
+      idempotencyRepository: ownedIdempotencyRepository,
+      transactionRunner,
+    };
+    return attemptResponseCaptureRecovery(input, ownedDeps, operator.operatorId, postLockClaim.claimedAt);
+  });
 }

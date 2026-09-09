@@ -123,6 +123,17 @@ export class PostgresEvidenceRepository implements EvidenceRepository {
     return mapEvidence(result.rows[0]);
   }
 
+  async findByInteractionId(interactionId: string): Promise<EvidenceRecord[]> {
+    const result = await this.client.query<EvidenceRow>(
+      `select ${evidenceColumns}
+         from raw_evidence
+        where metadata->>'interactionId' = $1
+        order by captured_at, id`,
+      [interactionId],
+    );
+    return result.rows.map(mapEvidence);
+  }
+
   async getById(id: string): Promise<EvidenceRecord | null> {
     const result = await this.client.query<EvidenceRow>(
       `select ${evidenceColumns} from raw_evidence where id = $1`,

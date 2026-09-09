@@ -19,4 +19,8 @@ export interface HumanVerificationRepository {
   listAssessments(interactionId: string): Promise<HumanResponseAssessment[]>;
   createTaskEvent(input: CreateHumanVerificationTaskEventInput): Promise<HumanVerificationTaskEvent>;
   listTaskEvents(taskId: string): Promise<HumanVerificationTaskEvent[]>;
+  /** TX-INTEGRITY-04B recovery lookup: interaction(s) correlated to this idempotencyKey for this task, via the interaction's own metadata.idempotencyKey (written in the same INSERT that creates the interaction). Scoped to the task so an unrelated interaction elsewhere can never match. */
+  findInteractionByIdempotencyKey(taskId: string, idempotencyKey: string): Promise<HumanInteraction[]>;
+  /** TX-INTEGRITY-04B recovery lookup: assessment(s) correlated to this idempotencyKey, via the assessment's own idempotency_key column (written in the same INSERT that creates the assessment). */
+  findAssessmentByIdempotencyKey(idempotencyKey: string): Promise<HumanResponseAssessment[]>;
 }

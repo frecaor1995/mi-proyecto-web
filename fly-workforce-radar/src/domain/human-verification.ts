@@ -158,6 +158,8 @@ export interface CreateHumanResponseAssessmentInput {
   followUpTarget?: string | null;
   supersedesAssessmentId?: string | null;
   assessmentNotes?: string | null;
+  /** TX-INTEGRITY-04B recovery correlation -- the idempotencyKey of the response-capture submission that produced this assessment, written in the same INSERT that creates the row. Null for assessments created outside response capture, or created before this column existed. */
+  idempotencyKey?: string | null;
 }
 export interface HumanResponseAssessment extends CreateHumanResponseAssessmentInput { id: string; createdAt: Date }
 

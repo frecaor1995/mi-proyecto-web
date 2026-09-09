@@ -35,6 +35,7 @@ const migrations = [
   "20260817070000_manpower_acceptance.sql", "20260817080000_contacts_routes.sql",
   "20260817090000_opportunity_graph.sql", "20260817100000_human_verification.sql",
   "20260904010000_human_verification_domain.sql",
+  "20260909010000_response_capture_recovery_correlation.sql",
 ];
 const at = new Date("2026-09-04T12:00:00Z");
 

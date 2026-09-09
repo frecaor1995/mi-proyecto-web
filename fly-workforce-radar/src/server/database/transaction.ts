@@ -15,3 +15,31 @@ import type { SqlClient } from "../repositories/evidence/postgres-evidence-repos
  * reusing its single client for the whole callback is already correct).
  */
 export type TransactionRunner = <T>(fn: (client: SqlClient) => Promise<T>) => Promise<T>;
+
+/** TX-INTEGRITY-04B-R1: runs one independent transaction on a client whose
+ * PostgreSQL session is already owned by the caller. */
+export function transactionRunnerOnClient(client: SqlClient): TransactionRunner {
+  return async <T>(fn: (client: SqlClient) => Promise<T>): Promise<T> => {
+    await client.query("begin");
+    try {
+      const result = await fn(client);
+      await client.query("commit");
+      return result;
+    } catch (error) {
+      await client.query("rollback").catch(() => {});
+      throw error;
+    }
+  };
+}
+
+export interface ResponseCaptureOwnershipContext {
+  readonly client: SqlClient;
+  readonly transactionRunner: TransactionRunner;
+}
+
+/** Owns one response-capture idempotency key on one dedicated PostgreSQL
+ * session for the complete callback lifetime. */
+export type ResponseCaptureOwnershipRunner = <T>(
+  idempotencyKey: string,
+  fn: (context: ResponseCaptureOwnershipContext) => Promise<T>,
+) => Promise<T>;

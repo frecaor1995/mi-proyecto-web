@@ -16,7 +16,7 @@ export class PostgresIdempotencyRepository implements IdempotencyRepository {
     if (insert.rows[0]) return { outcome: "CLAIMED" };
 
     const existing = await this.client.query<Row>(
-      `select operator_id,action,target_type,target_id,request_fingerprint,result from command_idempotency_keys where idempotency_key=$1`,
+      `select operator_id,action,target_type,target_id,request_fingerprint,result,created_at from command_idempotency_keys where idempotency_key=$1`,
       [input.idempotencyKey],
     );
     const row = existing.rows[0];
@@ -24,7 +24,7 @@ export class PostgresIdempotencyRepository implements IdempotencyRepository {
     if (String(row.operator_id) !== input.operatorId) return { outcome: "CONFLICT", reason: "ACTOR_MISMATCH" };
     if (String(row.target_type) !== input.targetType || String(row.target_id) !== input.targetId) return { outcome: "CONFLICT", reason: "TARGET_MISMATCH" };
     if (String(row.action) !== input.action || String(row.request_fingerprint) !== input.requestFingerprint) return { outcome: "CONFLICT", reason: "PAYLOAD_MISMATCH" };
-    if (row.result == null) return { outcome: "IN_PROGRESS" };
+    if (row.result == null) return { outcome: "IN_PROGRESS", claimedAt: new Date(String(row.created_at)) };
     return { outcome: "REPLAY", result: row.result };
   }
 

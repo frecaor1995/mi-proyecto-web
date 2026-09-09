@@ -18,7 +18,7 @@ import { HUMAN_VERIFICATION_RULE_VERSION, HumanVerificationService } from "../..
 import type { HumanVerificationTransactionalAccess } from "../../server/services/human-verification/human-verification-service";
 import { ManpowerAcceptanceService } from "../../server/services/manpower-acceptance/manpower-acceptance-service";
 import type { ServerSession } from "../../server/auth/session";
-import type { TransactionRunner } from "../../server/database/transaction";
+import type { ResponseCaptureOwnershipRunner, TransactionRunner } from "../../server/database/transaction";
 
 /**
  * TX-INTEGRITY-02. This `service` is the TEST'S OWN setup helper (used only
@@ -66,6 +66,7 @@ const migrations = [
   "20260817130000_commercial_action_engine.sql", "20260817140000_contact_grade_ordering.sql", "20260817150000_production_source_architecture.sql",
   "20260817160000_first_production_adapters.sql", "20260817170000_production_capture_closeout.sql",
   "20260904010000_human_verification_domain.sql", "20260905010000_operator_identity_and_safe_mutation.sql",
+  "20260909010000_response_capture_recovery_correlation.sql",
 ];
 
 describe("3I-B3 protected human verification response capture (full stack, real Postgres)", () => {
@@ -125,7 +126,24 @@ describe("3I-B3 protected human verification response capture (full stack, real 
     return { task, companyId: isolatedCompanyId };
   };
 
-  const deps = () => ({ humanVerificationRepository, idempotencyRepository, transactionRunner, closureServiceFor, operatorRepository });
+  const ownershipTails = new Map<string, Promise<void>>();
+  const deps = (ownedRunner: TransactionRunner = transactionRunner, ownedClient: SqlClient = db as unknown as SqlClient) => {
+    const ownershipRunner: ResponseCaptureOwnershipRunner = async (idempotencyKey, fn) => {
+      const prior = ownershipTails.get(idempotencyKey) ?? Promise.resolve();
+      let release!: () => void;
+      const held = new Promise<void>((resolve) => { release = resolve; });
+      const tail = prior.then(() => held);
+      ownershipTails.set(idempotencyKey, tail);
+      await prior;
+      try {
+        return await fn({ client: ownedClient, transactionRunner: ownedRunner });
+      } finally {
+        release();
+        if (ownershipTails.get(idempotencyKey) === tail) ownershipTails.delete(idempotencyKey);
+      }
+    };
+    return { humanVerificationRepository, idempotencyRepository, transactionRunner: ownedRunner, ownershipRunner, closureServiceFor, operatorRepository };
+  };
   const session = (authUserId: string | null): (() => Promise<ServerSession | null>) => () => Promise.resolve(authUserId ? { authUserId, email: "operator@example.com" } : null);
 
   const baseInput = (taskId: string, expectedTaskStatus: HumanVerificationTaskStatus, overrides: Partial<ResponseCaptureInput> = {}): ResponseCaptureInput => ({
@@ -303,31 +321,16 @@ describe("3I-B3 protected human verification response capture (full stack, real 
      * its failure cannot (and must not) roll back the interaction that
      * already committed before it ran.
      */
-    function failingAssessmentRepository(base: PostgresHumanVerificationRepository) {
-      return {
-        findOpenTaskByDeduplicationKey: base.findOpenTaskByDeduplicationKey.bind(base),
-        createTask: base.createTask.bind(base),
-        getTask: base.getTask.bind(base),
-        transitionTask: base.transitionTask.bind(base),
-        transitionTaskIfCurrentStatus: base.transitionTaskIfCurrentStatus.bind(base),
-        createInteraction: base.createInteraction.bind(base),
-        listInteractions: base.listInteractions.bind(base),
-        createAssessment: async () => { throw new Error("INJECTED_ASSESSMENT_FAILURE"); },
-        listAssessments: base.listAssessments.bind(base),
-        createTaskEvent: base.createTaskEvent.bind(base),
-        listTaskEvents: base.listTaskEvents.bind(base),
-      };
-    }
     const client = () => db as unknown as SqlClient;
     const nonSubstantive = (): Partial<ResponseCaptureInput> => ({
       interactionOutcome: "VOICEMAIL_LEFT", reachedHuman: false, answerDisposition: null, authorityLevel: null, commercialMechanism: null, responseSummary: "Left a voicemail.",
     });
 
-    it("A. the interaction persists even though the separate (non-transactional) assessment write fails afterward", async () => {
+    it("A. the interaction transaction persists even though the separate assessment transaction fails afterward", async () => {
       const task = await newTask();
-      const failingDeps = { ...deps(), humanVerificationRepository: failingAssessmentRepository(humanVerificationRepository) };
-      await expect(executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...failingDeps, getSession: session(activeAuthUserId) }))
-        .rejects.toThrow("INJECTED_ASSESSMENT_FAILURE");
+      const failingTransactionRunner = failingRunner(client(), /^\s*insert into human_response_assessments/i);
+      await expect(executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(failingTransactionRunner), getSession: session(activeAuthUserId) }))
+        .rejects.toThrow("INJECTED_FAILURE");
       const interactions = await humanVerificationRepository.listInteractions(task.id);
       expect(interactions).toHaveLength(1); // committed independently before the assessment write ever ran
     });
@@ -335,7 +338,7 @@ describe("3I-B3 protected human verification response capture (full stack, real 
     it("B. interaction and assessment both persist when the canonical closure transaction fails at its very first write", async () => {
       const task = await newTask();
       const failingTransactionRunner = failingRunner(client(), /^\s*insert into raw_evidence/i);
-      await expect(executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(), transactionRunner: failingTransactionRunner, getSession: session(activeAuthUserId) }))
+      await expect(executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(failingTransactionRunner), getSession: session(activeAuthUserId) }))
         .rejects.toThrow("INJECTED_FAILURE");
       const interactions = await humanVerificationRepository.listInteractions(task.id);
       expect(interactions).toHaveLength(1);
@@ -353,7 +356,7 @@ describe("3I-B3 protected human verification response capture (full stack, real 
       });
       const before = await counts();
       const failingTransactionRunner = failingRunner(client(), /^\s*insert into manpower_acceptance_evaluations/i);
-      await expect(executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(), transactionRunner: failingTransactionRunner, getSession: session(activeAuthUserId) }))
+      await expect(executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(failingTransactionRunner), getSession: session(activeAuthUserId) }))
         .rejects.toThrow("INJECTED_FAILURE");
       expect(await counts()).toEqual(before); // the whole closure unit rolled back: no orphan evidence, claim, link, or evaluation
       const interactions = await humanVerificationRepository.listInteractions(task.id);
@@ -405,7 +408,7 @@ describe("3I-B3 protected human verification response capture (full stack, real 
           throw error;
         }
       };
-      const outcome = await executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(), transactionRunner: spyRunner, getSession: session(activeAuthUserId) });
+      const outcome = await executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(spyRunner), getSession: session(activeAuthUserId) });
       expect(outcome).toMatchObject({ kind: "EXECUTED", canonicalOutcome: "AF01_EVALUATED" });
       expect(usedBy.get("evidence")).toBeDefined();
       expect(usedBy.get("claim")).toBeDefined();
@@ -437,7 +440,7 @@ describe("3I-B3 protected human verification response capture (full stack, real 
       };
       const outcome = await executeProtectedHumanVerificationResponseCapture(
         baseInput(task.id, "OPEN", nonSubstantive()),
-        { ...deps(), transactionRunner: spyRunner, getSession: session(activeAuthUserId) },
+        { ...deps(spyRunner), getSession: session(activeAuthUserId) },
       );
       expect(outcome).toMatchObject({ kind: "EXECUTED", newTaskStatus: "ATTEMPTED" });
       expect(usedBy.get("update")).toBeDefined();
@@ -450,7 +453,7 @@ describe("3I-B3 protected human verification response capture (full stack, real 
       const failingTransactionRunner = failingRunner(client(), /^\s*insert into human_verification_task_events/i);
       await expect(executeProtectedHumanVerificationResponseCapture(
         baseInput(task.id, "OPEN", nonSubstantive()),
-        { ...deps(), transactionRunner: failingTransactionRunner, getSession: session(activeAuthUserId) },
+        { ...deps(failingTransactionRunner), getSession: session(activeAuthUserId) },
       )).rejects.toThrow("INJECTED_FAILURE");
       expect((await humanVerificationRepository.getTask(task.id))?.status).toBe("OPEN");
     });
@@ -458,7 +461,7 @@ describe("3I-B3 protected human verification response capture (full stack, real 
     it("I. a failed task-transition hop does not roll back the interaction, assessment, or an already-committed canonical closure", async () => {
       const { task, companyId: isolatedCompanyId } = await newIsolatedTask();
       const failingTransactionRunner = failingRunner(client(), /^\s*insert into human_verification_task_events/i);
-      await expect(executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(), transactionRunner: failingTransactionRunner, getSession: session(activeAuthUserId) }))
+      await expect(executeProtectedHumanVerificationResponseCapture(baseInput(task.id, "OPEN"), { ...deps(failingTransactionRunner), getSession: session(activeAuthUserId) }))
         .rejects.toThrow("INJECTED_FAILURE");
       const interactions = await humanVerificationRepository.listInteractions(task.id);
       expect(interactions).toHaveLength(1);
@@ -482,6 +485,74 @@ describe("3I-B3 protected human verification response capture (full stack, real 
       expect(outcome).toMatchObject({ kind: "EXECUTED", newTaskStatus: "ATTEMPTED" });
       const events = (await humanVerificationRepository.listTaskEvents(task.id)).filter((event) => event.eventType === "STATE_CHANGED");
       expect(events).toHaveLength(1);
+    });
+
+    it("K. CLAIMED worker and same-key IN_PROGRESS worker share continuous ownership and the waiter replays", async () => {
+      const task = await newTask();
+      const input = baseInput(task.id, "OPEN", { ...nonSubstantive(), idempotencyKey: `owned-race-${task.id}` });
+      let firstPhaseCommitted!: () => void;
+      let allowOwnerToContinue!: () => void;
+      const phaseCommitted = new Promise<void>((resolve) => { firstPhaseCommitted = resolve; });
+      const continueOwner = new Promise<void>((resolve) => { allowOwnerToContinue = resolve; });
+      let calls = 0;
+      const pausedRunner: TransactionRunner = async (fn) => {
+        const result = await transactionRunner(fn);
+        calls += 1;
+        if (calls === 1) { firstPhaseCommitted(); await continueOwner; }
+        return result;
+      };
+
+      const workerA = executeProtectedHumanVerificationResponseCapture(input, { ...deps(pausedRunner), getSession: session(activeAuthUserId) });
+      await phaseCommitted;
+      let workerBSettled = false;
+      const workerB = executeProtectedHumanVerificationResponseCapture(input, { ...deps(), getSession: session(activeAuthUserId) })
+        .finally(() => { workerBSettled = true; });
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(workerBSettled).toBe(false);
+      expect(await humanVerificationRepository.listInteractions(task.id)).toHaveLength(1);
+
+      allowOwnerToContinue();
+      const [first, second] = await Promise.all([workerA, workerB]);
+      expect(first.kind).toBe("EXECUTED");
+      expect(second.kind).toBe("REPLAYED");
+      expect(await humanVerificationRepository.listInteractions(task.id)).toHaveLength(1);
+      expect((await humanVerificationRepository.listTaskEvents(task.id)).filter((event) => event.eventType === "STATE_CHANGED")).toHaveLength(1);
+      expect(Number((await db.query<{ c: string }>("select count(*) as c from command_idempotency_keys where idempotency_key=$1", [input.idempotencyKey])).rows[0].c)).toBe(1);
+    });
+
+    it("L. failed separate complete() releases ownership; retry reconstructs with zero duplicate business rows, then replays", async () => {
+      const { task, companyId: isolatedCompanyId } = await newIsolatedTask();
+      const input = baseInput(task.id, "OPEN", { idempotencyKey: `complete-failure-${task.id}` });
+      let failComplete = true;
+      const base = client();
+      const failingCompleteClient: SqlClient = {
+        async query<Row>(text: string, values?: unknown[]) {
+          if (failComplete && /^\s*update command_idempotency_keys set result/i.test(text)) {
+            failComplete = false;
+            throw new Error("INJECTED_COMPLETE_FAILURE");
+          }
+          return base.query<Row>(text, values);
+        },
+      };
+      const failingCompleteRunner = pgliteTransactional(failingCompleteClient).run;
+      await expect(executeProtectedHumanVerificationResponseCapture(
+        input,
+        { ...deps(failingCompleteRunner, failingCompleteClient), getSession: session(activeAuthUserId) },
+      )).rejects.toThrow("INJECTED_COMPLETE_FAILURE");
+
+      const retry = await executeProtectedHumanVerificationResponseCapture(input, { ...deps(), getSession: session(activeAuthUserId) });
+      expect(retry.kind).toBe("EXECUTED");
+      const replay = await executeProtectedHumanVerificationResponseCapture(input, { ...deps(), getSession: session(activeAuthUserId) });
+      expect(replay.kind).toBe("REPLAYED");
+      const interactionId = retry.kind === "EXECUTED" ? retry.interactionId : "";
+      expect(await humanVerificationRepository.listInteractions(task.id)).toHaveLength(1);
+      expect(await humanVerificationRepository.listAssessments(interactionId)).toHaveLength(1);
+      expect(Number((await db.query<{ c: string }>("select count(*) as c from raw_evidence where metadata->>'interactionId'=$1", [interactionId])).rows[0].c)).toBe(1);
+      expect(Number((await db.query<{ c: string }>("select count(*) as c from claims where company_id=$1", [isolatedCompanyId])).rows[0].c)).toBe(1);
+      expect(Number((await db.query<{ c: string }>("select count(*) as c from evidence_links where evidence_id in (select id from raw_evidence where metadata->>'interactionId'=$1)", [interactionId])).rows[0].c)).toBe(0);
+      expect(Number((await db.query<{ c: string }>("select count(*) as c from manpower_acceptance_evaluations where company_id=$1", [isolatedCompanyId])).rows[0].c)).toBe(1);
+      expect((await humanVerificationRepository.listTaskEvents(task.id)).filter((event) => event.eventType === "STATE_CHANGED")).toHaveLength(2);
+      expect(Number((await db.query<{ c: string }>("select count(*) as c from command_idempotency_keys where idempotency_key=$1", [input.idempotencyKey])).rows[0].c)).toBe(1);
     });
   });
 });

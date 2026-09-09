@@ -19,6 +19,8 @@ class MemoryRepository implements HumanVerificationRepository {
   async listInteractions(taskId:string):Promise<HumanInteraction[]>{void taskId;return[]}
   async createAssessment():Promise<HumanResponseAssessment>{throw new Error("B2 must not assess responses")}
   async listAssessments(interactionId:string):Promise<HumanResponseAssessment[]>{void interactionId;return[]}
+  async findInteractionByIdempotencyKey(taskId:string,idempotencyKey:string):Promise<HumanInteraction[]>{void taskId;void idempotencyKey;return[]}
+  async findAssessmentByIdempotencyKey(idempotencyKey:string):Promise<HumanResponseAssessment[]>{void idempotencyKey;return[]}
 }
 const contact={personId:"person-1",name:"Commercial Contact",title:"Manager",department:"Procurement",routeId:"route-1",routeType:"PROFESSIONAL_PHONE",routeTarget:"555-0100",routeVerificationState:"VERIFIED",routeCurrent:true,preferredMethod:"PHONE"as const};
 const input=(overrides:Partial<HumanVerificationPlanningInput>={}):HumanVerificationPlanningInput=>({need:"EXTERNAL_MANPOWER_ACCEPTANCE_UNKNOWN",companyId:"company-1",companyName:"Example Contractor",opportunityId:"opportunity-1",projectId:"project-1",projectName:"Example Project",blockerCode:"MISSING_MANPOWER_ACCEPTANCE",tradeId:"ELECTRICAL",occupationId:"ELECTRICIAN",scope:{companyScope:"UNKNOWN",projectId:"project-1",tradeId:"ELECTRICAL",occupationId:"ELECTRICIAN",geographicScope:"Texas"},sourceBasis:[{evidenceId:"evidence-1",claimId:"claim-1",sourceUrl:"https://example.com",observedAt:"2026-09-01",current:true,summary:"Public evidence does not resolve AF01."}],contact,publicEvidenceExhausted:true,commerciallyMaterial:true,createdBy:"planner-1",...overrides});

@@ -53,7 +53,7 @@ describe("3I-B3A idempotency foundation", () => {
 
   it("a key claimed but never completed reports IN_PROGRESS rather than being re-executed or silently replayed", async () => {
     await idempotency.claim(context({ idempotencyKey: "key-3" }));
-    expect(await idempotency.claim(context({ idempotencyKey: "key-3" }))).toEqual({ outcome: "IN_PROGRESS" });
+    expect(await idempotency.claim(context({ idempotencyKey: "key-3" }))).toMatchObject({ outcome: "IN_PROGRESS", claimedAt: expect.any(Date) });
   });
 
   it("no fuzzy dedupe: two different logical actions never collide just because their keys differ", async () => {
