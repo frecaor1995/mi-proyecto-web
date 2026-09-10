@@ -52,6 +52,19 @@ export async function attemptResponseCaptureRecovery(
       return { kind: "REJECTED", reason: "RECOVERY_INTEGRITY_CONFLICT", detail: "task not found during recovery" };
     }
 
+    // TX-INTEGRITY-05B. Before the first durable business write, distinguish
+    // a fresh/stale attempt from valid same-key crash recovery. Correlated
+    // state means this key crossed the write boundary and must resume even if
+    // prior task hops changed status. With no correlation, a state mismatch
+    // is terminal STALE_STATE and persists no response-capture business row.
+    const preflightInteractions = await deps.humanVerificationRepository.findInteractionByIdempotencyKey(input.taskId, input.idempotencyKey);
+    if (preflightInteractions.length > 1) {
+      throw new RecoveryFailClosedError("RECOVERY_INTEGRITY_CONFLICT", "multiple interactions are correlated to this idempotency key");
+    }
+    if (preflightInteractions.length === 0 && task.status !== input.expectedTaskStatus) {
+      throw new RecoveryFailClosedError("STALE_STATE", "task state changed before the first response-capture business write");
+    }
+
     const interaction = await recoverInteraction(deps, input, task, operatorId, claimedAt);
 
     const substantive = input.reachedHuman && !!input.answerDisposition;

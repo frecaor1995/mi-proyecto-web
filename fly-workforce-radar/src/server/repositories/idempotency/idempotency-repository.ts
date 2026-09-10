@@ -12,7 +12,7 @@ export type IdempotencyClaim =
    * recovery path.
    */
   | { readonly outcome: "IN_PROGRESS"; readonly claimedAt: Date }
-  | { readonly outcome: "CONFLICT"; readonly reason: "ACTOR_MISMATCH" | "TARGET_MISMATCH" | "PAYLOAD_MISMATCH" };
+  | { readonly outcome: "CONFLICT"; readonly reason: "ACTOR_MISMATCH" | "TARGET_MISMATCH" | "PAYLOAD_MISMATCH" | "TASK_CAPTURE_IN_PROGRESS" };
 
 export interface IdempotencyRepository {
   /** Atomically claims the key for this context, or reports why it cannot be (replay/in-progress/conflict). Never duplicates a claim. */

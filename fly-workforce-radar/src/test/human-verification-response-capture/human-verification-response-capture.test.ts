@@ -67,6 +67,7 @@ const migrations = [
   "20260817160000_first_production_adapters.sql", "20260817170000_production_capture_closeout.sql",
   "20260904010000_human_verification_domain.sql", "20260905010000_operator_identity_and_safe_mutation.sql",
   "20260909010000_response_capture_recovery_correlation.sql",
+  "20260910070755_tx_integrity_05b_active_response_capture_task_guard.sql",
 ];
 
 describe("3I-B3 protected human verification response capture (full stack, real Postgres)", () => {
@@ -260,6 +261,38 @@ describe("3I-B3 protected human verification response capture (full stack, real 
       { ...deps(), getSession: session(activeAuthUserId) },
     );
     expect(outcome).toMatchObject({ kind: "EXECUTED", newTaskStatus: "ATTEMPTED", assessmentId: null, canonicalOutcome: "NO_CANONICAL_CHANGE" });
+  });
+
+  it("TX-05B: a different active key for the same task is rejected before every business write", async () => {
+    const task = await newTask();
+    const operator = await operatorRepository.findByAuthUserId(activeAuthUserId);
+    await idempotencyRepository.claim({
+      idempotencyKey: `active-owner-${task.id}`, operatorId: operator!.id,
+      action: "human_verification.capture_response", targetType: "HUMAN_VERIFICATION_TASK",
+      targetId: task.id, requestFingerprint: "active-owner-fingerprint",
+    });
+    const outcome = await executeProtectedHumanVerificationResponseCapture(
+      baseInput(task.id, "OPEN", { idempotencyKey: `loser-${task.id}` }),
+      { ...deps(), getSession: session(activeAuthUserId) },
+    );
+    expect(outcome).toEqual({ kind: "REJECTED", reason: "TASK_CAPTURE_IN_PROGRESS" });
+    expect(await humanVerificationRepository.listInteractions(task.id)).toHaveLength(0);
+    expect((await humanVerificationRepository.listTaskEvents(task.id)).filter((event) => event.eventType === "STATE_CHANGED")).toHaveLength(0);
+  });
+
+  it("TX-05B: a different key after completion is stale before any business write", async () => {
+    const task = await newTask();
+    const first = await executeProtectedHumanVerificationResponseCapture(
+      baseInput(task.id, "OPEN", { idempotencyKey: `completed-owner-${task.id}`, interactionOutcome: "VOICEMAIL_LEFT", reachedHuman: false, answerDisposition: null, authorityLevel: null, commercialMechanism: null }),
+      { ...deps(), getSession: session(activeAuthUserId) },
+    );
+    expect(first).toMatchObject({ kind: "EXECUTED", newTaskStatus: "ATTEMPTED" });
+    const second = await executeProtectedHumanVerificationResponseCapture(
+      baseInput(task.id, "OPEN", { idempotencyKey: `post-completion-${task.id}` }),
+      { ...deps(), getSession: session(activeAuthUserId) },
+    );
+    expect(second).toEqual({ kind: "REJECTED", reason: "STALE_STATE" });
+    expect(await humanVerificationRepository.listInteractions(task.id)).toHaveLength(1);
   });
 
   it("28. the mutation never touches eligibility/scoring tables -- HOT/eligibility bypass is structurally impossible here", async () => {

@@ -10,7 +10,7 @@ import type { OperatorRepository } from "../repositories/operator/operator-repos
 
 export type ProtectedTransitionOutcome =
   | { readonly kind: "REJECTED"; readonly reason: "UNAUTHENTICATED" | "UNAUTHORIZED" | "STALE_STATE" }
-  | { readonly kind: "REJECTED"; readonly reason: "IDEMPOTENCY_CONFLICT"; readonly detail: "ACTOR_MISMATCH" | "TARGET_MISMATCH" | "PAYLOAD_MISMATCH" | "IN_PROGRESS" }
+  | { readonly kind: "REJECTED"; readonly reason: "IDEMPOTENCY_CONFLICT"; readonly detail: "ACTOR_MISMATCH" | "TARGET_MISMATCH" | "PAYLOAD_MISMATCH" | "TASK_CAPTURE_IN_PROGRESS" | "IN_PROGRESS" }
   | { readonly kind: "EXECUTED" | "REPLAYED"; readonly taskId: string; readonly status: HumanVerificationTaskStatus };
 
 export interface ProtectedTransitionInput {

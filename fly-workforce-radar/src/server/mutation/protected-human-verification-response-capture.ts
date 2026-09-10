@@ -230,7 +230,11 @@ export async function executeProtectedHumanVerificationResponseCapture(
     targetId: input.taskId,
     requestFingerprint: fingerprint(input),
   });
-  if (claim.outcome === "CONFLICT") return { kind: "REJECTED", reason: "IDEMPOTENCY_CONFLICT", detail: claim.reason };
+  if (claim.outcome === "CONFLICT") {
+    return claim.reason === "TASK_CAPTURE_IN_PROGRESS"
+      ? { kind: "REJECTED", reason: "TASK_CAPTURE_IN_PROGRESS" }
+      : { kind: "REJECTED", reason: "IDEMPOTENCY_CONFLICT", detail: claim.reason };
+  }
   if (claim.outcome === "REPLAY") {
     const stored = claim.result as StoredResult;
     if (stored.kind !== "EXECUTED") return { kind: "REJECTED", reason: stored.kind };
@@ -253,7 +257,9 @@ export async function executeProtectedHumanVerificationResponseCapture(
       requestFingerprint: fingerprint(input),
     });
     if (postLockClaim.outcome === "CONFLICT") {
-      return { kind: "REJECTED", reason: "IDEMPOTENCY_CONFLICT", detail: postLockClaim.reason };
+      return postLockClaim.reason === "TASK_CAPTURE_IN_PROGRESS"
+        ? { kind: "REJECTED", reason: "TASK_CAPTURE_IN_PROGRESS" }
+        : { kind: "REJECTED", reason: "IDEMPOTENCY_CONFLICT", detail: postLockClaim.reason };
     }
     if (postLockClaim.outcome === "REPLAY") {
       const stored = postLockClaim.result as StoredResult;
