@@ -245,6 +245,7 @@ export const dictionary = {
     OPERATOR_ASSUMPTION: "Supuesto del operador",
     UNKNOWN: "Desconocido",
   },
+  economicDecision:{sectionTitle:"Decisión económica",current:"Vigente — efectiva",currentTitle:"Decisión duradera vigente",historical:"Histórica",historyTitle:"Historial de decisiones",humanBoundary:"Disposición comercial autorizada por una persona — no es una recomendación del sistema.",operator:"Operador que decidió",decidedAt:"Decisión registrada",certainty:"Certeza efectiva",snapshot:"Snapshot inmutable del escenario",blockingReasons:"Motivos de bloqueo del snapshot",supersededBy:"Reemplazada por",emptyTitle:"No hay decisión económica registrada",emptyDescription:"No se ha registrado una decisión económica duradera para esta oportunidad.",unavailableTitle:"Información de decisión económica no disponible",unavailableDescription:"No se pudo leer el estado de decisión. Esto no significa que no exista una decisión.",disposition:{PROCEED:"PROCEDER",DECLINE:"DECLINAR",DEFER:"POSPONER"}},
   economics: {
     sectionTitle: "Economía comercial",
     railTitle: "Bloqueos económicos",

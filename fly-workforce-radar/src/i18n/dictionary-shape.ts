@@ -230,6 +230,12 @@ export interface Dictionary {
     readonly OPERATOR_ASSUMPTION: string;
     readonly UNKNOWN: string;
   };
+  readonly economicDecision: {
+    readonly sectionTitle:string;readonly current:string;readonly currentTitle:string;readonly historical:string;readonly historyTitle:string;readonly humanBoundary:string;
+    readonly operator:string;readonly decidedAt:string;readonly certainty:string;readonly snapshot:string;readonly blockingReasons:string;readonly supersededBy:string;
+    readonly emptyTitle:string;readonly emptyDescription:string;readonly unavailableTitle:string;readonly unavailableDescription:string;
+    readonly disposition:{readonly PROCEED:string;readonly DECLINE:string;readonly DEFER:string};
+  };
   readonly economics: {
     readonly sectionTitle: string;
     readonly railTitle: string;
