@@ -16,6 +16,11 @@ export type OperatorStatus = (typeof OPERATOR_STATUSES)[number];
  * (commercial-sensitive) -- kept as distinct permissions rather than one
  * broad "worker.admin" so a caller can hold profile access without ever
  * being able to read or write contact or compensation data.
+ * MATCHING-B1-C adds "demand_requirement.write" for the narrow
+ * demand_skill_requirements/demand_credential_requirements replace-semantics
+ * write path -- distinct from every worker_* permission (it never touches
+ * worker data) and from commercial_economics.* (it's structural requirement
+ * data, not a commercial decision).
  */
 export const OPERATOR_PERMISSIONS = [
   "human_verification.write",
@@ -27,6 +32,7 @@ export const OPERATOR_PERMISSIONS = [
   "worker_contact.write",
   "worker_compensation.read",
   "worker_compensation.write",
+  "demand_requirement.write",
 ] as const;
 export type OperatorPermission = (typeof OPERATOR_PERMISSIONS)[number];
 
