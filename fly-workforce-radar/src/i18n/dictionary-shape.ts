@@ -39,6 +39,7 @@ export interface Dictionary {
     readonly sources: string;
     readonly activity: string;
     readonly settings: string;
+    readonly workforce: string;
   };
   readonly shell: {
     readonly brandName: string;
@@ -192,6 +193,7 @@ export interface Dictionary {
     readonly sources: { readonly title: string; readonly description: string };
     readonly activity: { readonly title: string; readonly description: string };
     readonly settings: { readonly title: string; readonly description: string };
+    readonly workforce: { readonly title: string; readonly description: string };
   };
   readonly trust: {
     readonly VERIFIED: string;
@@ -335,6 +337,212 @@ export interface Dictionary {
     readonly authority: Readonly<Record<string, string>>;
     readonly mechanism: Readonly<Record<string, string>>;
     readonly rejected: Readonly<Record<string, string>>;
+  };
+  /** WORKFORCE-TALENT-A4. Operational management UI over the A2-B/A3
+   * canonical worker domain -- not a matching UI, no score/ranking strings
+   * exist anywhere in this section. */
+  readonly workforce: {
+    readonly eyebrow: string;
+    readonly listTitle: string;
+    readonly listDescription: string;
+    readonly newWorkerAction: string;
+    readonly filtersLabel: string;
+    readonly filterLifecycleLabel: string;
+    readonly filterLifecycleAll: string;
+    readonly filterTradeLabel: string;
+    readonly filterTradeAll: string;
+    readonly filterOccupationLabel: string;
+    readonly filterOccupationAll: string;
+    readonly applyFilters: string;
+    readonly clearFilters: string;
+    readonly column: {
+      readonly name: string;
+      readonly lifecycle: string;
+      readonly verification: string;
+      readonly trade: string;
+      readonly availability: string;
+      readonly location: string;
+      readonly completeness: string;
+    };
+    readonly lifecycleState: Readonly<Record<string, string>>;
+    readonly emptyTitle: string;
+    readonly emptyDescription: string;
+    readonly emptyFilteredTitle: string;
+    readonly emptyFilteredDescription: string;
+    readonly capabilityUnavailableTitle: string;
+    readonly capabilityUnavailableDescription: string;
+    readonly queryErrorTitle: string;
+    readonly queryErrorDescription: string;
+    readonly requiresSignIn: string;
+    readonly requiresOperator: string;
+    readonly unknownValue: string;
+    readonly redactedValue: string;
+    readonly noneValue: string;
+    readonly create: {
+      readonly title: string;
+      readonly description: string;
+      readonly displayNameLabel: string;
+      readonly sourceOfRecordLabel: string;
+      readonly sourceOfRecordOption: Readonly<Record<string, string>>;
+      readonly primaryTradeHint: string;
+      readonly tradeLabel: string;
+      readonly occupationLabel: string;
+      readonly tradeOptionalHint: string;
+      readonly experienceMonthsLabel: string;
+      readonly submit: string;
+      readonly validationError: string;
+      readonly submissionFailed: string;
+    };
+    readonly section: {
+      readonly overview: string;
+      readonly tradeOccupation: string;
+      readonly skills: string;
+      readonly credentials: string;
+      readonly availability: string;
+      readonly location: string;
+      readonly workHistory: string;
+      readonly contact: string;
+      readonly compensation: string;
+      readonly completeness: string;
+    };
+    readonly overview: {
+      readonly displayNameLabel: string;
+      readonly lifecycleLabel: string;
+      readonly verificationLabel: string;
+      readonly verifiedAtLabel: string;
+      readonly firstSeenAtLabel: string;
+      readonly lastSeenAtLabel: string;
+      readonly editButton: string;
+      readonly saveButton: string;
+      readonly cancelButton: string;
+      readonly markVerifiedLabel: string;
+      readonly updateSuccess: string;
+      readonly updateError: string;
+      readonly archiveAction: string;
+      readonly archiveWarning: string;
+      readonly archiveConfirmSubmit: string;
+      readonly reactivateAction: string;
+      readonly archiveSuccess: string;
+      readonly archiveError: string;
+      readonly reactivateSuccess: string;
+      readonly reactivateError: string;
+    };
+    readonly tradeOccupation: {
+      readonly primaryLabel: string;
+      readonly secondaryLabel: string;
+      readonly experienceMonthsSuffix: string;
+      readonly addTradeLabel: string;
+      readonly addOccupationLabel: string;
+      readonly addRoleLabel: string;
+      readonly addExperienceLabel: string;
+      readonly addSubmit: string;
+      readonly removeButton: string;
+      readonly addSuccess: string;
+      readonly addError: string;
+      readonly empty: string;
+    };
+    readonly skills: {
+      readonly addSkillLabel: string;
+      readonly addSubmit: string;
+      readonly removeButton: string;
+      readonly addSuccess: string;
+      readonly addError: string;
+      readonly empty: string;
+    };
+    readonly credentials: {
+      readonly addCredentialLabel: string;
+      readonly addRawIdentifierLabel: string;
+      readonly addRawIdentifierHint: string;
+      readonly addIssuedAtLabel: string;
+      readonly addExpiresAtLabel: string;
+      readonly addSubmit: string;
+      readonly addSuccess: string;
+      readonly addError: string;
+      readonly verifyButton: string;
+      readonly issuedAtLabel: string;
+      readonly expiresAtLabel: string;
+      readonly issuingAuthorityLabel: string;
+      readonly empty: string;
+    };
+    readonly availability: {
+      readonly currentLabel: string;
+      readonly statusLabel: string;
+      readonly statusOption: Readonly<Record<string, string>>;
+      readonly availableFromLabel: string;
+      readonly availableUntilLabel: string;
+      readonly addSubmit: string;
+      readonly addSuccess: string;
+      readonly addError: string;
+      readonly noRecordsYet: string;
+    };
+    readonly location: {
+      readonly currentLabel: string;
+      readonly cityLabel: string;
+      readonly regionLabel: string;
+      readonly countryLabel: string;
+      readonly travelWillingLabel: string;
+      readonly travelRadiusLabel: string;
+      readonly relocationWillingLabel: string;
+      readonly addSubmit: string;
+      readonly addSuccess: string;
+      readonly addError: string;
+      readonly noRecordsYet: string;
+      readonly milesSuffix: string;
+    };
+    readonly workHistory: {
+      readonly employerLabel: string;
+      readonly projectLabel: string;
+      readonly startDateLabel: string;
+      readonly endDateLabel: string;
+      readonly addSubmit: string;
+      readonly addSuccess: string;
+      readonly addError: string;
+      readonly markEndedSubmit: string;
+      readonly empty: string;
+      readonly presentLabel: string;
+    };
+    readonly contact: {
+      readonly restrictedTitle: string;
+      readonly restrictedDescription: string;
+      readonly readOnlyNotice: string;
+      readonly routeTypeLabel: string;
+      readonly targetLabel: string;
+      readonly consentLabel: string;
+      readonly consentOption: Readonly<Record<string, string>>;
+      readonly addSubmit: string;
+      readonly addSuccess: string;
+      readonly addError: string;
+      readonly deactivateButton: string;
+      readonly preferredLabel: string;
+      readonly inactiveLabel: string;
+      readonly empty: string;
+      readonly consentRequiredHint: string;
+    };
+    readonly compensation: {
+      readonly restrictedTitle: string;
+      readonly restrictedDescription: string;
+      readonly readOnlyNotice: string;
+      readonly rateTypeLabel: string;
+      readonly rateTypeOption: Readonly<Record<string, string>>;
+      readonly rateMinLabel: string;
+      readonly ratePreferredLabel: string;
+      readonly currencyLabel: string;
+      readonly perDiemLabel: string;
+      readonly negotiableLabel: string;
+      readonly addSubmit: string;
+      readonly addSuccess: string;
+      readonly addError: string;
+      readonly empty: string;
+    };
+    readonly completeness: {
+      readonly title: string;
+      readonly missingTrade: string;
+      readonly missingSkills: string;
+      readonly missingAvailability: string;
+      readonly credentialVerificationPending: string;
+      readonly missingContactConsent: string;
+      readonly allGood: string;
+    };
   };
 }
 

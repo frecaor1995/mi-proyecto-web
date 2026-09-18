@@ -148,7 +148,7 @@ describe("I18N-1 server rendering", () => {
   it("19. UI-1 route coverage remains intact", () => {
     const paths = NAVIGATION.flatMap((group) => group.items.map((item) => item.href));
     expect(paths).toEqual([
-      "/command-center","/opportunities","/companies","/projects","/contacts","/signals",
+      "/command-center","/opportunities","/companies","/projects","/contacts","/signals","/workforce",
       "/verification","/actions","/hot","/near-ready","/evidence","/relationships",
       "/sources","/activity","/settings",
     ]);

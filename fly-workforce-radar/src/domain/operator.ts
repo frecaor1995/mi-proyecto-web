@@ -10,11 +10,23 @@ export type OperatorStatus = (typeof OPERATOR_STATUSES)[number];
  * Each permission authorizes only its own domain's specific protected
  * mutations -- extend narrowly, never as a generic RBAC platform, and never
  * let one permission implicitly authorize another domain's writes.
+ * WORKFORCE-TALENT-A3 adds three worker-domain permission pairs matching the
+ * three sensitivity tiers certified in A2-A/A2-B: general profile facts,
+ * contact routes (highest sensitivity), and compensation expectations
+ * (commercial-sensitive) -- kept as distinct permissions rather than one
+ * broad "worker.admin" so a caller can hold profile access without ever
+ * being able to read or write contact or compensation data.
  */
 export const OPERATOR_PERMISSIONS = [
   "human_verification.write",
   "commercial_economics.write",
   "commercial_economics.decide",
+  "worker_profile.read",
+  "worker_profile.write",
+  "worker_contact.read",
+  "worker_contact.write",
+  "worker_compensation.read",
+  "worker_compensation.write",
 ] as const;
 export type OperatorPermission = (typeof OPERATOR_PERMISSIONS)[number];
 
