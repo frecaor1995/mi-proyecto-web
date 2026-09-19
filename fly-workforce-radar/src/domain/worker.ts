@@ -411,6 +411,17 @@ export interface MatchingReadyCredential {
   readonly expiresAt: Date | null;
 }
 
+/**
+ * MATCHING-B1-D-R1. Structured replacement for the earlier lossy
+ * `skillCodes: string[]` projection -- worker_skills.verification_state
+ * already exists in the schema and on WorkerSkillRecord; this only stops
+ * discarding it on the way into the matching-ready shape.
+ */
+export interface MatchingReadySkill {
+  readonly skillCode: string;
+  readonly verificationState: VerificationState;
+}
+
 export interface MatchingReadyAvailability {
   readonly status: WorkerAvailabilityStatus;
   readonly availableFrom: Date | null;
@@ -431,6 +442,8 @@ export interface MatchingReadyCompensation {
   readonly ratePreferred: number | null;
   readonly currency: string;
   readonly perDiemRequired: boolean | null;
+  /** MATCHING-B1-D-R1. Already-published worker_compensation_expectations.negotiable, previously dropped by this projection. */
+  readonly negotiable: boolean;
 }
 
 /**
@@ -441,7 +454,7 @@ export interface MatchingReadyCompensation {
 export interface MatchingReadyWorkerInput {
   readonly workerId: string;
   readonly tradeOccupations: readonly MatchingReadyTradeOccupation[];
-  readonly skillCodes: readonly string[];
+  readonly skills: readonly MatchingReadySkill[];
   readonly credentials: readonly MatchingReadyCredential[];
   readonly availability: Fact<MatchingReadyAvailability>;
   readonly location: Fact<MatchingReadyLocation>;

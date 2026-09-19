@@ -473,14 +473,14 @@ export class WorkerService {
     return ok({
       workerId,
       tradeOccupations: tradeOccupations.map((t) => ({ tradeCode: t.tradeCode, occupationCode: t.occupationCode, roleDesignation: t.roleDesignation, experienceMonths: t.experienceMonths })),
-      skillCodes: skills.map((s) => s.skillCode),
+      skills: skills.map((s) => ({ skillCode: s.skillCode, verificationState: s.verificationState })),
       credentials: credentials.map((c) => ({ credentialCode: c.credentialCode, verificationState: c.verificationState, expiresAt: c.expiresAt })),
       availability: availabilityRow ? knownFact({ status: availabilityRow.status, availableFrom: availabilityRow.availableFrom }) : unknownFact(),
       location: locationRow
         ? knownFact({ city: locationRow.city, region: locationRow.region, country: locationRow.country, travelWilling: locationRow.travelWilling, travelRadiusMiles: locationRow.travelRadiusMiles, relocationWilling: locationRow.relocationWilling })
         : unknownFact(),
       compensation: compensationRow
-        ? knownFact({ rateType: compensationRow.rateType, rateMin: compensationRow.rateMin, ratePreferred: compensationRow.ratePreferred, currency: compensationRow.currency, perDiemRequired: compensationRow.perDiemRequired })
+        ? knownFact({ rateType: compensationRow.rateType, rateMin: compensationRow.rateMin, ratePreferred: compensationRow.ratePreferred, currency: compensationRow.currency, perDiemRequired: compensationRow.perDiemRequired, negotiable: compensationRow.negotiable })
         : unknownFact(),
       knownGaps: MATCHING_INPUT_KNOWN_GAPS,
     });

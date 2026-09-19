@@ -115,6 +115,29 @@ describe("MATCHING-B1-C WorkerMatchingInput sanitization + correction contracts"
     // unmodified through the data layer, which is a prerequisite for that.
   });
 
+  it("R1.7.1: MatchingReadyWorkerInput.skills preserves per-skill verification state, no longer collapsing to a bare code array (MATCHING-B1-D-R1)", async () => {
+    const worker = await createWorker("SYNTHETIC-SKILL-VERIFICATION-FIDELITY");
+    await service().addSkill({ workerId: worker.id, skillCode: "TIG", verificationState: "VERIFIED" });
+    await service().addSkill({ workerId: worker.id, skillCode: "SMAW", verificationState: "UNVERIFIED" });
+    const result = await service().buildMatchingReadyInput(worker.id);
+    const value = result.kind === "OK" ? result.value : null;
+    expect(value?.skills).toEqual(
+      expect.arrayContaining([
+        { skillCode: "TIG", verificationState: "VERIFIED" },
+        { skillCode: "SMAW", verificationState: "UNVERIFIED" },
+      ]),
+    );
+  });
+
+  it("R1.7.7: MatchingReadyCompensation.negotiable reaches the matching input directly from worker_compensation_expectations.negotiable, never derived", async () => {
+    const worker = await createWorker("SYNTHETIC-COMPENSATION-NEGOTIABLE-FIDELITY");
+    await service().appendCompensationExpectation({ workerId: worker.id, rateType: "HOURLY", rateMin: 30, currency: "USD", negotiable: true });
+    const result = await service().buildMatchingReadyInput(worker.id);
+    const value = result.kind === "OK" ? result.value : null;
+    expect(value?.compensation.state).toBe("KNOWN");
+    if (value?.compensation.state === "KNOWN") expect(value.compensation.value.negotiable).toBe(true);
+  });
+
   it("Manager correction contract: a worker with zero trade rows produces a genuinely empty tradeOccupations array, never a synthesized conflict marker", async () => {
     const worker = await createWorker("SYNTHETIC-NO-TRADE-ROWS");
     const result = await service().buildMatchingReadyInput(worker.id);
