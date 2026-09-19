@@ -21,6 +21,16 @@ import { isEligibleForMatching } from "./eligibility";
  * the same criteria (same order) and the same outcome.
  */
 
+/**
+ * MATCHING-B2-B. Hand-maintained, bumped only when an outcome-affecting
+ * rule in this file changes -- never derived from a git SHA or a source
+ * hash (MATCHING-B2-A B2.5). Persisted verbatim with every durable match
+ * result so the product can later distinguish which rule generation
+ * produced a given outcome. Mirrors the identical pattern already
+ * established for RecordVerificationInput.ruleVersion (domain/verification.ts).
+ */
+export const MATCHING_RULE_VERSION = "matching-b1-d-v1";
+
 export interface EvaluateWorkerDemandMatchInput {
   readonly demand: MatchingReadyDemandInput;
   readonly worker: MatchingReadyWorkerInput;

@@ -21,6 +21,12 @@ export type OperatorStatus = (typeof OPERATOR_STATUSES)[number];
  * write path -- distinct from every worker_* permission (it never touches
  * worker data) and from commercial_economics.* (it's structural requirement
  * data, not a commercial decision).
+ * MATCHING-B2-B adds "matching_result.read" for reading durable
+ * worker_demand_match_results/criteria -- read-only, because matching
+ * results are server-computed facts operators can never author; a separate
+ * write path deliberately does not exist as an operator permission at all
+ * (the persistence service writes with the fly_workforce_runtime role, not
+ * on behalf of an operator's own authorization).
  */
 export const OPERATOR_PERMISSIONS = [
   "human_verification.write",
@@ -33,6 +39,7 @@ export const OPERATOR_PERMISSIONS = [
   "worker_compensation.read",
   "worker_compensation.write",
   "demand_requirement.write",
+  "matching_result.read",
 ] as const;
 export type OperatorPermission = (typeof OPERATOR_PERMISSIONS)[number];
 
