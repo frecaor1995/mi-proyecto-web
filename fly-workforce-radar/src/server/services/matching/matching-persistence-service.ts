@@ -36,6 +36,18 @@ export interface MatchingPersistenceServiceDeps {
   readonly transactionRunner: TransactionRunner;
 }
 
+/**
+ * MATCHING-B3-B. Stable, deterministic identity for the per-pair advisory
+ * lock: the same (demandSignalId, workerId) pair always contends on the same
+ * lock; a different pair maps to an independently lockable key. Follows the
+ * repository's established `<domain>:<ids>` text-key convention (see
+ * protected-economic-decision-mutation / protected-commercial-terms-mutation),
+ * which is hashed inside PostgreSQL by `hashtext($1)::bigint`.
+ */
+export function matchingResultPairLockKey(demandSignalId: string, workerId: string): string {
+  return `matching-result:${demandSignalId}:${workerId}`;
+}
+
 export class MatchingPersistenceService {
   constructor(private readonly deps: MatchingPersistenceServiceDeps) {}
 
@@ -48,6 +60,16 @@ export class MatchingPersistenceService {
    * A failure at step 2 or 3 rolls back the whole transaction, including
    * step 1's supersede -- the previous row's superseded_at reverts to null
    * automatically, so it remains the current result.
+   *
+   * MATCHING-B3-B: step 0 acquires a transaction-scoped advisory lock keyed
+   * on (demandSignalId, workerId) BEFORE step 1. Without it, two concurrent
+   * persists for the same pair both see no committed current row, both
+   * "supersede" nothing, and the second insert then blocks on the partial
+   * unique index and fails with an unhandled 23505. With it, the second
+   * transaction waits, and -- because each statement runs under READ
+   * COMMITTED -- its supersede then sees the first transaction's committed
+   * row and supersedes it correctly. The lock is released automatically at
+   * COMMIT/ROLLBACK; there is no manual unlock.
    */
   async persist(input: PersistWorkerDemandMatchResultInput): Promise<PersistWorkerDemandMatchResultOutcome> {
     if (input.engineResult.kind !== "EVALUATED") return { kind: "NOT_PERSISTED_INELIGIBLE" };
@@ -59,6 +81,10 @@ export class MatchingPersistenceService {
 
     return this.deps.transactionRunner(async (client) => {
       const repository = new PostgresMatchingResultRepository(client);
+      await client.query("select pg_advisory_xact_lock(hashtext($1)::bigint)", [
+        matchingResultPairLockKey(input.demand.demandSignalId, input.worker.workerId),
+      ]);
+
       const evaluatedAt = new Date();
 
       await repository.supersedeCurrentResult(input.demand.demandSignalId, input.worker.workerId, evaluatedAt);

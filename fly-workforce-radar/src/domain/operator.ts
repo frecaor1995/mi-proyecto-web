@@ -27,6 +27,10 @@ export type OperatorStatus = (typeof OPERATOR_STATUSES)[number];
  * write path deliberately does not exist as an operator permission at all
  * (the persistence service writes with the fly_workforce_runtime role, not
  * on behalf of an operator's own authorization).
+ * MATCHING-B3-B adds "matching.execute" for TRIGGERING a demand-to-workforce
+ * evaluation run. It is deliberately distinct from "matching_result.read":
+ * execute permits starting a run, read permits reading persisted results,
+ * and neither implicitly grants the other.
  */
 export const OPERATOR_PERMISSIONS = [
   "human_verification.write",
@@ -40,6 +44,7 @@ export const OPERATOR_PERMISSIONS = [
   "worker_compensation.write",
   "demand_requirement.write",
   "matching_result.read",
+  "matching.execute",
 ] as const;
 export type OperatorPermission = (typeof OPERATOR_PERMISSIONS)[number];
 
