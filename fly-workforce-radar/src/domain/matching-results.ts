@@ -49,6 +49,11 @@ export interface DemandMatchWorkerRow {
   readonly outcome: MatchOutcome;
   readonly topReasons: readonly string[];
   readonly missingInformationReasons: readonly string[];
+  /** MATCHING-B4-B. Complete, display-safe deterministic criteria for the
+   * current result. Deliberately excludes observed values: the UI needs the
+   * canonical state/reason/subject to explain the result, not raw matching
+   * inputs or any sensitive worker data. */
+  readonly explanations: readonly DemandMatchCriterionExplanation[];
   readonly evaluationDate: Date;
   readonly evaluatedAt: Date;
   readonly freshness: WorkerDemandMatchFreshness;
@@ -59,6 +64,27 @@ export interface DemandMatchWorkerRow {
    * transient read failure), never as a stand-in for "worker not found". */
   readonly currentWorkerLifecycleStatus: WorkerLifecycleStatus | null;
 }
+
+export interface DemandMatchCriterionExplanation {
+  readonly criterion: CriterionKey;
+  readonly subject: string | null;
+  readonly importance: CriterionImportance;
+  readonly state: CriterionState;
+  readonly reasonCode: MatchingExplanationReasonCode;
+}
+
+/** Closed reason-code vocabulary emitted by the published B1 engine. Keeping
+ * it explicit makes the bilingual B4 presentation exhaustive at compile time. */
+export const MATCHING_EXPLANATION_REASON_CODES = [
+  "DEMAND_TRADE_NOT_SPECIFIED", "WORKER_TRADE_UNKNOWN", "TRADE_MATCH_PRIMARY", "TRADE_MATCH_SECONDARY",
+  "DEMAND_OCCUPATION_NOT_SPECIFIED", "WORKER_OCCUPATION_UNKNOWN", "OCCUPATION_MATCH",
+  "DEMAND_MINIMUM_EXPERIENCE_NOT_SPECIFIED", "WORKER_EXPERIENCE_UNKNOWN", "EXPERIENCE_MEETS_MINIMUM", "EXPERIENCE_BELOW_MINIMUM",
+  "REQUIRED_SKILL_UNKNOWN", "PREFERRED_SKILL_UNKNOWN", "SKILL_REJECTED", "REQUIRED_SKILL_VERIFIED", "PREFERRED_SKILL_VERIFIED", "REQUIRED_SKILL_UNVERIFIED", "PREFERRED_SKILL_UNVERIFIED",
+  "REQUIRED_CREDENTIAL_UNKNOWN", "PREFERRED_CREDENTIAL_UNKNOWN", "CREDENTIAL_EXPIRED", "CREDENTIAL_REJECTED", "REQUIRED_CREDENTIAL_VERIFIED", "PREFERRED_CREDENTIAL_VERIFIED", "REQUIRED_CREDENTIAL_UNVERIFIED", "PREFERRED_CREDENTIAL_UNVERIFIED",
+  "DEMAND_START_DATE_NOT_SPECIFIED", "WORKER_AVAILABILITY_UNKNOWN", "WORKER_COMMITTED_STATUS_UNKNOWN", "AVAILABLE_FOR_START", "WORKER_AVAILABLE_FROM_AFTER_REQUIRED_START", "WORKER_UNAVAILABLE_FOR_START",
+  "DEMAND_COMPENSATION_NOT_SPECIFIED", "WORKER_COMPENSATION_UNKNOWN", "COMPENSATION_NOT_COMPARABLE", "COMPENSATION_PAY_PERIOD_NOT_COMPARABLE", "COMPENSATION_COMPATIBLE", "COMPENSATION_NEGOTIABLE_GAP", "COMPENSATION_HARD_GAP",
+] as const;
+export type MatchingExplanationReasonCode = (typeof MATCHING_EXPLANATION_REASON_CODES)[number];
 
 export type DemandMatchCounts = { readonly [K in MatchOutcome]: number };
 

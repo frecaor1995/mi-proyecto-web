@@ -101,6 +101,13 @@ export class MatchingReadModelService {
         outcome: result.outcome,
         topReasons,
         missingInformationReasons,
+        explanations: criteria.map((criterion) => ({
+          criterion: criterion.criterion,
+          subject: criterion.subject,
+          importance: criterion.importance,
+          state: criterion.state,
+          reasonCode: criterion.reasonCode as DemandMatchWorkerRow["explanations"][number]["reasonCode"],
+        })),
         evaluationDate: result.evaluationDate,
         evaluatedAt: result.evaluatedAt,
         freshness,

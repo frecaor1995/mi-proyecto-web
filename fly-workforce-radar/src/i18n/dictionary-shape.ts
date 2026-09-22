@@ -1,3 +1,6 @@
+import type { CriterionState, MatchOutcome } from "../domain/matching-engine";
+import type { MatchingExplanationReasonCode, WorkerDemandMatchFreshness } from "../domain/matching-results";
+
 /**
  * I18N-1. The single Dictionary shape both locale files must conform to via
  * `satisfies Dictionary`. A key missing (or misspelled) in either
@@ -127,6 +130,31 @@ export interface Dictionary {
     readonly empty: { readonly demand: string; readonly route: string; readonly verification: string; readonly evidence: string; readonly gaps: string };
     readonly state: { readonly unavailableTitle: string; readonly unavailableDescription: string; readonly notFoundTitle: string; readonly notFoundDescription: string; readonly errorTitle: string; readonly errorDescription: string };
     readonly gap: Readonly<Record<string, string>>;
+  };
+  readonly workforceMatching: {
+    readonly title: string;
+    readonly noDemandTitle: string; readonly noDemandDescription: string;
+    readonly restricted: string; readonly restrictedDescription: string; readonly requiresSignIn: string;
+    readonly demandSelection: string; readonly selectDemand: string; readonly selectDemandPrompt: string;
+    readonly run: string; readonly runAgain: string; readonly running: string; readonly runningDescription: string;
+    readonly completed: string; readonly partialSuccess: string; readonly partialSuccessDescription: string; readonly failed: string;
+    readonly executionPermissionRequired: string;
+    readonly runSummary: string; readonly eligibleWorkers: string; readonly evaluatedWorkers: string; readonly persistedWorkers: string; readonly failedWorkers: string;
+    readonly persistedResultsRestricted: string; readonly persistedResultsRestrictedDescription: string;
+    readonly resultsUnavailable: string; readonly resultsUnavailableDescription: string;
+    readonly noPersistedResults: string; readonly noPersistedResultsDescription: string;
+    readonly currentPicture: string; readonly persistedResults: string; readonly persistedResultsBoundary: string;
+    readonly noWorkersInGroup: string; readonly unknownWorker: string; readonly staleDescription: string;
+    readonly currentLifecycle: string; readonly evaluatedAt: string; readonly whyThisMatch: string; readonly missingInformation: string; readonly unknownValue: string;
+    readonly outcome: { readonly [K in MatchOutcome]: string };
+    readonly freshness: { readonly [K in WorkerDemandMatchFreshness]: string };
+    readonly criterionState: { readonly [K in CriterionState]: string };
+    readonly reason: { readonly [K in MatchingExplanationReasonCode]: string };
+    readonly error: {
+      readonly invalidOpportunity: string; readonly invalidDemand: string; readonly demandNotLinked: string;
+      readonly requiresSignIn: string; readonly executionPermission: string; readonly unavailable: string;
+      readonly demandNotFound: string; readonly runFailed: string; readonly noResultsPersisted: string;
+    };
   };
   readonly companyIntelligence: {
     readonly eyebrow: string; readonly filtersLabel: string; readonly searchLabel: string; readonly searchPlaceholder: string;
