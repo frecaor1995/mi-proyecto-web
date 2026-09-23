@@ -45,6 +45,9 @@ export const OPERATOR_PERMISSIONS = [
   "demand_requirement.write",
   "matching_result.read",
   "matching.execute",
+  "worker_engagement.read",
+  "worker_engagement.write",
+  "worker_contact.execute",
 ] as const;
 export type OperatorPermission = (typeof OPERATOR_PERMISSIONS)[number];
 
