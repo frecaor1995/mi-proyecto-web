@@ -11,10 +11,10 @@ import { getProductionSqlClient } from "../database/production-sql-client";
  * Explicit column lists throughout; never `select *`.
  */
 
-export interface TradeOption { readonly code: string; readonly labelEn: string }
-export interface OccupationOption { readonly code: string; readonly tradeCode: string; readonly labelEn: string }
-export interface SkillOption { readonly code: string; readonly labelEn: string }
-export interface CredentialOption { readonly code: string; readonly labelEn: string }
+export interface TradeOption { readonly code: string; readonly labelEn: string; readonly labelEs?: string }
+export interface OccupationOption { readonly code: string; readonly tradeCode: string; readonly labelEn: string; readonly labelEs?: string }
+export interface SkillOption { readonly code: string; readonly labelEn: string; readonly labelEs?: string }
+export interface CredentialOption { readonly code: string; readonly labelEn: string; readonly labelEs?: string }
 
 export interface WorkforceTaxonomy {
   readonly trades: readonly TradeOption[];
@@ -30,16 +30,16 @@ export async function getWorkforceTaxonomy(): Promise<WorkforceTaxonomy> {
   if (!client) return EMPTY_TAXONOMY;
   try {
     const [trades, occupations, skills, credentials] = await Promise.all([
-      client.query<{ code: string; label_en: string }>("select code,label_en from workforce_trades where active order by label_en"),
-      client.query<{ code: string; trade_code: string; label_en: string }>("select code,trade_code,label_en from workforce_occupations where active order by label_en"),
-      client.query<{ code: string; label_en: string }>("select code,label_en from workforce_skills where active order by label_en"),
-      client.query<{ code: string; label_en: string }>("select code,label_en from workforce_credentials where active order by label_en"),
+      client.query<{ code: string; label_en: string; label_es: string }>("select code,label_en,label_es from workforce_trades where active order by label_en"),
+      client.query<{ code: string; trade_code: string; label_en: string; label_es: string }>("select code,trade_code,label_en,label_es from workforce_occupations where active order by label_en"),
+      client.query<{ code: string; label_en: string; label_es: string }>("select code,label_en,label_es from workforce_skills where active order by label_en"),
+      client.query<{ code: string; label_en: string; label_es: string }>("select code,label_en,label_es from workforce_credentials where active order by label_en"),
     ]);
     return {
-      trades: trades.rows.map((r) => ({ code: r.code, labelEn: r.label_en })),
-      occupations: occupations.rows.map((r) => ({ code: r.code, tradeCode: r.trade_code, labelEn: r.label_en })),
-      skills: skills.rows.map((r) => ({ code: r.code, labelEn: r.label_en })),
-      credentials: credentials.rows.map((r) => ({ code: r.code, labelEn: r.label_en })),
+      trades: trades.rows.map((r) => ({ code: r.code, labelEn: r.label_en, labelEs: r.label_es })),
+      occupations: occupations.rows.map((r) => ({ code: r.code, tradeCode: r.trade_code, labelEn: r.label_en, labelEs: r.label_es })),
+      skills: skills.rows.map((r) => ({ code: r.code, labelEn: r.label_en, labelEs: r.label_es })),
+      credentials: credentials.rows.map((r) => ({ code: r.code, labelEn: r.label_en, labelEs: r.label_es })),
     };
   } catch {
     return EMPTY_TAXONOMY;
