@@ -83,6 +83,44 @@ describe("MATCHING-B5-C canonical engagement foundation",()=>{
     const serialized=JSON.stringify(events);expect(serialized).not.toContain("555-0100");expect(serialized).not.toContain("+1-");
   });
 
+  it("round-trips B5 calendar dates exactly in America/Chicago, including DST, single-day, and nullable-until cases",async()=>{
+    const originalTimezone=process.env.TZ;
+    process.env.TZ="America/Chicago";
+    try{
+      const calendarWorker=(await db.query<{id:string}>(`insert into workforce_workers(display_name,source_of_record,lifecycle_status)values('B5-C CALENDAR DATE WORKER','IMPORTED','ACTIVE')returning id`)).rows[0].id;
+      const calendarMatch=(await db.query<{id:string}>(`insert into worker_demand_match_results(demand_signal_id,worker_id,outcome,rule_version,evaluation_date,worker_input_fingerprint,demand_input_fingerprint,worker_lifecycle_status_at_evaluation)values($1,$2,'STRONG_MATCH','matching-b1-d-v1','2026-09-22','calendar-worker','calendar-demand','ACTIVE')returning id`,[demandId,calendarWorker])).rows[0].id;
+      const created=await execute({action:"CREATE",idempotencyKey:"b5c-calendar-create",demandSignalId:demandId,workerId:calendarWorker,opportunityId,originatingMatchResultId:calendarMatch});
+      expect(created.kind).toBe("EXECUTED");if(created.kind!=="EXECUTED")throw new Error("calendar setup failed");
+      let version=created.version;
+      const verify=async(key:string,from:string,until:string|null)=>{
+        const beforeEvents=await db.query<{count:string}>(`select count(*)::text count from worker_demand_engagement_events where engagement_id=$1`,[created.engagementId]);
+        const beforeCommands=await db.query<{count:string}>(`select count(*)::text count from command_idempotency_keys where target_id=$1 and action='worker_engagement.set_availability'`,[created.engagementId]);
+        const result=await execute({action:"SET_AVAILABILITY",idempotencyKey:key,engagementId:created.engagementId,expectedVersion:version,state:"CONFIRMED_AVAILABLE",availableFrom:new Date(`${from}T00:00:00.000Z`),availableUntil:until?new Date(`${until}T00:00:00.000Z`):null});
+        expect(result.kind).toBe("EXECUTED");if(result.kind!=="EXECUTED")throw new Error("calendar command failed");version=result.version;
+        const projection=await db.query<{available_from:string;available_until:string|null}>(`select available_from::text,available_until::text from worker_demand_engagements where id=$1`,[created.engagementId]);
+        const event=await db.query<{available_from:string;available_until:string|null}>(`select available_from::text,available_until::text from worker_demand_engagement_events where engagement_id=$1 and engagement_version=$2`,[created.engagementId,version]);
+        expect(projection.rows[0]).toEqual({available_from:from,available_until:until});
+        expect(event.rows[0]).toEqual({available_from:from,available_until:until});
+        const read=await readWorkerDemandEngagement(created.engagementId,{transactionRunner:transactionRunnerOnClient(client),getSession:session,operatorRepository});
+        expect(read.kind).toBe("FOUND");if(read.kind!=="FOUND")throw new Error("calendar read failed");
+        expect(read.engagement.availableFrom?.toISOString().slice(0,10)).toBe(from);
+        expect(read.engagement.availableUntil?.toISOString().slice(0,10)??null).toBe(until);
+        expect(read.events.at(-1)?.availableFrom?.toISOString().slice(0,10)).toBe(from);
+        expect(read.events.at(-1)?.availableUntil?.toISOString().slice(0,10)??null).toBe(until);
+        const afterEvents=await db.query<{count:string}>(`select count(*)::text count from worker_demand_engagement_events where engagement_id=$1`,[created.engagementId]);
+        const afterCommands=await db.query<{count:string}>(`select count(*)::text count from command_idempotency_keys where target_id=$1 and action='worker_engagement.set_availability'`,[created.engagementId]);
+        expect(Number(afterEvents.rows[0].count)-Number(beforeEvents.rows[0].count)).toBe(1);
+        expect(Number(afterCommands.rows[0].count)-Number(beforeCommands.rows[0].count)).toBe(1);
+      };
+      await verify("b5c-calendar-september","2026-09-28","2026-09-29");
+      await verify("b5c-calendar-dst","2026-03-08","2026-03-09");
+      await verify("b5c-calendar-single-day","2026-11-01","2026-11-01");
+      await verify("b5c-calendar-null-until","2026-12-15",null);
+    }finally{
+      if(originalTimezone===undefined)delete process.env.TZ;else process.env.TZ=originalTimezone;
+    }
+  });
+
   it("fails closed for unknown consent without root/event mutation",async()=>{
     const secondWorker=(await db.query<{id:string}>(`insert into workforce_workers(display_name,source_of_record,lifecycle_status)values('B5-C WELDER','IMPORTED','ACTIVE')returning id`)).rows[0].id;
     const secondMatch=(await db.query<{id:string}>(`insert into worker_demand_match_results(demand_signal_id,worker_id,outcome,rule_version,evaluation_date,worker_input_fingerprint,demand_input_fingerprint,worker_lifecycle_status_at_evaluation)values($1,$2,'POSSIBLE_MATCH','matching-b1-d-v1','2026-09-22','worker-2','demand','ACTIVE')returning id`,[demandId,secondWorker])).rows[0].id;

@@ -8,7 +8,9 @@ import type { Locale } from "../../i18n/locale";
 import { formatDate } from "../../i18n/format";
 import { t } from "../../i18n/translate";
 import type { DemandMatchingReadState, WorkforceMatchingUiPermissions } from "../../server/opportunity-detail/get-opportunity-workforce-matching";
+import type { WorkerDemandEngagementUi } from "../../server/opportunity-detail/get-worker-demand-engagement-ui";
 import { runOpportunityWorkforceMatchingAction, type WorkforceMatchingActionState } from "../../server/opportunity-detail/workforce-matching-actions";
+import { WorkerEngagementPanel } from "./worker-engagement-panel";
 
 const OUTCOME_ORDER: readonly MatchOutcome[] = ["STRONG_MATCH", "POSSIBLE_MATCH", "INSUFFICIENT_DATA", "NO_MATCH"];
 const INITIAL_STATE: WorkforceMatchingActionState = { status: "READY", demandSignalId: null, run: null, errorKey: null };
@@ -77,7 +79,7 @@ export function WorkforceMatchingSection({ locale, opportunityId, demands, permi
       <p>{t(locale, (actionState.errorKey ?? "workforceMatching.error.runFailed") as Parameters<typeof t>[1])}</p>
     </div> : null}
 
-    {permissions.canRead ? <PersistedResults locale={locale} selectedDemandId={selectedDemandId} readState={selectedReadState} readModel={readModel}/> : <div className="matching-panel matching-panel-execute-only">
+    {permissions.canRead ? <PersistedResults locale={locale} opportunityId={opportunityId} selectedDemandId={selectedDemandId} readState={selectedReadState} readModel={readModel}/> : <div className="matching-panel matching-panel-execute-only">
       <strong>{t(locale, "workforceMatching.persistedResultsRestricted")}</strong>
       <p>{t(locale, "workforceMatching.persistedResultsRestrictedDescription")}</p>
     </div>}
@@ -105,8 +107,9 @@ function RunSummary({ locale, state }: { readonly locale: Locale; readonly state
   </section>;
 }
 
-function PersistedResults({ locale, selectedDemandId, readState, readModel }: {
+function PersistedResults({ locale, opportunityId, selectedDemandId, readState, readModel }: {
   readonly locale: Locale;
+  readonly opportunityId: string;
   readonly selectedDemandId: string;
   readonly readState: DemandMatchingReadState | undefined;
   readonly readModel: DemandMatchReadModel | null;
@@ -121,20 +124,20 @@ function PersistedResults({ locale, selectedDemandId, readState, readModel }: {
       {OUTCOME_ORDER.map((outcome) => <OutcomeTile locale={locale} outcome={outcome} count={readModel.counts[outcome]} key={outcome}/>) }
     </div>
     <div className="matching-groups">
-      {OUTCOME_ORDER.map((outcome) => <WorkerGroup locale={locale} outcome={outcome} workers={readModel.workers.filter((worker) => worker.outcome === outcome)} key={outcome}/>) }
+      {OUTCOME_ORDER.map((outcome) => <WorkerGroup locale={locale} opportunityId={opportunityId} demandSignalId={selectedDemandId} outcome={outcome} workers={readModel.workers.filter((worker) => worker.outcome === outcome)} engagements={readState.engagements??{}} key={outcome}/>) }
     </div>
   </section>;
 }
 
-function WorkerGroup({ locale, outcome, workers }: { readonly locale: Locale; readonly outcome: MatchOutcome; readonly workers: readonly DemandMatchWorkerRow[] }) {
+function WorkerGroup({ locale, opportunityId, demandSignalId, outcome, workers, engagements }: { readonly locale: Locale; readonly opportunityId:string;readonly demandSignalId:string;readonly outcome: MatchOutcome; readonly workers: readonly DemandMatchWorkerRow[];readonly engagements:Readonly<Record<string,WorkerDemandEngagementUi>> }) {
   const ordered = useMemo(() => [...workers].sort((a, b) => a.workerDisplayName.localeCompare(b.workerDisplayName, locale) || a.workerId.localeCompare(b.workerId)), [workers, locale]);
   return <section className={`matching-group matching-group-${outcome.toLowerCase()}`}>
     <header><h4>{t(locale, `workforceMatching.outcome.${outcome}`)}</h4><span>{ordered.length}</span></header>
-    {ordered.length === 0 ? <p className="matching-group-empty">{t(locale, "workforceMatching.noWorkersInGroup")}</p> : <div className="matching-worker-list">{ordered.map((worker) => <WorkerCard locale={locale} worker={worker} key={worker.workerId}/>)}</div>}
+    {ordered.length === 0 ? <p className="matching-group-empty">{t(locale, "workforceMatching.noWorkersInGroup")}</p> : <div className="matching-worker-list">{ordered.map((worker) => <WorkerCard locale={locale} opportunityId={opportunityId} demandSignalId={demandSignalId} worker={worker} engagement={engagements[worker.workerId]} key={worker.workerId}/>)}</div>}
   </section>;
 }
 
-function WorkerCard({ locale, worker }: { readonly locale: Locale; readonly worker: DemandMatchWorkerRow }) {
+function WorkerCard({ locale,opportunityId,demandSignalId, worker,engagement }: { readonly locale: Locale;readonly opportunityId:string;readonly demandSignalId:string; readonly worker: DemandMatchWorkerRow;readonly engagement:WorkerDemandEngagementUi|undefined }) {
   return <article className="matching-worker-card">
     <header><div><Link href={`/workforce/${encodeURIComponent(worker.workerId)}`}>{worker.workerDisplayName || t(locale, "workforceMatching.unknownWorker")}</Link><small>{worker.workerId}</small></div><span className={`matching-freshness matching-freshness-${worker.freshness.toLowerCase()}`}>{t(locale, `workforceMatching.freshness.${worker.freshness}`)}</span></header>
     {worker.freshness === "POTENTIALLY_STALE" ? <p className="matching-stale-note">{t(locale, "workforceMatching.staleDescription")}</p> : null}
@@ -146,6 +149,7 @@ function WorkerCard({ locale, worker }: { readonly locale: Locale; readonly work
       <ul>{worker.explanations.map((explanation, index) => <Explanation locale={locale} explanation={explanation} key={`${explanation.criterion}-${explanation.subject ?? "none"}-${index}`}/>)}</ul>
     </details>
     {worker.missingInformationReasons.length > 0 ? <section className="matching-missing"><h5>{t(locale, "workforceMatching.missingInformation")}</h5><ul>{worker.missingInformationReasons.map((reason, index) => <li key={`${reason}-${index}`}>{t(locale, `workforceMatching.reason.${reason}` as Parameters<typeof t>[1])}</li>)}</ul></section> : null}
+    <WorkerEngagementPanel locale={locale} opportunityId={opportunityId} demandSignalId={demandSignalId} workerId={worker.workerId} data={engagement}/>
   </article>;
 }
 

@@ -10,6 +10,7 @@ import { DemandRequirementService } from "../services/demand/demand-requirement-
 import { MatchingPersistenceService } from "../services/matching/matching-persistence-service";
 import { MatchingReadModelService } from "../services/matching/matching-read-model-service";
 import { WorkerService } from "../services/worker/worker-service";
+import { getWorkerDemandEngagementUi, type WorkerDemandEngagementUi } from "./get-worker-demand-engagement-ui";
 
 export interface WorkforceMatchingUiPermissions {
   readonly authenticated: boolean;
@@ -18,7 +19,7 @@ export interface WorkforceMatchingUiPermissions {
 }
 
 export type DemandMatchingReadState =
-  | { readonly state: "READY"; readonly value: DemandMatchReadModel }
+  | { readonly state: "READY"; readonly value: DemandMatchReadModel; readonly engagements?: Readonly<Record<string, WorkerDemandEngagementUi>> }
   | { readonly state: "UNAVAILABLE" | "ERROR"; readonly value: null };
 
 export interface OpportunityWorkforceMatchingPageData {
@@ -72,8 +73,9 @@ export async function getOpportunityWorkforceMatching(demandSignalIds: readonly 
   const entries = await Promise.all(demandSignalIds.map(async (demandSignalId): Promise<readonly [string, DemandMatchingReadState]> => {
     try {
       const result = await services.readModelService.getDemandMatchReadModel(demandSignalId);
+      const engagements=result.kind==="OK"?Object.fromEntries(await Promise.all(result.value.workers.map(async worker=>[worker.workerId,await getWorkerDemandEngagementUi(demandSignalId,worker.workerId)] as const))):{};
       return result.kind === "OK"
-        ? [demandSignalId, { state: "READY", value: result.value }]
+        ? [demandSignalId, { state: "READY", value: result.value, engagements }]
         : [demandSignalId, { state: "ERROR", value: null }];
     } catch {
       return [demandSignalId, { state: "ERROR", value: null }];
