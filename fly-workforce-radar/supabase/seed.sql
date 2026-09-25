@@ -56,6 +56,19 @@ insert into sources (
   '2026-09-01T12:00:00Z', '2026-09-10T12:00:00Z'
 );
 
+insert into sources (
+  id, name, source_type, domain, base_url, access_classification,
+  allowed_capture_methods, requires_auth, paywalled, enabled,
+  robots_review_status, tos_review_status, health_status, source_metadata
+) values (
+  '30000000-0000-4000-8000-000000000002',
+  'Brave Web Search API', 'SEARCH_RESULT',
+  'api.search.brave.com', 'https://api.search.brave.com', 'ACCOUNT_REQUIRED',
+  array['SEARCH_API'], true, false, true,
+  'APPROVED', 'APPROVED', 'UNKNOWN',
+  '{"role":"URL_DISCOVERY_ONLY","canonical_evidence":false,"environment":"LOCAL"}'::jsonb
+) on conflict (id) do nothing;
+
 insert into companies (
   id, legal_name, common_name, industry_metadata, first_seen_at, last_seen_at,
   created_at, updated_at, normalized_legal_name, normalized_common_name

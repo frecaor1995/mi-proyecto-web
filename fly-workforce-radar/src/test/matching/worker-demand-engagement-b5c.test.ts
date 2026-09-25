@@ -20,6 +20,7 @@ const EXCLUDED = new Set([
   "20260913133740_discovery_mvp_a0_durable_runs.sql", "20260913135341_discovery_mvp_a_candidates.sql",
   "20260914024442_discovery_mvp_b_r1_destination_policy_state.sql", "20260914094253_canonical_multi_profession_demand.sql",
   "20260915024424_security_rls_b0_r1_public_routine_defaults.sql", "20260915024716_security_rls_b0_r1_global_routine_defaults.sql",
+  "20260925011609_opportunity_radar_search_automation.sql", "20260925021527_radar_query_kind_schema_compatibility.sql",
 ]);
 const AUTH = "b5c00000-0000-4000-8000-000000000001";
 

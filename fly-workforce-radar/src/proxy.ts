@@ -1,5 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { assertProductionConfig } from "./server/config/production-config";
+import { decideGlobalOperatorGate, isPublicApplicationPath } from "./server/auth/global-operator-gate";
+import { getProductionSqlClient } from "./server/database/production-sql-client";
+import { PostgresOperatorRepository } from "./server/repositories/operator/postgres-operator-repository";
 
 /**
  * Refreshes the Supabase Auth session cookie on every request (the current
@@ -10,9 +14,11 @@ import { NextResponse, type NextRequest } from "next/server";
  * this app has no public routes requiring a session to view.
  */
 export async function proxy(request: NextRequest) {
+  assertProductionConfig();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return NextResponse.next();
+  const publicPath = isPublicApplicationPath(request.nextUrl.pathname);
+  if (!url || !key) return publicPath ? NextResponse.next() : NextResponse.redirect(new URL("/login", request.url));
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(url, key, {
@@ -26,8 +32,18 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
-  return response;
+  const { data, error } = await supabase.auth.getUser();
+  if (publicPath) return response;
+
+  const client = getProductionSqlClient();
+  const operator = !error && data.user && client
+    ? await new PostgresOperatorRepository(client).findByAuthUserId(data.user.id)
+    : null;
+  const decision = decideGlobalOperatorGate({ authenticated: !error && Boolean(data.user), operatorStatus: operator?.status ?? null });
+  if (decision === "ALLOW") return response;
+  const redirect = NextResponse.redirect(new URL(`/login?reason=${decision === "DENY_OPERATOR" ? "operator" : "session"}`, request.url));
+  for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
+  return redirect;
 }
 
 export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"] };

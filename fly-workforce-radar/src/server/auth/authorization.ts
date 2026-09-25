@@ -16,10 +16,32 @@ export type AuthorizationResult =
   | { readonly state: "AUTHENTICATED_BUT_UNAUTHORIZED"; readonly authUserId: string; readonly email: string | null }
   | { readonly state: "AUTHORIZED"; readonly operator: AuthorizedOperator };
 
+export type ActiveOperatorResult =
+  | { readonly state: "UNAUTHENTICATED" }
+  | { readonly state: "AUTHENTICATED_BUT_UNAUTHORIZED"; readonly authUserId: string; readonly email: string | null }
+  | { readonly state: "ACTIVE_OPERATOR"; readonly operator: AuthorizedOperator };
+
 /** Fails closed: with no database connection configured, an authenticated session still resolves to AUTHENTICATED_BUT_UNAUTHORIZED, never AUTHORIZED. */
 function defaultOperatorRepository(): OperatorRepository | null {
   const client = getProductionSqlClient();
   return client ? new PostgresOperatorRepository(client) : null;
+}
+
+/** Global identity-to-active-operator boundary; deliberately does not grant any permission. */
+export async function resolveActiveOperator(
+  deps: { readonly getSession?: () => Promise<ServerSession | null>; readonly repository?: OperatorRepository | null } = {},
+): Promise<ActiveOperatorResult> {
+  const session = await (deps.getSession ?? resolveServerSession)();
+  if (!session) return { state: "UNAUTHENTICATED" };
+  const repository = deps.repository !== undefined ? deps.repository : defaultOperatorRepository();
+  const record = repository ? await repository.findByAuthUserId(session.authUserId) : null;
+  if (!record || record.status !== "ACTIVE") {
+    return { state: "AUTHENTICATED_BUT_UNAUTHORIZED", authUserId: session.authUserId, email: session.email };
+  }
+  return {
+    state: "ACTIVE_OPERATOR",
+    operator: { operatorId: record.id, authUserId: record.authUserId, email: record.email, permissions: record.permissions },
+  };
 }
 
 /**

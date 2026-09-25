@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { resolveServerLocale } from "../../i18n/server-locale";
 import { t } from "../../i18n/translate";
-import { authorizeOperator } from "../../server/auth/authorization";
+import { resolveActiveOperator } from "../../server/auth/authorization";
 import { signOutAction } from "../../server/auth/actions";
 import { LoginForm } from "./login-form";
 
 export default async function LoginPage() {
-  const [locale, authorization] = await Promise.all([resolveServerLocale(), authorizeOperator("human_verification.write")]);
-  if (authorization.state === "AUTHORIZED") redirect("/command-center");
+  const [locale, authorization] = await Promise.all([resolveServerLocale(), resolveActiveOperator()]);
+  if (authorization.state === "ACTIVE_OPERATOR") redirect("/command-center");
 
   return (
     <div className="page-stack login-view">

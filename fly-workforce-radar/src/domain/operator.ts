@@ -10,6 +10,8 @@ export type OperatorStatus = (typeof OPERATOR_STATUSES)[number];
  * Each permission authorizes only its own domain's specific protected
  * mutations -- extend narrowly, never as a generic RBAC platform, and never
  * let one permission implicitly authorize another domain's writes.
+ * Discovery MVP A0 adds "company_discovery.run" because initiating external
+ * discovery is neither a verification nor a commercial-economics mutation.
  * WORKFORCE-TALENT-A3 adds three worker-domain permission pairs matching the
  * three sensitivity tiers certified in A2-A/A2-B: general profile facts,
  * contact routes (highest sensitivity), and compensation expectations
@@ -36,6 +38,7 @@ export const OPERATOR_PERMISSIONS = [
   "human_verification.write",
   "commercial_economics.write",
   "commercial_economics.decide",
+  "company_discovery.run",
   "worker_profile.read",
   "worker_profile.write",
   "worker_contact.read",
