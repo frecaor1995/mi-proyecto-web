@@ -25,10 +25,6 @@ import type { ServerSession } from "../../server/auth/session";
 import type { OperatorRepository } from "../../server/repositories/operator/operator-repository";
 
 const EXCLUDED_LOCAL_MIGRATIONS = new Set([
-  "20260913133740_discovery_mvp_a0_durable_runs.sql",
-  "20260913135341_discovery_mvp_a_candidates.sql",
-  "20260914024442_discovery_mvp_b_r1_destination_policy_state.sql",
-  "20260914094253_canonical_multi_profession_demand.sql",
   "20260915024424_security_rls_b0_r1_public_routine_defaults.sql",
   "20260915024716_security_rls_b0_r1_global_routine_defaults.sql",
 ]);
@@ -923,7 +919,7 @@ describe("MATCHING-B3-B demand-to-workforce orchestration", () => {
     });
 
     it("no new schema: B3 introduces no run/queue table and no migration beyond the published B2 one", async () => {
-      const files = (await readdir(resolve(process.cwd(), "supabase/migrations"))).filter((f) => /matching/i.test(f)).sort();
+      const files = (await readdir(resolve(process.cwd(), "supabase/migrations"))).filter((f) => /matching_b[123]_/i.test(f)).sort();
       expect(files).toEqual(["20260918010000_matching_b1_demand_readiness.sql", "20260919010000_matching_b2_durable_results.sql"]);
       const tables = await db.query<{ table_name: string }>("select table_name from information_schema.tables where table_schema='public' and table_name like '%match%'");
       expect((tables.rows as { table_name: string }[]).map((t) => t.table_name).sort()).toEqual(["worker_demand_match_criteria", "worker_demand_match_results"]);

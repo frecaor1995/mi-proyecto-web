@@ -1,10 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { DemandMatchReadModel, DemandMatchWorkerRow } from "../../domain/matching-results";
 import { WorkforceMatchingSection } from "../../components/opportunity-detail/workforce-matching-section";
 import { DICTIONARIES } from "../../i18n/translate";
+
+vi.mock("server-only", () => ({}));
 
 const OPPORTUNITY_ID = "11111111-1111-4111-8111-111111111111";
 const DEMAND_A = "22222222-2222-4222-8222-222222222222";

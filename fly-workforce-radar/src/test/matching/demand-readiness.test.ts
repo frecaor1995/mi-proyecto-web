@@ -15,22 +15,12 @@ import type { OperatorRepository } from "../../server/repositories/operator/oper
  * the demand-readiness migration and the demand-requirement write path.
  *
  * IMPORTANT: this harness deliberately does NOT apply every .sql file in
- * supabase/migrations/ the way worker-domain.test.ts does -- that directory
- * currently also contains the excluded, unpublished Discovery/B0-R1/
- * canonical_multi_profession_demand.sql migrations, and the latter already
- * collides with the committed 20260915020000 shared-taxonomy migration
- * (both CREATE TABLE workforce_trades), a pre-existing, already-tracked
- * problem unrelated to this phase (confirmed: worker-domain.test.ts
- * currently fails the same way with or without this file's changes). This
- * harness instead applies exactly the published/certified chain plus this
- * phase's own new migration, mirroring the same explicit-list rigor used
- * to validate the Commit 1/Commit 2 publication.
+ * supabase/migrations/ the way worker-domain.test.ts does. It excludes only
+ * the B0-R1 default-privilege migrations, whose ALTER DEFAULT PRIVILEGES FOR
+ * ROLE statements require owner semantics PGlite cannot emulate. All schema
+ * migrations otherwise execute in canonical order.
  */
 const EXCLUDED_LOCAL_MIGRATIONS = new Set([
-  "20260913133740_discovery_mvp_a0_durable_runs.sql",
-  "20260913135341_discovery_mvp_a_candidates.sql",
-  "20260914024442_discovery_mvp_b_r1_destination_policy_state.sql",
-  "20260914094253_canonical_multi_profession_demand.sql",
   "20260915024424_security_rls_b0_r1_public_routine_defaults.sql",
   "20260915024716_security_rls_b0_r1_global_routine_defaults.sql",
 ]);

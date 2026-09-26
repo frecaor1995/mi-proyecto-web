@@ -1,27 +1,13 @@
--- SECURITY-RUNTIME-B2: dedicated local application login role, closes the
--- verified opportunity-edge grant gaps, and replaces "RLS enabled with zero
--- policies" on the nine tables that trapped fly_workforce_runtime with
--- intentional, role-scoped policies. Local-only; not applied to any remote
--- project. workforce_operators remains untouched -- no write grant, no
--- policy -- per the explicit Manager decision that operator provisioning
--- stays outside the ordinary application runtime surface.
-
-do $role$
-begin
-  if not exists (select 1 from pg_roles where rolname = 'fly_workforce_app') then
-    create role fly_workforce_app
-      login
-      inherit
-      nosuperuser
-      nocreatedb
-      nocreaterole
-      noreplication
-      nobypassrls;
-  end if;
-end
-$role$;
-
-grant fly_workforce_runtime to fly_workforce_app;
+-- SECURITY-RUNTIME-B2: closes the verified opportunity-edge grant gaps and
+-- replaces "RLS enabled with zero policies" on the nine tables that trapped
+-- fly_workforce_runtime with intentional, role-scoped policies.
+--
+-- The migration deliberately creates no LOGIN role. fly_workforce_runtime is
+-- the portable NOLOGIN permission group established by B0; each environment
+-- provisions its own restricted login and grants membership separately.
+-- workforce_operators remains untouched -- no write grant, no policy -- per
+-- the explicit Manager decision that operator provisioning stays outside the
+-- ordinary application runtime surface.
 
 -- Verified (by direct repository inspection) INSERT-only requirement: these
 -- five opportunity-edge junction tables are only ever written via

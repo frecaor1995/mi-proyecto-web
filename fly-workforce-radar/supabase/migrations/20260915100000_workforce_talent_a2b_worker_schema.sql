@@ -1,7 +1,7 @@
 -- WORKFORCE-TALENT-A2-B: canonical worker schema. Schema-only -- no worker
 -- repository/service/UI exists yet, no real worker data is seeded here, and
 -- the application runtime (DATABASE_URL) still connects as `postgres`, not
--- `fly_workforce_app`. The grants/policies below establish the intended
+-- an environment-provisioned restricted login. The grants/policies below establish the intended
 -- least-privilege security model ahead of that switch, exactly as the
 -- existing taxonomy/demand tables already do for features not yet built.
 --

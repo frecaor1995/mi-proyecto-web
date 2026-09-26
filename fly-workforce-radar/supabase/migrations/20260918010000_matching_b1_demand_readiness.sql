@@ -1,35 +1,10 @@
 -- MATCHING-B1-C: minimum demand-readiness schema for the future
 -- deterministic worker-matching engine (MATCHING-B1-A/B1-B certified
--- design). Purely additive -- every new column is nullable, no existing
--- row is touched, no backfill runs, and role_type is left completely
--- alone as a legacy/display-only field. Matching reads trade_code/
+-- design). The canonical workforce taxonomy foundation owns the shared
+-- demand columns and their foreign keys. This migration adds only the
+-- matching-specific index and runtime write capability. role_type is left
+-- completely alone as a legacy/display-only field. Matching reads trade_code/
 -- occupation_code exclusively; it must never read role_type.
---
--- COLLISION DEBT (tracked, not resolved here): the excluded, unpublished
--- 20260914094253_canonical_multi_profession_demand.sql independently adds
--- its own demand_signals.trade_code / occupation_code /
--- minimum_experience_months / start_date / expected_end_date columns
--- (plus several others this migration does not touch: travel_required,
--- relocation_required, shift, hours_per_day, hours_per_week,
--- duration_text, demand_status, verification_state, last_verified_at,
--- evidence_tier). If that excluded migration is ever published as-is
--- after this one, its "add column trade_code ..." / "add column
--- occupation_code ..." / "add column minimum_experience_months ..." /
--- "add column start_date ..." statements will fail with a duplicate-
--- column error, because this migration will have already added them.
--- Reconciling that file (dropping its now-redundant column additions,
--- keeping only what this migration does not cover) is a prerequisite for
--- ever publishing it, exactly as MATCHING-B1-B already flagged for the
--- taxonomy tables. Not resolved here per explicit instruction not to
--- edit the excluded migration.
-
-alter table public.demand_signals
-  add column trade_code text references public.workforce_trades(code),
-  add column occupation_code text,
-  add column minimum_experience_months integer check (minimum_experience_months >= 0),
-  add column start_date date,
-  add constraint demand_signals_occupation_trade_fk
-    foreign key (occupation_code, trade_code) references public.workforce_occupations(code, trade_code);
 
 create index demand_signals_trade_occupation_idx on public.demand_signals(trade_code, occupation_code);
 

@@ -12,12 +12,12 @@
 -- so 022837's own unconditional grant on the two demand-requirement tables
 -- is satisfied at execution time (R3-R1 proved retimestamping was required:
 -- a later migration cannot satisfy an earlier one's dependency). This
--- migration intentionally excludes that source migration's demand_signals
--- ALTER TABLE (new columns) and its backfill UPDATE -- both belong to the
--- separate, unrelated canonical workforce-demand (project labor-demand
--- forecasting) feature and are not
--- required by anything in Workforce Talent. demand_signals and raw_evidence
--- themselves are guaranteed to already exist (20260817010000_canonical_model.sql).
+-- The unpublished source migration was removed from the executable chain to
+-- avoid creating these taxonomy tables twice. Its demand_signals columns,
+-- constraints, and deterministic legacy-role backfill are retained below so
+-- later Matching migrations receive the complete canonical demand contract.
+-- demand_signals and raw_evidence themselves are guaranteed to already exist
+-- (20260817010000_canonical_model.sql).
 
 create table public.workforce_trades (
   code text primary key,
@@ -110,6 +110,42 @@ create table public.demand_credential_requirements (
   created_at timestamptz not null default now(),
   primary key (demand_signal_id,credential_code,requirement_level)
 );
+
+alter table public.demand_signals
+  add column project_id uuid references public.projects(id),
+  add column unresolved_project_context text,
+  add column trade_code text references public.workforce_trades(code),
+  add column occupation_code text,
+  add column source_role_label text,
+  add column minimum_experience_months integer check (minimum_experience_months >= 0),
+  add column travel_required boolean,
+  add column relocation_required boolean,
+  add column shift text,
+  add column hours_per_day numeric check (hours_per_day > 0 and hours_per_day <= 24),
+  add column hours_per_week numeric check (hours_per_week > 0 and hours_per_week <= 168),
+  add column start_date date,
+  add column expected_end_date date,
+  add column duration_text text,
+  add column demand_status text check (demand_status in ('CURRENT','STALE','EXPIRED','UNKNOWN')),
+  add column verification_state text check (verification_state in ('VERIFIED','UNVERIFIED','DISPUTED','UNKNOWN')),
+  add column last_verified_at timestamptz,
+  add column evidence_tier text,
+  add constraint demand_signals_occupation_trade_fk foreign key (occupation_code,trade_code)
+    references public.workforce_occupations(code,trade_code),
+  add constraint demand_signals_occupation_requires_trade check (occupation_code is null or trade_code is not null),
+  add constraint demand_signals_date_order check (expected_end_date is null or start_date is null or expected_end_date >= start_date),
+  add constraint demand_signals_verified_timestamp check (verification_state <> 'VERIFIED' or last_verified_at is not null),
+  add constraint demand_signals_current_freshness check (demand_status <> 'CURRENT' or (published_at is not null and stale_after is not null));
+
+update public.demand_signals set
+ trade_code = case when role_type in ('INSTRUMENTATION','E_AND_I') then 'INSTRUMENTATION_CONTROLS' else 'ELECTRICAL' end,
+ occupation_code = case
+   when role_type in ('INSTRUMENTATION','E_AND_I') then 'INSTRUMENTATION_TECHNICIAN'
+   when role_type in ('FOREMAN','GENERAL_FOREMAN') then 'ELECTRICAL_FOREMAN'
+   when role_type = 'SUPERINTENDENT' then 'ELECTRICAL_SUPERINTENDENT'
+   else 'ELECTRICIAN' end,
+ source_role_label = coalesce(original_title,title)
+where role_type in ('APPRENTICE_ELECTRICIAN','ELECTRICIAN','JOURNEYMAN_ELECTRICIAN','INDUSTRIAL_ELECTRICIAN','ELECTRICAL_TECHNICIAN','INSTRUMENTATION','E_AND_I','FOREMAN','GENERAL_FOREMAN','SUPERINTENDENT');
 
 alter table public.workforce_trades enable row level security;
 alter table public.workforce_occupations enable row level security;

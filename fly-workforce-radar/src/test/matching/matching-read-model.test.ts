@@ -17,10 +17,6 @@ import type { ServerSession } from "../../server/auth/session";
 import type { OperatorRepository } from "../../server/repositories/operator/operator-repository";
 
 const EXCLUDED_LOCAL_MIGRATIONS = new Set([
-  "20260913133740_discovery_mvp_a0_durable_runs.sql",
-  "20260913135341_discovery_mvp_a_candidates.sql",
-  "20260914024442_discovery_mvp_b_r1_destination_policy_state.sql",
-  "20260914094253_canonical_multi_profession_demand.sql",
   "20260915024424_security_rls_b0_r1_public_routine_defaults.sql",
   "20260915024716_security_rls_b0_r1_global_routine_defaults.sql",
 ]);
