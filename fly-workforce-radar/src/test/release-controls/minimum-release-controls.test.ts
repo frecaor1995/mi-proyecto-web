@@ -62,18 +62,25 @@ describe("Commercial Release v1.0 minimum controls", () => {
   });
 
   it("verifies restricted role, schema, migrations, grants and RLS read-only", async () => {
-    const query = vi.fn(async (sql: string) => {
+    const query = vi.fn(async (sql: string, params?: unknown[]) => {
+      const listed = String((params?.[0] as string[] | undefined)?.length ?? 0);
       if (sql === "select 1") return { rows: [{ "?column?": 1 }] };
       if (sql.includes("pg_has_role")) return { rows: [{ current_user: "fly_workforce_app", rolsuper: false, rolbypassrls: false, runtime_member: true }] };
-      if (sql.includes("information_schema.tables")) return { rows: [{ count: "5" }] };
+      if (sql.includes("information_schema.tables")) return { rows: [{ count: listed }] };
       if (sql.includes("schema_migrations")) return { rows: [{ version: "1" }, { version: "2" }] };
-      if (sql.includes("grantee='fly_workforce_runtime'")) return { rows: [{ count: "5" }] };
-      if (sql.includes("from pg_policies")) return { rows: [{ count: "5" }] };
+      if (sql.includes("grantee='fly_workforce_runtime'")) return { rows: [{ count: listed }] };
+      if (sql.includes("from pg_policies")) return { rows: [{ count: listed }] };
       return { rows: [{ count: "0" }] };
     });
     const checks = await verifyDatabaseReleaseControls({ query } as unknown as SqlClient, ["1", "2"]);
     expect(releaseChecksPass(checks)).toBe(true);
     expect(query.mock.calls.every(([sql]) => /^\s*select/i.test(String(sql)))).toBe(true);
+    const tableLists = query.mock.calls.map(([, params]) => params?.[0]).filter(Array.isArray);
+    expect(tableLists.flat()).not.toContain("workforce_demands");
+    const schemaCall = query.mock.calls.find(([sql]) => sql.includes("information_schema.tables"));
+    expect(schemaCall?.[1]?.[0]).toEqual(["workforce_operators", "opportunities", "demand_signals", "workforce_workers", "worker_demand_engagements"]);
+    const policyCall = query.mock.calls.find(([sql]) => sql.includes("from pg_policies"));
+    expect(policyCall?.[1]?.[0]).toEqual(["workforce_workers", "worker_demand_engagements"]);
   });
 
   it("documents operator lifecycle, backup restore, alerting, smoke and rollback", async () => {

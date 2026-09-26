@@ -2,7 +2,6 @@ import { Client } from "pg";
 import { afterEach, describe, expect, it } from "vitest";
 
 const databaseUrl = process.env.DATABASE_URL;
-const adminDatabaseUrl = process.env.SUPABASE_ADMIN_DATABASE_URL;
 const clients: Client[] = [];
 
 async function connect(connectionString: string): Promise<Client> {
@@ -16,7 +15,7 @@ afterEach(async () => {
   await Promise.all(clients.splice(0).map((client) => client.end().catch(() => undefined)));
 });
 
-describe.skipIf(!databaseUrl || !adminDatabaseUrl)("SECURITY-RLS-B0 local PostgreSQL", () => {
+describe.skipIf(!databaseUrl)("SECURITY-RLS-B0 local PostgreSQL", () => {
   it("removes client-role grants and creates the restricted runtime role", async () => {
     const client = await connect(databaseUrl!);
     const grants = await client.query<{ count: string }>(`
@@ -54,15 +53,11 @@ describe.skipIf(!databaseUrl || !adminDatabaseUrl)("SECURITY-RLS-B0 local Postgr
     }]);
   });
 
-  it.each([
-    ["postgres", () => databaseUrl!],
-    ["supabase_admin", () => adminDatabaseUrl!],
-  ])("does not expose future objects created by %s", async (owner, getUrl) => {
-    const client = await connect(getUrl());
-    const suffix = owner === "postgres" ? "pg" : "admin";
-    const table = `public.b0_r1_future_${suffix}_table`;
-    const sequence = `public.b0_r1_future_${suffix}_seq`;
-    const routine = `public.b0_r1_future_${suffix}_fn`;
+  it("does not expose future objects created by postgres", async () => {
+    const client = await connect(databaseUrl!);
+    const table = "public.b0_r1_future_pg_table";
+    const sequence = "public.b0_r1_future_pg_seq";
+    const routine = "public.b0_r1_future_pg_fn";
 
     await client.query("begin");
     try {

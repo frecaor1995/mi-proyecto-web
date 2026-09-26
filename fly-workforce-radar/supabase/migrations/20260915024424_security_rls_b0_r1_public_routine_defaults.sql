@@ -7,6 +7,3 @@ revoke execute on all routines in schema public from public;
 
 alter default privileges for role postgres in schema public
   revoke execute on routines from public;
-
-alter default privileges for role supabase_admin in schema public
-  revoke execute on routines from public;

@@ -17,13 +17,6 @@ alter default privileges for role postgres in schema public
 alter default privileges for role postgres in schema public
   revoke all privileges on routines from anon, authenticated;
 
-alter default privileges for role supabase_admin in schema public
-  revoke all privileges on tables from anon, authenticated;
-alter default privileges for role supabase_admin in schema public
-  revoke all privileges on sequences from anon, authenticated;
-alter default privileges for role supabase_admin in schema public
-  revoke all privileges on routines from anon, authenticated;
-
 do $role$
 begin
   if not exists (select 1 from pg_roles where rolname = 'fly_workforce_runtime') then

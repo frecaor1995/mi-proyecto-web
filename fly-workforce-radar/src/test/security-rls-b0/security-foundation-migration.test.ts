@@ -25,9 +25,7 @@ describe("SECURITY-RLS-B0 foundation migration", () => {
     expect(migration).toContain(
       "alter default privileges for role postgres in schema public",
     );
-    expect(migration).toContain(
-      "alter default privileges for role supabase_admin in schema public",
-    );
+    expect(migration).not.toContain("supabase_admin");
   });
 
   it("defines a credential-free restricted runtime role", () => {
@@ -59,16 +57,12 @@ describe("SECURITY-RLS-B0 foundation migration", () => {
     expect(routineDefaultsMigration).toContain(
       "alter default privileges for role postgres in schema public",
     );
-    expect(routineDefaultsMigration).toContain(
-      "alter default privileges for role supabase_admin in schema public",
-    );
+    expect(routineDefaultsMigration).not.toContain("supabase_admin");
     expect(routineDefaultsMigration).not.toContain("grant execute");
     expect(globalRoutineDefaultsMigration).toContain(
       "alter default privileges for role postgres\n  revoke execute on functions from public",
     );
-    expect(globalRoutineDefaultsMigration).toContain(
-      "alter default privileges for role supabase_admin\n  revoke execute on functions from public",
-    );
+    expect(globalRoutineDefaultsMigration).not.toContain("supabase_admin");
     expect(globalRoutineDefaultsSql).not.toContain("in schema");
     expect(`${routineDefaultsSql}\n${globalRoutineDefaultsSql}`).not.toMatch(
       /from\s+(anon|authenticated|service_role|fly_workforce_runtime)/,

@@ -1,10 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { OpportunityDetailView } from "../../components/opportunity-detail/opportunity-detail-view";
 import { assembleOpportunityIntelligenceDetail } from "../../server/read-models/opportunity-detail";
 import { getOpportunityDetailPage, loadOpportunityDetail } from "../../server/opportunity-detail/get-opportunity-detail-page";
+
+vi.mock("server-only", () => ({}));
 
 const id="11111111-1111-4111-8111-111111111111", now=new Date("2026-09-05T12:00:00Z");
 function detail(overrides:Record<string,unknown>={}) { const graph={opportunity:{id,identityKey:"stable-01",projectId:"project-1",unresolvedCompanyContext:null,title:"Battery Plant Expansion",lifecycle:"ACTIVE",firstSeenAt:now,lastSeenAt:now,staleAfter:null,verificationDueAt:null,metadata:{}},demandSignals:[{id:"d-1",role_type:"ELECTRICIAN",headcount_estimate:null,per_diem_available:false,stale_after:null}],claims:[{id:"c-1",predicate:"workforce_demand",supporting_evidence_id:"e-1",verification_state:"VERIFIED",stale_after:null}],companies:[{id:"co-1",common_name:"Acme Energy"}],companyRoles:[{id:"r-1",role:"MANPOWER_BUYER",verification_state:"VERIFIED"}],project:{id:"project-1",name:"Battery Plant",location_text:"Austin, TX"},acceptance:{id:"a-1",result:"VERIFIED_NEGATIVE",reason:"Authorized buyer response",valid_until:null,qualifying_categories:[],supporting_evidence_ids:["e-1"]},vendorRoutes:[],contactPeople:[{id:"p-1",name:"Jordan Lee",title:"Procurement Manager",verification_state:"VERIFIED"}],contactRoutes:[{id:"route-1",route_type:"CORPORATE_EMAIL",target:"buyer@acme.example",verification_state:"VERIFIED",stale_after:null}],routeGrades:[{contact_route_id:"route-1",grade:"A"}],evidence:[{id:"e-1",source_url:"https://example.com/source",source_id:"source-1",capture_method:"HUMAN_INTERACTION",captured_at:now}],verificationReviews:[{id:"v-1",target_type:"MANPOWER_ACCEPTANCE",decision:"VERIFY",reason:"Authorized response reviewed",decided_at:now,evidence_ids:["e-1"]}],asOf:now,claimConflictCount:0,gaps:["MISSING_ACTIONABLE_ROUTE"],conflicts:[],...overrides}; return assembleOpportunityIntelligenceDetail(graph as Parameters<typeof assembleOpportunityIntelligenceDetail>[0],now); }
