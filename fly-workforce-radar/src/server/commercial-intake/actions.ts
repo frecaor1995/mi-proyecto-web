@@ -21,7 +21,7 @@ export async function activateCommercialIntakeAction(_previous:CommercialIntakeA
     idempotencyKey:text(data,"idempotencyKey"),sourceType:text(data,"sourceType") as CommercialIntakeSourceType,
     sourceReference:optional(data,"sourceReference"),evidenceSummary:text(data,"evidenceSummary"),customerName:text(data,"customerName"),
     opportunityTitle:text(data,"opportunityTitle"),projectName:optional(data,"projectName"),city:optional(data,"city"),state:optional(data,"state"),
-    tradeCode:text(data,"tradeCode"),occupationCode:text(data,"occupationCode"),headcount:Number(text(data,"headcount")),
+    tradeCode:text(data,"tradeCode"),occupationCode:text(data,"occupationCode"),headcount:numberOrNull(text(data,"headcount")),
     minimumExperienceMonths:numberOrNull(text(data,"minimumExperienceMonths")),startDate:optional(data,"startDate"),schedule:optional(data,"schedule"),
     skills:requirements(data,"skills"),credentials:requirements(data,"credentials"),
   };

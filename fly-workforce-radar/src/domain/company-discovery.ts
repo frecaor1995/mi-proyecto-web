@@ -47,6 +47,11 @@ export interface DiscoveryCandidate {
   readonly operationalClassification?: "HOT" | "NEAR_READY" | "WATCH" | "NEEDS_REVIEW" | null;
   readonly previouslySeen?: boolean;
   readonly discoveredAt?: string;
+  /** Page date reported by the provider (source publication/update), distinct from the discovery time. */
+  readonly providerPageAge?: string | null;
+  /** Position of the planned multi-trade cycle query that surfaced this candidate. */
+  readonly queryPosition?: number;
+  readonly queryExecutionId?: string | null;
 }
 
 export type DiscoveryExecutionState =

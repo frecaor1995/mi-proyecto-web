@@ -61,6 +61,15 @@ describe("Commercial Intake evidence-to-demand vertical slice",()=>{
     expect(result).toMatchObject({kind:"VALIDATION_ERROR",errors:{evidenceSummary:"required",tradeCode:"required",headcount:"positiveInteger"}});
   });
 
+  it("accepts unknown headcount without manufacturing a workforce quantity",async()=>{
+    const unknownHeadcount={...input,idempotencyKey:"44444444-4444-4444-8444-444444444444",headcount:null};
+    const result=await new CommercialIntakeService({transactionRunner:transactionRunnerOnClient(client),getSession:async()=>({authUserId:operator.authUserId,email:operator.email}),operatorRepository}).activate(unknownHeadcount);
+    expect(result.kind).toBe("ACTIVATED");
+    if(result.kind!=="ACTIVATED")return;
+    const graph=await new PostgresOpportunityRepository(client).loadGraph(result.value.opportunityId,new Date("2026-09-24T12:00:01Z"));
+    expect(graph.demandSignals[0].headcount_estimate).toBeNull();
+  });
+
   it("renders canonical multi-profession controls and bilingual operator copy",()=>{
     const taxonomy={trades:[{code:"ELECTRICAL",labelEn:"Electrical",labelEs:"Electricidad"}],occupations:[{code:"ELECTRICIAN",tradeCode:"ELECTRICAL",labelEn:"Electrician",labelEs:"Electricista"}],skills:[{code:"INDUSTRIAL_ELECTRICAL",labelEn:"Industrial electrical",labelEs:"Electricidad industrial"}],credentials:[{code:"OSHA_10",labelEn:"OSHA 10",labelEs:"OSHA 10"}]};
     const en=renderToStaticMarkup(<CommercialIntakeForm locale="en-US" taxonomy={taxonomy} idempotencyKey={input.idempotencyKey}/>),es=renderToStaticMarkup(<CommercialIntakeForm locale="es-US" taxonomy={taxonomy} idempotencyKey={input.idempotencyKey}/>);

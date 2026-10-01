@@ -16,7 +16,7 @@ export interface CommercialIntakeInput {
   readonly state: string | null;
   readonly tradeCode: string;
   readonly occupationCode: string;
-  readonly headcount: number;
+  readonly headcount: number | null;
   readonly minimumExperienceMonths: number | null;
   readonly startDate: string | null;
   readonly schedule: string | null;
@@ -47,7 +47,7 @@ export function validateCommercialIntake(input: CommercialIntakeInput): Readonly
   if (!input.opportunityTitle.trim()) errors.opportunityTitle = "required";
   if (!input.tradeCode.trim()) errors.tradeCode = "required";
   if (!input.occupationCode.trim()) errors.occupationCode = "required";
-  if (!Number.isInteger(input.headcount) || input.headcount < 1) errors.headcount = "positiveInteger";
+  if (input.headcount !== null && (!Number.isInteger(input.headcount) || input.headcount < 1)) errors.headcount = "positiveInteger";
   if (input.minimumExperienceMonths !== null && (!Number.isInteger(input.minimumExperienceMonths) || input.minimumExperienceMonths < 0)) errors.minimumExperienceMonths = "nonNegativeInteger";
   if (input.startDate && Number.isNaN(Date.parse(`${input.startDate}T00:00:00Z`))) errors.startDate = "invalidDate";
   if (input.sourceType === "PUBLIC_SOURCE" && !input.sourceReference?.trim()) errors.sourceReference = "requiredForPublicSource";

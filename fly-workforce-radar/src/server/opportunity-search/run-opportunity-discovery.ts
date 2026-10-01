@@ -5,6 +5,7 @@ import { nextScheduledRun, scheduledWindow, summarizeOpportunitySearch, type Opp
 import { BraveSearchProvider, type ProviderSearchResult } from "../company-discovery/brave-search-provider";
 import { NO_AUTOMATIC_PROMOTION, NO_UNGOVERNED_EVALUATION, processDiscoveryCandidates, type GovernedCaptureGateway } from "../company-discovery/candidate-processing";
 import { PostgresCompanyDiscoveryRepository } from "../company-discovery/discovery-repository";
+import { runDiscoveryCycle } from "./run-discovery-cycle";
 
 export type OpportunitySearchAuthority =
   | { readonly kind: "HUMAN"; readonly authorization: AuthorizationResult }
@@ -70,6 +71,7 @@ export async function executeDueOpportunitySearches(input: {
   readonly repository: PostgresCompanyDiscoveryRepository;
   readonly capture: GovernedCaptureGateway;
   readonly provider?: Pick<BraveSearchProvider, "search">;
+  readonly cycleProvider?: Pick<BraveSearchProvider, "searchPlanned">;
   readonly now?: Date;
 }): Promise<{ readonly due: number; readonly executed: number; readonly overlapsSuppressed: number }> {
   const now = input.now ?? new Date();
@@ -78,8 +80,11 @@ export async function executeDueOpportunitySearches(input: {
   let overlapsSuppressed = 0;
   for (const profile of profiles) {
     const window = scheduledWindow(now, profile.cadenceHours);
-    const execution = await runOpportunityDiscovery({ request: profile.request, authority: { kind: "SCHEDULER" }, repository: input.repository,
-      capture: input.capture, provider: input.provider, profileId: profile.id, scheduleWindow: window, now: () => now });
+    const execution = profile.kind === "MULTI_TRADE_CYCLE"
+      ? await runDiscoveryCycle({ authority: { kind: "SCHEDULER" }, repository: input.repository, capture: input.capture,
+        provider: input.cycleProvider, budget: profile.queriesPerCycle, profileId: profile.id, scheduleWindow: window, now: () => now })
+      : await runOpportunityDiscovery({ request: profile.request, authority: { kind: "SCHEDULER" }, repository: input.repository,
+        capture: input.capture, provider: input.provider, profileId: profile.id, scheduleWindow: window, now: () => now });
     if (execution.state === "OVERLAP_SUPPRESSED") overlapsSuppressed += 1;
     else executed += 1;
     await input.repository.advanceProfile(profile.id, nextScheduledRun(window, profile.cadenceHours));

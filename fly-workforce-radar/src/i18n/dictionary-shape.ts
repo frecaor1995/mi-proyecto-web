@@ -27,6 +27,10 @@ export interface Dictionary {
     readonly groupOperations: string;
     readonly groupKnowledge: string;
     readonly groupSystem: string;
+    readonly groupWorkflow: string;
+    readonly radar: string;
+    readonly groupPlanned: string;
+    readonly plannedBadge: string;
     readonly commandCenter: string;
     readonly opportunities: string;
     readonly companies: string;

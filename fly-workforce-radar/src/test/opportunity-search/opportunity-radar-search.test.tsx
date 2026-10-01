@@ -93,7 +93,7 @@ describe("Opportunity Radar governed search vertical slice", () => {
     const es = renderToStaticMarkup(<OpportunitySearchPanel locale="es-US" authorized status={status} />);
     expect(en).toContain("Search Now"); expect(en).toContain("Refresh"); expect(en).toContain("Every 6 hours");
     expect(es).toContain("Buscar ahora"); expect(es).toContain("Actualizar"); expect(es).toContain("Cada 6 horas");
-    expect(en).toContain('href="/opportunities"');
+    expect(en).toContain('href="/radar"');
   });
 
   it("declares durable profiles, scheduled overlap uniqueness and cross-run fingerprints", async () => {

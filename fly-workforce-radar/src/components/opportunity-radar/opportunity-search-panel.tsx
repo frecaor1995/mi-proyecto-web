@@ -12,12 +12,12 @@ const copy = {
     company: "Company", keyword: "Opportunity / project / keyword", trade: "Trade / profession", location: "Location", search: "Search Now", searching: "Searching…", refresh: "Refresh",
     automatic: "Automatic Search", on: "ON", off: "OFF", frequency: "Frequency", every: "Every {hours} hours", last: "Last Search", success: "Last Successful Search", next: "Next Search",
     status: "Status", results: "Candidates", failure: "Failure", none: "No search run yet", discovered: "Discovered candidates", caution: "Discovered does not mean verified or canonical.",
-    provider: "Provider", discoveredAt: "Discovered", seen: "Seen in an earlier run", evidence: "Evidence", captured: "Captured", pending: "Validation pending", intent: "Enter at least one search field.", unavailable: "Search storage is unavailable until its migration is applied." },
+    provider: "Provider", discoveredAt: "Discovered", seen: "Seen in an earlier run", evidence: "Evidence", captured: "Captured", pending: "Validation pending", intent: "Enter at least one search field.", unavailable: "Search storage is unavailable until its migration is applied.", openControls: "Run a new market search" },
   "es-US": { eyebrow: "Descubrimiento de oportunidades", title: "Buscar en el mercado", description: "Buscar ahora inicia un descubrimiento externo gobernado. Actualizar solo recarga los datos actuales del Radar.",
     company: "Empresa", keyword: "Oportunidad / proyecto / palabra clave", trade: "Oficio / profesión", location: "Ubicación", search: "Buscar ahora", searching: "Buscando…", refresh: "Actualizar",
     automatic: "Búsqueda automática", on: "ACTIVA", off: "INACTIVA", frequency: "Frecuencia", every: "Cada {hours} horas", last: "Última búsqueda", success: "Última búsqueda exitosa", next: "Próxima búsqueda",
     status: "Estado", results: "Candidatos", failure: "Falla", none: "Aún no hay búsquedas", discovered: "Candidatos descubiertos", caution: "Descubierto no significa verificado ni canónico.",
-    provider: "Proveedor", discoveredAt: "Descubierto", seen: "Visto en una búsqueda anterior", evidence: "Evidencia", captured: "Capturada", pending: "Validación pendiente", intent: "Ingrese al menos un campo de búsqueda.", unavailable: "El almacenamiento de búsqueda no está disponible hasta aplicar su migración." },
+    provider: "Proveedor", discoveredAt: "Descubierto", seen: "Visto en una búsqueda anterior", evidence: "Evidencia", captured: "Capturada", pending: "Validación pendiente", intent: "Ingrese al menos un campo de búsqueda.", unavailable: "El almacenamiento de búsqueda no está disponible hasta aplicar su migración.", openControls: "Ejecutar una nueva búsqueda" },
 } as const;
 
 export function OpportunitySearchPanel({ locale, authorized, status }: { readonly locale: Locale; readonly authorized: boolean; readonly status: OpportunitySearchStatus }) {
@@ -39,14 +39,15 @@ export function OpportunitySearchPanel({ locale, authorized, status }: { readonl
       else if (outcome.failureCode) setMessage(outcome.failureCode.replaceAll("_", " "));
     });
   }
-  return <section className="radar-state-panel opportunity-search-panel" aria-labelledby="opportunity-search-title">
-    <p className="overline">{c.eyebrow}</p><h2 id="opportunity-search-title">{c.title}</h2><p>{c.description}</p>
+  return <details className="opportunity-search-panel" aria-labelledby="opportunity-search-title">
+    <summary><span><strong id="opportunity-search-title">{c.openControls}</strong><small>{c.description}</small></span><span aria-hidden="true">+</span></summary>
+    <div className="opportunity-search-body">
     <form className="radar-filters" onSubmit={(event) => { event.preventDefault(); submit(event.currentTarget); }}>
       <label><span>{c.company}</span><input name="company" disabled={!authorized || pending} /></label>
       <label><span>{c.keyword}</span><input name="keyword" disabled={!authorized || pending} /></label>
       <label><span>{c.trade}</span><input name="tradeProfession" disabled={!authorized || pending} /></label>
       <label><span>{c.location}</span><input name="location" placeholder="Houston, TX" disabled={!authorized || pending} /></label>
-      <div className="radar-filter-actions"><button type="submit" disabled={!authorized || pending}>{pending ? c.searching : c.search}</button><Link href="/opportunities">{c.refresh}</Link></div>
+      <div className="radar-filter-actions"><button type="submit" disabled={!authorized || pending}>{pending ? c.searching : c.search}</button><Link href="/radar">{c.refresh}</Link></div>
     </form>
     {message ? <p role="alert">{message}</p> : null}
     {!status.available ? <p className="radar-boundary-note">{c.unavailable}</p> : null}
@@ -57,7 +58,8 @@ export function OpportunitySearchPanel({ locale, authorized, status }: { readonl
       <span>{c.results}: {latest?.findingsCount ?? 0}</span>{latest?.failureCode ? <span>{c.failure}: {latest.failureCode.replaceAll("_", " ")}</span> : null}
     </div>
     <CandidateList locale={locale} result={result ?? (latest ? { candidates: latest.candidates } : null)} />
-  </section>;
+    </div>
+  </details>;
 }
 
 function CandidateList({ locale, result }: { readonly locale: Locale; readonly result: Pick<CompanyDiscoveryResult, "candidates"> | null }) {

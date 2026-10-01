@@ -4,6 +4,7 @@ import { PostgresGovernedDestinationCapture } from "../../../../server/company-d
 import { PostgresCompanyDiscoveryRepository } from "../../../../server/company-discovery/discovery-repository";
 import { getProductionSqlClient } from "../../../../server/database/production-sql-client";
 import { executeDueOpportunitySearches } from "../../../../server/opportunity-search/run-opportunity-discovery";
+import { enrichPromisingFromLatestRun } from "../../../../server/source-enrichment/enrich-source";
 
 export const runtime = "nodejs";
 
@@ -20,5 +21,7 @@ export async function GET(request: Request) {
   const client = getProductionSqlClient();
   if (!client) return NextResponse.json({ status: "unavailable" }, { status: 503 });
   const result = await executeDueOpportunitySearches({ repository: new PostgresCompanyDiscoveryRepository(client), capture: new PostgresGovernedDestinationCapture(client) });
-  return NextResponse.json({ status: "completed", ...result });
+  // Bounded original-source retrieval for a few promising new findings (never a crawl; failures are recorded).
+  const enriched = result.executed > 0 ? await enrichPromisingFromLatestRun(client, 5).catch(() => 0) : 0;
+  return NextResponse.json({ status: "completed", ...result, enriched });
 }

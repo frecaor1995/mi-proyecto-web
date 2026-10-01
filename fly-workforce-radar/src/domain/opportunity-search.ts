@@ -15,6 +15,9 @@ export interface OpportunitySearchProfile {
   readonly request: OpportunitySearchRequest;
   readonly cadenceHours: number;
   readonly nextRunAt: string;
+  /** SINGLE_QUERY runs the stored request; MULTI_TRADE_CYCLE runs a bounded rotating multi-trade plan. */
+  readonly kind?: "SINGLE_QUERY" | "MULTI_TRADE_CYCLE";
+  readonly queriesPerCycle?: number | null;
 }
 
 function field(value: unknown): string | null {
