@@ -1,7 +1,7 @@
 import type { SqlClient } from "../repositories/evidence/postgres-evidence-repository";
 import type { SignalDetail } from "../opportunity-discovery/signals";
 import {
-  BUYER_FUNCTIONS, actionableRoute, buyerPath, classifyOrganization, functionsFor, groupPeople, isPlausibleName, personKey,
+  BUYER_FUNCTIONS, actionableRoute, buyerPath, normalizePerson, classifyOrganization, functionsFor, groupPeople, isPlausibleName, personKey,
   type ActionableRoute, type BuyerFunction, type BuyerPath, type CorporateChannel, type EvidenceCurrency, type HumanInteraction, type OrganizationType, type PersonEvidence, type PersonGroup, type SourceType,
 } from "../../domain/buyer-intelligence";
 import { extractContacts, phoneKindFromQuote, type ContactProviderId, type ExtractedContact, type PhoneKind } from "../../domain/contact-investigation";
@@ -12,7 +12,9 @@ import { normalizeCompanyName } from "../services/company/company-name-normaliza
 import { safeFetchSource } from "../source-enrichment/safe-fetch";
 import { hunterDomainSearch, retrieveOfficialPages } from "./providers";
 import { hunterCandidates, insertExtracted, organizationIdentityFor, runContactInvestigation } from "./investigation";
-import { discoverPeople, PAGE_PARSER_REVISION, PEOPLE_SEARCH_CACHE_DAYS, type PeopleSearchOutcome } from "./people-search";
+import { PAGE_PARSER_REVISION, PEOPLE_SEARCH_CACHE_DAYS, type PeopleSearchOutcome } from "./people-search";
+import { runResearch, type ResearchMetrics } from "./research-engine";
+import { corroboratePerson, procurementStatus, rankPeopleForResearch, researchCategory, phoneDigits, type PersonCorroboration, type PhoneAssociation, type PivotKind, type ProcurementStatus } from "../../domain/research-pivots";
 import type { BraveSearchProvider } from "../company-discovery/brave-search-provider";
 
 /**
@@ -36,6 +38,21 @@ export interface BuyerOrganization {
 
 export interface CanonicalContact { readonly id: string; readonly name: string; readonly title: string | null; readonly contactFunction: string; readonly verificationState: string; readonly fromInvestigation: boolean; readonly firstSeenAt: string }
 
+export interface ResearchPivotView { readonly id: string; readonly kind: PivotKind; readonly value: string; readonly parentId: string | null; readonly depth: number; readonly sourceUrl: string | null; readonly discoveredAt: string }
+export interface ReferenceContact { readonly key: string; readonly name: string; readonly title: string | null; readonly phone: string | null; readonly association: PhoneAssociation; readonly via: readonly string[]; readonly sourceDomains: readonly string[] }
+export interface ResearchView {
+  readonly pivots: readonly ResearchPivotView[];
+  /** Per person (PersonGroup.key): field corroboration and the discovery chain that led to the person. */
+  readonly insights: Readonly<Record<string, { readonly corroboration: PersonCorroboration; readonly via: readonly string[] }>>;
+  readonly procurement: ProcurementStatus;
+  /** Named, sourced people Fly can mention or ask for when calling — never buyer status. */
+  readonly referenceContacts: readonly ReferenceContact[];
+  readonly channelEvidence: readonly { readonly phone: string; readonly note: string; readonly url: string }[];
+  readonly usage: { readonly queries: number; readonly pages: number; readonly pivots: number };
+}
+
+const EMPTY_RESEARCH: ResearchView = { pivots: [], insights: {}, procurement: procurementStatus([]), referenceContacts: [], channelEvidence: [], usage: { queries: 0, pages: 0, pivots: 0 } };
+
 export interface BuyerInvestigationView {
   readonly organization: BuyerOrganization;
   readonly functions: readonly { readonly id: string; readonly label: string; readonly selected: boolean }[];
@@ -48,6 +65,8 @@ export interface BuyerInvestigationView {
   readonly canonical: readonly CanonicalContact[];
   readonly route: ActionableRoute;
   readonly departmentEvidence: readonly { readonly quote: string; readonly url: string }[];
+  /** 2.1A research graph, provenance and field-level corroboration (read time; nothing here changes person states). */
+  readonly research: ResearchView;
 }
 
 const iso = (value: string | Date) => new Date(value).toISOString();
@@ -113,7 +132,8 @@ export async function buyerOrganization(client: SqlClient, subject: BuyerSubject
 /** Bounded run: official sources (+ Hunter only if configured), then person-first discovery. */
 export async function runBuyerInvestigation(client: SqlClient, subject: BuyerSubject, operatorId: string | null, options: {
   readonly search?: Pick<BraveSearchProvider, "searchWeb" | "configured">; readonly fetcher?: typeof safeFetchSource; readonly hunter?: typeof hunterDomainSearch; readonly spacingMs?: number; readonly now?: Date;
-} = {}): Promise<{ readonly investigationId: string; readonly channels: number; readonly people: PeopleSearchOutcome }> {
+  readonly env?: Record<string, string | undefined>;
+} = {}): Promise<{ readonly investigationId: string; readonly channels: number; readonly people: PeopleSearchOutcome; readonly research: ResearchMetrics }> {
   let channels = 0;
   if (subject.kind === "SIGNAL") {
     channels = (await runContactInvestigation(client, subject.signal, subject.normalizedUrl, operatorId, { fetcher: options.fetcher, spacingMs: options.spacingMs, hunter: options.hunter })).found;
@@ -132,11 +152,12 @@ export async function runBuyerInvestigation(client: SqlClient, subject: BuyerSub
     extracted.push(...await hunterCandidates(client, row.id, organization.officialDomain, options.hunter));
     channels = await insertExtracted(client, row.id, organization.name, extracted, false);
   }
-  const people = await discoverPeople(client, {
+  // 2.1A: the accepted 2.0 person search runs as stage 1 of the iterative research engine (shared budget).
+  const research = await runResearch(client, {
     investigationId: row.id, organization, functions: functionsFor(organization.type, row.target_functions),
-    search: options.search, fetcher: options.fetcher, spacingMs: options.spacingMs, now: options.now,
+    search: options.search, fetcher: options.fetcher, spacingMs: options.spacingMs, now: options.now, env: options.env,
   });
-  return { investigationId: row.id, channels, people };
+  return { investigationId: row.id, channels, people: research.stage1, research: research.metrics };
 }
 
 export async function loadBuyerInvestigation(client: SqlClient, subject: BuyerSubject, now = new Date()): Promise<BuyerInvestigationView> {
@@ -149,7 +170,7 @@ export async function loadBuyerInvestigation(client: SqlClient, subject: BuyerSu
     [organization.companyId])).rows.map((item) => ({ id: item.id, name: item.name, title: item.title, contactFunction: item.contact_function, verificationState: item.verification_state,
     fromInvestigation: String(item.contact_metadata?.source ?? "").startsWith("contact-"), firstSeenAt: iso(item.first_seen_at ?? item.created_at) })) : [];
   if (!row) {
-    return { organization, functions, investigation: null, people: [], otherPeople: [], channels: [], sources: [], canonical, departmentEvidence: [],
+    return { organization, functions, investigation: null, people: [], otherPeople: [], channels: [], sources: [], canonical, departmentEvidence: [], research: EMPTY_RESEARCH,
       route: actionableRoute({ organization: organization.name, type: organization.type, people: [], channels: [], departmentEvidence: [] }),
       path: buyerPath({ organization: organization.name, people: [], channels: [], functions: selected, sourcesChecked: 0 }) };
   }
@@ -164,7 +185,7 @@ export async function loadBuyerInvestigation(client: SqlClient, subject: BuyerSu
     client.query<Record<string, unknown>>(
       `select i.* from contact_interactions i join contact_candidates c on c.id = i.candidate_id where c.investigation_id=$1 order by i.recorded_at desc, i.id`, [row.id]),
     client.query<{ url: string; provider: string; status: string; query_text: string | null; retrieved_at: string | Date; evidence_note: string | null }>(
-      "select url, provider, status, query_text, retrieved_at, evidence_note from contact_source_retrievals where investigation_id=$1 order by retrieved_at desc, id limit 80", [row.id]),
+      "select url, provider, status, query_text, retrieved_at, evidence_note from contact_source_retrievals where investigation_id=$1 order by retrieved_at desc, id limit 300", [row.id]),
   ]);
   const rejected = new Set(decisions.rows.filter((item) => item.decision === "REJECTED").map((item) => item.candidate_id));
   const valid = (id: string, channel: string) => validations.rows.some((item) => item.candidate_id === id && item.channel === channel && item.result === "VALID");
@@ -228,7 +249,9 @@ export async function loadBuyerInvestigation(client: SqlClient, subject: BuyerSu
     .filter((item, index, all) => all.findIndex((other) => other.url === item.url) === index)
     .filter((item) => item.evidence_note).map((item) => ({ quote: item.evidence_note!, url: item.url }));
   const lastRun = retrievals.rows[0]?.retrieved_at ? iso(retrievals.rows[0].retrieved_at) : null;
+  const research = await loadResearchView(client, row.id, grouped, channels, departmentEvidence, live);
   return {
+    research,
     organization, functions,
     investigation: { id: row.id, startedAt: iso(row.started_at), lastRunAt: lastRun, stale: !lastRun || now.getTime() - Date.parse(lastRun) > PEOPLE_SEARCH_CACHE_DAYS * 86_400_000 },
     people: grouped.filter((item) => item.facts.relevant), otherPeople: grouped.filter((item) => !item.facts.relevant), channels,
@@ -291,3 +314,53 @@ export async function recordInteraction(client: SqlClient, input: {
 }
 
 export type { BuyerFunction };
+
+/** 2.1A read model: research graph, provenance chains and field-level corroboration. Read-only. */
+async function loadResearchView(client: SqlClient, investigationId: string, grouped: readonly PersonGroup[], channels: readonly CorporateChannel[],
+  departmentEvidence: readonly { readonly quote: string; readonly url: string }[], candidates: readonly Record<string, unknown>[]): Promise<ResearchView> {
+  const [pivotRows, retrievalRows] = await Promise.all([
+    client.query<{ id: string; kind: PivotKind; value: string; normalized_key: string; parent_pivot_id: string | null; depth: number; discovered_at: string | Date; source_url: string | null }>(
+      `select p.id, p.kind, p.value, p.normalized_key, p.parent_pivot_id, p.depth, p.discovered_at, r.url as source_url
+         from contact_research_pivots p left join contact_source_retrievals r on r.id = p.source_retrieval_id where p.investigation_id=$1 order by p.depth, p.discovered_at, p.id`, [investigationId]),
+    client.query<{ url: string; status: string; query_text: string | null; pivot_id: string | null; evidence_note: string | null }>(
+      "select url, status, query_text, pivot_id, evidence_note from contact_source_retrievals where investigation_id=$1", [investigationId]),
+  ]);
+  const pivots: ResearchPivotView[] = pivotRows.rows.map((p) => ({ id: p.id, kind: p.kind, value: p.value, parentId: p.parent_pivot_id, depth: Number(p.depth), sourceUrl: p.source_url, discoveredAt: iso(p.discovered_at) }));
+  const byId = new Map(pivots.map((p) => [p.id, p]));
+  const chain = (id: string | undefined): readonly string[] => {
+    const out: string[] = []; let current = id ? byId.get(id) : undefined; let guard = 0;
+    while (current && guard < 10) { out.unshift(`${current.kind}:${current.value}`); current = current.parentId ? byId.get(current.parentId) : undefined; guard += 1; }
+    return out;
+  };
+  const personPivot = new Map(pivotRows.rows.filter((p) => p.kind === "PERSON").map((p) => [p.normalized_key, p.id]));
+  const officialLines = new Map<string, string>();
+  for (const c of channels) if (c.kind === "PHONE_ROUTE" && c.phoneKind && ["MAIN", "OFFICE", "DEPARTMENT"].includes(c.phoneKind)) officialLines.set(phoneDigits(c.value), c.phoneKind);
+  const institutionUrls = new Set(candidates.filter((c) => String(c.attribution_basis ?? "").startsWith("Listed by ")).map((c) => String(c.source_url)));
+  const conflictsByPivot = new Map<string, { url: string; note: string; currency: "UNDATED" }[]>();
+  for (const r of retrievalRows.rows) if (r.pivot_id && r.evidence_note?.startsWith("AFFILIATION_CONFLICT")) {
+    conflictsByPivot.set(r.pivot_id, [...(conflictsByPivot.get(r.pivot_id) ?? []), { url: r.url, note: r.evidence_note.replace(/^AFFILIATION_CONFLICT:\s*/, ""), currency: "UNDATED" }]);
+  }
+  const insights: Record<string, { corroboration: PersonCorroboration; via: readonly string[] }> = {};
+  for (const person of grouped) {
+    const pid = personPivot.get(normalizePerson(person.name));
+    insights[person.key] = {
+      corroboration: corroboratePerson(person, { officialLines, institutionUrls, affiliationConflicts: pid ? conflictsByPivot.get(pid) ?? [] : [], interactions: person.interactions }),
+      via: pid ? chain(pid) : [],
+    };
+  }
+  const domainOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; } };
+  const referenceContacts = rankPeopleForResearch(grouped
+    // Only people relevant to a target function or in a research role category (procurement → BD): a corroborated board
+    // director or executive chairman is not someone to ask for on a staffing call.
+    .filter((p) => (p.facts.relevant || !["LEADERSHIP", "OTHER"].includes(researchCategory(p.title))) && (p.sources.some((s) => institutionUrls.has(s.sourceUrl)) || insights[p.key].corroboration.fields.identity.status === "CORROBORATED"))
+    .map((p) => ({ ...p, domains: insights[p.key].corroboration.fields.identity.domains.length })))
+    .slice(0, 3)
+    .map((p) => ({ key: p.key, name: p.name, title: p.title, phone: p.phone?.number ?? null, association: insights[p.key].corroboration.phoneAssociation, via: insights[p.key].via,
+      sourceDomains: [...new Set(p.sources.map((s) => domainOf(s.sourceUrl)))] }));
+  const channelEvidence = retrievalRows.rows.filter((r) => r.evidence_note?.startsWith("CHANNEL_SEEN")).map((r) => ({
+    phone: byId.get(r.pivot_id ?? "")?.value ?? "", note: r.evidence_note!.replace(/^CHANNEL_SEEN:\s*/, ""), url: r.url }));
+  return {
+    pivots, insights, procurement: procurementStatus(departmentEvidence), referenceContacts, channelEvidence,
+    usage: { queries: retrievalRows.rows.filter((r) => r.query_text && r.status !== "CACHED").length, pages: retrievalRows.rows.filter((r) => r.status === "FETCHED" || /^(HTTP_|TIMEOUT|BLOCKED|FAILED|UNSAFE|PRIVATE|TOO_LARGE|UNSUPPORTED|OFF_DOMAIN)/.test(r.status)).length, pivots: pivots.length },
+  };
+}

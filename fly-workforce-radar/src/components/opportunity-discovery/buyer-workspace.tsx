@@ -29,6 +29,15 @@ export function BuyerWorkspace({ locale, subject, view, providers, today = today
   const phoneConfigured = providers.find((provider) => provider.id === "PHONE_LOOKUP")?.state === "AVAILABLE";
   const queries = view.sources.filter((source) => source.query);
   const pages = view.sources.filter((source) => !source.query);
+  const rs = b.research;
+  const research = view.research;
+  /** One discovery-chain step ("KIND:value") as a readable label; institutions/sources are shown by host. */
+  const step = (entry: string) => {
+    const at = entry.indexOf(":");
+    const kind = entry.slice(0, at); const value = entry.slice(at + 1);
+    const shown = /^https?:\/\//.test(value) ? (() => { try { return new URL(value).hostname.replace(/^www\./, ""); } catch { return value; } })() : value;
+    return `${rs.kind[kind] ?? kind}: ${shown}`;
+  };
 
   const personCard = (person: PersonGroup) => (
     <li key={person.key} className="ct-card by-person">
@@ -45,6 +54,25 @@ export function BuyerWorkspace({ locale, subject, view, providers, today = today
         <div><dt>{b.authority}</dt><dd>{b.authorityState[person.facts.responsibilityConfirmed ? (person.interactions.some((item) => item.personReached && item.handlesExternalWorkforce === "YES") ? "CONFIRMED_BY_HUMAN" : "CONFIRMED_BY_EVIDENCE") : "NOT_CONFIRMED"]}</dd></div>
         <div><dt>{b.evidenceDate}</dt><dd>{person.lastEvidenceDate ? day(person.lastEvidenceDate) : b.currency.UNDATED}</dd></div>
       </dl>
+      {research.insights[person.key] ? (() => {
+        const insight = research.insights[person.key];
+        return (
+          <>
+            {insight.via.length > 1 ? <p className="dr-card-note"><strong>{rs.via}:</strong> {insight.via.map(step).join(" → ")}</p> : null}
+            <p className="dr-card-note">
+              {person.phone ? <>{b.phone}: {rs.association[insight.corroboration.phoneAssociation]} · </> : null}
+              <span className={insight.corroboration.stale === "CURRENT" ? "" : "ci-expired"}>{rs.stale[insight.corroboration.stale]}</span>
+            </p>
+            <details className="dr-details"><summary>{rs.corroboration}</summary>
+              <ul className="ci-list">{Object.entries(insight.corroboration.fields).map(([field, evidence]) => (
+                <li key={field} className={evidence.status === "CORROBORATED" ? "ci-status-supported" : evidence.status === "CONFLICTING" ? "ci-status-requires_confirmation" : "ci-status-unknown"}>
+                  <strong>{rs.field[field] ?? field}</strong>: {rs.status[evidence.status]}{evidence.domains.length ? ` · ${evidence.domains.length} ${rs.domains} (${evidence.domains.join(", ")})` : ""}{field === "phoneAssociation" ? ` — ${rs.association[insight.corroboration.phoneAssociation]}` : field === "department" && person.fn ? ` — ${fnLabel(person.fn.id, person.fn.label)}` : evidence.note ? ` — ${rs.notes[evidence.note] ?? evidence.note}` : ""}
+                </li>
+              ))}</ul>
+            </details>
+          </>
+        );
+      })() : null}
       <ul className="ct-states">
         {FACTS.map((fact) => <li key={fact} className={person.facts[fact] ? "ci-status-supported" : "ci-status-unknown"}>{person.facts[fact] ? "✓" : "○"} {b.facts[fact]}</li>)}
       </ul>
@@ -95,6 +123,18 @@ export function BuyerWorkspace({ locale, subject, view, providers, today = today
           <div><dt>{r.verified}</dt><dd><ul className="ct-states">{route.verified.length ? route.verified.map((key) => <li key={key} className="ci-status-supported">✓ {r.verifiedLabel[key]}</li>) : <li>{r.none}</li>}</ul></dd></div>
           <div><dt>{r.pending}</dt><dd><ul className="ct-states">{route.pending.map((key) => <li key={key} className="ci-status-unknown">○ {r.pendingLabel[key]}</li>)}</ul></dd></div>
           {!route.person ? <div className="ci-wide"><dt>{b.sourcesChecked}</dt><dd>{view.sources.length}</dd></div> : null}
+          <div className="ci-wide"><dt>{rs.procurement}</dt><dd>
+            {rs.supplierRoute}: {research.procurement.supplierRoute ? rs.yes : rs.no} · {rs.subcontractRoute}: {research.procurement.subcontractRoute ? rs.yes : rs.no} · {rs.externalWorkforce}: {rs.purchasing[research.procurement.externalWorkforcePurchasing]}
+          </dd></div>
+          {research.referenceContacts.length ? (
+            <div className="ci-wide"><dt>{rs.reference}</dt><dd>
+              <ul className="ci-list">{research.referenceContacts.map((contact) => (
+                <li key={contact.key}>{contact.name}{contact.title ? ` — ${contact.title}` : ""}{contact.phone ? ` · ${contact.phone} (${rs.association[contact.association]})` : ""} · {contact.sourceDomains.join(", ")}
+                  {contact.via.length > 1 ? <small>{rs.via}: {contact.via.map(step).join(" → ")}</small> : null}</li>
+              ))}</ul>
+              <small>{rs.referenceNote}</small>
+            </dd></div>
+          ) : null}
         </dl>
       </div>
 
@@ -139,6 +179,14 @@ export function BuyerWorkspace({ locale, subject, view, providers, today = today
         <details className="dr-details"><summary>{b.sourcesChecked} · {view.sources.length}</summary>
           {queries.length ? <><p className="dr-card-note"><strong>{b.queries}</strong></p><ul className="ci-list">{queries.map((item) => <li key={`${item.query}-${item.retrievedAt}`}>{item.query} — {item.status === "OK" ? b.queryState.OK : item.status} · {when(item.retrievedAt)}</li>)}</ul></> : null}
           <ul className="ci-list">{pages.map((item) => <li key={`${item.url}-${item.retrievedAt}`}>{item.url} — {item.status} · {when(item.retrievedAt)}</li>)}</ul>
+        </details>
+      ) : null}
+      {research.pivots.length ? (
+        <details className="dr-details"><summary>{rs.graph} · {rs.usage(research.usage.queries, research.usage.pages, research.usage.pivots)}</summary>
+          <ul className="ci-list">{research.pivots.map((pivot) => (
+            <li key={pivot.id}>{"↳ ".repeat(pivot.depth)}{step(`${pivot.kind}:${pivot.value}`)}{pivot.sourceUrl ? <> · <a href={pivot.sourceUrl} target="_blank" rel="noreferrer noopener">{c.source}</a></> : null}</li>
+          ))}</ul>
+          {research.channelEvidence.length ? <><p className="dr-card-note"><strong>{rs.channelSeen}</strong></p><ul className="ci-list">{research.channelEvidence.map((item) => <li key={`${item.phone}-${item.url}`}>{item.phone} — {item.note} · <a href={item.url} target="_blank" rel="noreferrer noopener">{c.source}</a></li>)}</ul></> : null}
         </details>
       ) : null}
     </section>

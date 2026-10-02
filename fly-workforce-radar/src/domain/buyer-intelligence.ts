@@ -20,14 +20,26 @@ export interface BuyerFunction {
 
 const F = (id: string, label: string, title: RegExp, contactFunction: ContactFunction): BuyerFunction => ({ id, label, title, contactFunction });
 
+/**
+ * Generic procurement / supply-chain and subcontract / vendor-management title families, in either word order
+ * ("Supply Chain Manager", "Director, Supply Chain", "VP of Procurement", "Manager, Vendor Management"). Matching a
+ * family only makes a person relevant for research; it never confirms authority or external-workforce responsibility.
+ */
+const LEAD = String.raw`(?:manager|director|lead|leader|head|specialist|vp|vice president|svp|evp|chief|officer)`;
+const PROCUREMENT_AREA = String.raw`(?:procurement|purchasing|supply chain|(?:strategic )?sourcing)`;
+const PROCUREMENT_TITLES = String.raw`\b${PROCUREMENT_AREA} ${LEAD}\b|\b${LEAD}(?:,| of| -| –)? (?:global |strategic |corporate )?${PROCUREMENT_AREA}\b`;
+const PROCUREMENT_FAMILY = new RegExp(String.raw`${PROCUREMENT_TITLES}|\bbuyer\b`, "i");
+const SUBCONTRACT_AREA = String.raw`(?:subcontracts?|subcontract management|subcontractor management|vendor management|supplier management)`;
+const SUBCONTRACTS_FAMILY = new RegExp(String.raw`\b(?:subcontract(?:s|or)?|vendor|supplier) (?:manager|administrator|director|coordinator|lead)\b|\b(?:subcontract|vendor|supplier) management\b|\b${LEAD}(?:,| of| -| –)? ${SUBCONTRACT_AREA}\b|\bsubcontracts\b`, "i");
+
 export const BUYER_FUNCTIONS: Readonly<Record<OrganizationType, readonly BuyerFunction[]>> = {
   ELECTRICAL_CONSTRUCTION: [
     F("OPERATIONS_MANAGER", "Operations Manager", /\b(?:field )?operations (?:manager|director)|\b(?:vp|vice president)(?:,| of)? operations\b|\bdirector of operations\b/i, "OPERATIONS"),
     F("WORKFORCE_MANAGER", "Workforce / Manpower", /\b(?:workforce|manpower|labor|craft) (?:manager|coordinator|director|planner)|\bmanpower\b|\bcraft recruit/i, "WORKFORCE"),
     F("PROJECT_EXECUTIVE", "Project Executive / Project Manager", /\bproject (?:executive|manager|director)\b/i, "PROJECT_MANAGEMENT"),
     F("SUPERINTENDENT", "Superintendent", /\b(?:general |field |electrical )?superintendent\b/i, "CONSTRUCTION_MANAGEMENT"),
-    F("PROCUREMENT", "Procurement Manager", /\b(?:procurement|purchasing|supply chain|sourcing) (?:manager|director|lead|specialist)|\bbuyer\b/i, "PROCUREMENT"),
-    F("SUBCONTRACTS", "Subcontractor / Vendor Manager", /\b(?:subcontract(?:s|or)?|vendor|supplier) (?:manager|administrator|director|coordinator)|\bsubcontracts\b/i, "SUBCONTRACTS"),
+    F("PROCUREMENT", "Procurement Manager", PROCUREMENT_FAMILY, "PROCUREMENT"),
+    F("SUBCONTRACTS", "Subcontractor / Vendor Manager", SUBCONTRACTS_FAMILY, "SUBCONTRACTS"),
   ],
   STAFFING_AGENCY: [
     F("BRANCH_MANAGER", "Branch Manager", /\bbranch manager\b/i, "OPERATIONS"),
@@ -42,8 +54,8 @@ export const BUYER_FUNCTIONS: Readonly<Record<OrganizationType, readonly BuyerFu
     F("TURNAROUND_MANAGER", "Turnaround Manager", /\b(?:turnaround|shutdown|outage) (?:manager|director|coordinator|planner)\b/i, "PROJECT_MANAGEMENT"),
     F("PROJECT_MANAGER", "Project Manager", /\bproject (?:manager|executive|director)\b/i, "PROJECT_MANAGEMENT"),
     F("WORKFORCE_MOBILIZATION", "Workforce / Mobilization Manager", /\b(?:workforce|mobilization|manpower|craft labor) (?:manager|coordinator|director)\b/i, "WORKFORCE"),
-    F("PROCUREMENT", "Procurement Manager", /\b(?:procurement|purchasing|supply chain) (?:manager|director|lead)|\bbuyer\b/i, "PROCUREMENT"),
-    F("SUBCONTRACTS", "Subcontractor Manager", /\b(?:subcontract(?:s|or)?|vendor) (?:manager|administrator|director)\b/i, "SUBCONTRACTS"),
+    F("PROCUREMENT", "Procurement Manager", PROCUREMENT_FAMILY, "PROCUREMENT"),
+    F("SUBCONTRACTS", "Subcontractor Manager", SUBCONTRACTS_FAMILY, "SUBCONTRACTS"),
   ],
   PUBLIC_PROCUREMENT: [
     F("PURCHASING_AGENT", "Named Purchasing Agent", /\b(?:assistant )?purchasing (?:agent|manager|director)\b/i, "PROCUREMENT"),
@@ -51,7 +63,7 @@ export const BUYER_FUNCTIONS: Readonly<Record<OrganizationType, readonly BuyerFu
   ],
   GENERAL: [
     F("OPERATIONS_MANAGER", "Operations Manager", /\boperations (?:manager|director)\b/i, "OPERATIONS"),
-    F("PROCUREMENT", "Procurement", /\b(?:procurement|purchasing) (?:manager|director|agent)\b/i, "PROCUREMENT"),
+    F("PROCUREMENT", "Procurement", new RegExp(String.raw`${PROCUREMENT_TITLES}|\b(?:procurement|purchasing) agent\b`, "i"), "PROCUREMENT"),
     F("PROJECT_MANAGER", "Project Manager", /\bproject (?:manager|executive)\b/i, "PROJECT_MANAGEMENT"),
   ],
 };
@@ -123,7 +135,7 @@ const tokensIn = (text: string, tokens: readonly string[]) => tokens.length > 0 
 
 /**
  * People named in one search result, tied to the organization in the same title/sentence. Profile listings
- * ("Jane Doe - Operations Manager - MMR Group | LinkedIn") are public listings: identity + title only, undated.
+ * ("Jane Doe - Operations Manager - Acme Group | LinkedIn") are public listings: identity + title only, undated.
  */
 export function parsePeopleFromSearchResult(result: { readonly title: string; readonly url: string; readonly description: string | null }, orgTokens: readonly string[], officialDomain: string | null): readonly ParsedPerson[] {
   const sourceType = sourceTypeOf(result.url, officialDomain);
@@ -194,7 +206,7 @@ export function parsePeopleFromPage(text: string): readonly PagePerson[] {
       people.set(normalizePerson(inline[1]), { name: inline[1], title: inline[2].trim(), quote: line.slice(0, 300), ...entryRoutes(index + 1) });
       continue;
     }
-    // Press-release lists inside a paragraph: "…; Riley Fixturo, Operations Manager, Corpus Christi (27 years); and …".
+    // Press-release lists inside a paragraph: "…; Pat Example, Operations Manager, Springfield (27 years); and …".
     if (line.length > 120 && line.includes(";")) {
       for (const segment of line.split(/;\s*(?:and\s+)?/)) {
         const item = segment.trim().replace(/[.,]$/, "").match(/^(?:and\s+)?([A-Z][a-z'’-]+(?:\s+[A-Z]\.)?\s+[A-Z][a-z'’-]+(?:-[A-Z][a-z]+)?),\s*([^;]{3,90}?)(?:\s+for\b.*)?$/);

@@ -9,6 +9,7 @@ import { nameTokens, registrableDomain } from "../../domain/contact-investigatio
 import { BraveSearchProvider } from "../company-discovery/brave-search-provider";
 import { safeFetchSource } from "../source-enrichment/safe-fetch";
 import { extractSource } from "../source-enrichment/source-text";
+import { dailyQueryCap } from "../../domain/research-pivots";
 import { retrieveOfficialPages } from "./providers";
 
 /**
@@ -29,7 +30,9 @@ export const MAX_DISCOVERY_QUERIES = 7;
 export const MAX_CONFIRMATION_QUERIES = 2;
 export const MAX_OFFICIAL_PEOPLE_PAGES = 8;
 export const MAX_DIRECTORY_PAGES = 2;
+/** Default daily cap (configurable through CONTACT_RESEARCH_DAILY_QUERY_CAP; see dailyQueryCap). */
 export const MAX_DAILY_WEB_QUERIES = 60;
+export const contentHash = (text: string) => createHash("sha256").update(text).digest("hex");
 /** Pages read before the current parser revision are re-read once (the cache never hides an improved reading). */
 export const PAGE_PARSER_REVISION = "2026-10-01T22:40:00Z";
 const LEADERSHIP_PATHS = ["/about-us", "/about", "/leadership", "/our-team", "/team", "/about-us/leadership", "/company/leadership", "/our-people"];
@@ -81,6 +84,10 @@ const hostOf = (url: string) => { try { return new URL(url).hostname.toLowerCase
 export async function discoverPeople(client: SqlClient, input: {
   readonly investigationId: string; readonly organization: PeopleSearchOrganization; readonly functions: readonly BuyerFunction[];
   readonly search?: WebSearch; readonly fetcher?: typeof safeFetchSource; readonly spacingMs?: number; readonly now?: Date;
+  /** 2.1A: the research pivot that generated this stage (root COMPANY pivot) and the configurable daily cap. */
+  readonly pivotId?: string | null; readonly dailyCap?: number;
+  /** 2.1A: share of the per-investigation research budget this stage may spend (omitted = the 2.0 limits). */
+  readonly maxQueries?: number; readonly maxPages?: number;
 }): Promise<PeopleSearchOutcome> {
   const org = input.organization;
   const now = input.now ?? new Date();
@@ -105,18 +112,19 @@ export async function discoverPeople(client: SqlClient, input: {
     if (Number(cached.rows[0]?.n ?? 0) > 0) { queries.push({ query, state: "CACHED", results: 0 }); return; }
     if (!search.configured) { queries.push({ query, state: "NOT_CONFIGURED", results: 0 }); return; }
     if (stopped) return;
-    if (used >= MAX_DAILY_WEB_QUERIES) { queries.push({ query, state: "DAILY_LIMIT", results: 0 }); return; }
+    if (used - dailyUsed >= (input.maxQueries ?? Infinity)) return;
+    if (used >= (input.dailyCap ?? dailyQueryCap())) { queries.push({ query, state: "DAILY_LIMIT", results: 0 }); return; }
     if (used > dailyUsed && spacing > 0) await new Promise((resolve) => setTimeout(resolve, spacing));
     used += 1;
     try {
       const results = await search.searchWeb(query, 10);
       queries.push({ query, state: "OK", results: results.length });
-      await client.query("insert into contact_source_retrievals(investigation_id,url,provider,status,query_text) values($1,'brave:web-search','WEB_SEARCH_RESULT','OK',$2)", [input.investigationId, query]);
+      await client.query("insert into contact_source_retrievals(investigation_id,url,provider,status,query_text,pivot_id) values($1,'brave:web-search','WEB_SEARCH_RESULT','OK',$2,$3)", [input.investigationId, query, input.pivotId ?? null]);
       onResults(results);
     } catch (error) {
       const reason = error instanceof Error ? error.message.slice(0, 120) : "FAILED";
       queries.push({ query, state: "FAILED", results: 0 });
-      await client.query("insert into contact_source_retrievals(investigation_id,url,provider,status,query_text) values($1,'brave:web-search','WEB_SEARCH_RESULT',$2,$3)", [input.investigationId, `FAILED ${reason}`.slice(0, 200), query]);
+      await client.query("insert into contact_source_retrievals(investigation_id,url,provider,status,query_text,pivot_id) values($1,'brave:web-search','WEB_SEARCH_RESULT',$2,$3,$4)", [input.investigationId, `FAILED ${reason}`.slice(0, 200), query, input.pivotId ?? null]);
       if (/HTTP 429/.test(reason)) stopped = true;
     }
   };
@@ -195,14 +203,14 @@ export async function discoverPeople(client: SqlClient, input: {
       "select url from contact_source_retrievals where investigation_id=$1 and provider='OFFICIAL_WEBSITE' and status='FETCHED' and retrieved_at > greatest($2::timestamptz - make_interval(days => $3), $4::timestamptz)",
       [input.investigationId, now.toISOString(), PEOPLE_SEARCH_CACHE_DAYS, PAGE_PARSER_REVISION]);
     // Channel pages are always re-read (office lines change); people pages follow the cache window.
-    const fresh = [...channelPaths, ...peoplePaths.filter((path) => !already.rows.some((row) => row.url.replace(/\/$/, "").endsWith(path.replace(/\/$/, ""))))].slice(0, MAX_OFFICIAL_PEOPLE_PAGES);
-    const retrieved = await retrieveOfficialPages(org.officialDomain, fresh, { includeContactPages: false, limit: MAX_OFFICIAL_PEOPLE_PAGES, fetcher: input.fetcher, spacingMs: input.spacingMs });
+    const fresh = [...channelPaths, ...peoplePaths.filter((path) => !already.rows.some((row) => row.url.replace(/\/$/, "").endsWith(path.replace(/\/$/, ""))))].slice(0, Math.min(MAX_OFFICIAL_PEOPLE_PAGES, input.maxPages ?? Infinity));
+    const retrieved = await retrieveOfficialPages(org.officialDomain, fresh, { includeContactPages: false, limit: Math.min(MAX_OFFICIAL_PEOPLE_PAGES, input.maxPages ?? Infinity), fetcher: input.fetcher, spacingMs: input.spacingMs });
     for (const page of retrieved) {
       pages += 1;
       const note = page.text ? departmentEvidence(page.text) : null;
       if (note) notes.push({ url: page.url, note });
-      await client.query("insert into contact_source_retrievals(investigation_id,url,provider,status,http_status,evidence_note) values($1,$2,'OFFICIAL_WEBSITE',$3,$4,$5)",
-        [input.investigationId, page.url, page.status, page.httpStatus, note]);
+      await client.query("insert into contact_source_retrievals(investigation_id,url,provider,status,http_status,evidence_note,pivot_id,content_hash,excerpt) values($1,$2,'OFFICIAL_WEBSITE',$3,$4,$5,$6,$7,$8)",
+        [input.investigationId, page.url, page.status, page.httpStatus, note, input.pivotId ?? null, page.text ? contentHash(page.text) : null, page.text ? page.text.slice(0, 20000) : null]);
       if (!page.text) continue;
       const sourceType = sourceTypeOf(page.url, org.officialDomain);
       const published = pageDate(page.text);
@@ -231,12 +239,14 @@ export async function discoverPeople(client: SqlClient, input: {
 
   // 4. Public association/directory pages naming the organization (bounded; robots respected; no brokers).
   const fetcher = input.fetcher ?? safeFetchSource;
-  for (const url of [...directoryPages].slice(0, MAX_DIRECTORY_PAGES)) {
+  let directoryFetches = 0;
+  for (const url of [...directoryPages].slice(0, Math.max(0, Math.min(MAX_DIRECTORY_PAGES, (input.maxPages ?? Infinity) - pages)))) {
     const result = await fetcher(url);
-    await client.query("insert into contact_source_retrievals(investigation_id,url,provider,status,http_status) values($1,$2,'WEB_SEARCH_RESULT',$3,$4)",
-      [input.investigationId, url, result.ok ? "FETCHED" : result.failure, result.status]);
-    if (!result.ok) continue;
-    const page = extractSource(result.body, result.contentType);
+    directoryFetches += 1;
+    const page = result.ok ? extractSource(result.body, result.contentType) : null;
+    await client.query("insert into contact_source_retrievals(investigation_id,url,provider,status,http_status,pivot_id,content_hash,excerpt) values($1,$2,'WEB_SEARCH_RESULT',$3,$4,$5,$6,$7)",
+      [input.investigationId, url, result.ok ? "FETCHED" : result.failure, result.status, input.pivotId ?? null, page ? contentHash(page.text) : null, page ? page.text.slice(0, 20000) : null]);
+    if (!result.ok || !page) continue;
     if (!tokens.every((token) => `${page.title ?? ""} ${page.text.slice(0, 3000)}`.toLowerCase().includes(token))) continue;
     for (const person of parsePeopleFromPage(page.text)) {
       rows.push({
@@ -263,5 +273,5 @@ export async function discoverPeople(client: SqlClient, input: {
         row.quote.slice(0, 600), row.basis, row.currency === "HISTORICAL", key, row.sourceType, row.sourceDate, row.currency, fn?.label ?? null, row.location, project, row.profileUrl, row.responsibility]);
     inserted += result.rows.length;
   }
-  return { found: inserted, channels, queries, pages };
+  return { found: inserted, channels, queries, pages: pages + directoryFetches };
 }

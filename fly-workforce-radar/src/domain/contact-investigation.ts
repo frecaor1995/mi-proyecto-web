@@ -56,7 +56,7 @@ export interface SourceDocument {
 const ENTITY_SUFFIX = /\b(inc|llc|l\.l\.c|corp|corporation|co|company|ltd|lp|group|constructors|construction|contractors|contracting|services|industries|electric|electrical|engineering)\.?$/i;
 const STOP = new Set(["the", "of", "and", "county", "city", "port", "inc", "llc", "group", "company"]);
 
-/** Distinctive tokens of an organization name ("MMR Constructors, Inc" -> ["mmr"]). */
+/** Distinctive tokens of an organization name ("Acme Constructors, Inc" -> ["acme"]). */
 export function nameTokens(name: string): readonly string[] {
   let base = name.toLowerCase().replace(/[.,]/g, " ").trim();
   for (let index = 0; index < 3; index += 1) base = base.replace(ENTITY_SUFFIX, "").trim();
@@ -74,7 +74,7 @@ const hostOf = (url: string) => { try { return new URL(url).hostname.toLowerCase
 /**
  * Official domain, only with evidence: the source is the organization's own site (its name token is in the
  * domain), a public body's .gov site, or a stored search result whose title names the organization on a
- * domain carrying its name token (e.g. "MMR Group | Home" on mmrgrp.com).
+ * domain carrying its name token (e.g. "Acme Group | Home" on acmegrp.com).
  */
 export function resolveOfficialDomain(input: {
   readonly organization: string | null;
