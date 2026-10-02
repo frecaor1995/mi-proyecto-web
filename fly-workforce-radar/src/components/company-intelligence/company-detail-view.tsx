@@ -10,7 +10,7 @@ import { ErrorState } from "../ui/foundation";
 
 const formatDateTime = (value: string, locale: Locale) => formatDate(locale, new Date(value), { dateStyle: "medium", timeStyle: "short" });
 
-export function CompanyIntelligenceDetailView({ locale, result }: { readonly locale: Locale; readonly result: CompanyDetailResult }) {
+export function CompanyIntelligenceDetailView({ locale, result, contacts = null }: { readonly locale: Locale; readonly result: CompanyDetailResult; readonly contacts?: ReactNode }) {
   if (result.state !== "READY") return <StateView locale={locale} state={result.state} />;
   const d = result.detail;
   const unknown = t(locale, "companyDetail.unknown");
@@ -101,6 +101,7 @@ export function CompanyIntelligenceDetailView({ locale, result }: { readonly loc
           <RailSection title={t(locale, "companyDetail.section.gaps")}><Gaps locale={locale} detail={d} /></RailSection>
         </aside>
       </div>
+      {contacts}
     </div>
   );
 }

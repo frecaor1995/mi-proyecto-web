@@ -5,11 +5,20 @@ import type { CompanyListItem } from "../../server/read-models/company-detail";
 import { companyListHref, type CompanyListQuery, type CompanyListResult } from "../../server/company-intelligence/get-company-intelligence";
 import { CurrentnessBadge, TrustState } from "../ui/status-primitives";
 import { ErrorState, PageHeader } from "../ui/foundation";
+import { StrategicCompanyForm } from "../opportunity-discovery/buyer-forms";
+import { discoveryCopy } from "../opportunity-discovery/discovery-copy";
 
-export function CompanyIntelligenceListView({ locale, query, result }: { readonly locale: Locale; readonly query: CompanyListQuery; readonly result: CompanyListResult }) {
+export function CompanyIntelligenceListView({ locale, query, result, discoveryAuthorized = false }: { readonly locale: Locale; readonly query: CompanyListQuery; readonly result: CompanyListResult; readonly discoveryAuthorized?: boolean }) {
   return (
     <div className="page-stack company-list-view">
       <PageHeader eyebrow={t(locale, "companyIntelligence.eyebrow")} title={t(locale, "routes.companies.title")} description={t(locale, "routes.companies.description")} marker={t(locale, `capabilityState.${result.capability}`)} locale={locale} />
+      {discoveryAuthorized ? (
+        <section className="sig-panel by-panel" aria-labelledby="by-strategic-title">
+          <h2 id="by-strategic-title">{discoveryCopy(locale).buyer.strategic.title}</h2>
+          <p className="sig-panel-lede">{discoveryCopy(locale).buyer.strategic.lede}</p>
+          <StrategicCompanyForm locale={locale} />
+        </section>
+      ) : null}
       <ListFilters locale={locale} query={query} />
       {result.capability === "UNKNOWN" ? (
         <ErrorState locale={locale} title={t(locale, "companyIntelligence.queryErrorTitle")} description={t(locale, "companyIntelligence.queryErrorDescription")} />

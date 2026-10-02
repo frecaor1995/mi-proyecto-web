@@ -12,6 +12,9 @@ import { CommercialIntelligencePanel } from "../../../components/opportunity-dis
 import { buildCommercialIntelligence } from "../../../domain/signal-intelligence";
 import { getProductionSqlClient } from "../../../server/database/production-sql-client";
 import { getWorkforceReadiness } from "../../../server/source-enrichment/workforce-readiness";
+import { BuyerWorkspace } from "../../../components/opportunity-discovery/buyer-workspace";
+import { loadBuyerInvestigation } from "../../../server/contact-intelligence/buyer-investigation";
+import { providerStatuses } from "../../../server/contact-intelligence/providers";
 
 const formatDateTime = (value: string, locale: Locale) => formatDate(locale, new Date(value), { dateStyle: "medium", timeStyle: "short" });
 
@@ -29,6 +32,7 @@ export default async function SignalPage({ params }: { readonly params: Promise<
   });
   const client = getProductionSqlClient();
   const readiness = client ? await getWorkforceReadiness(client, { professions: s.professions, promotedOpportunityId: s.promotedOpportunityId }).catch(() => null) : null;
+  const contacts = client ? await loadBuyerInvestigation(client, { kind: "SIGNAL", signal: s, normalizedUrl: s.normalizedUrl }).catch(() => null) : null;
   const facts = [
     ["company", s.company], ["location", s.location], ["trade", s.trade], ["headcount", s.headcount], ["pay", s.pay], ["perDiem", s.perDiem], ["project", null], ["schedule", null], ["start", null], ["credentials", null], ["contact", null],
   ] as const;
@@ -49,6 +53,7 @@ export default async function SignalPage({ params }: { readonly params: Promise<
       </header>
 
       <CommercialIntelligencePanel locale={locale} signal={s} intelligence={intelligence} readiness={readiness} />
+      {contacts ? <BuyerWorkspace locale={locale} subject={{ signalId: s.candidateId }} view={contacts} providers={providerStatuses()} /> : null}
 
       <div className="sig-columns">
         <div className="sig-main">

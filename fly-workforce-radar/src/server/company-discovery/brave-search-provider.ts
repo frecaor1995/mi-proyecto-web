@@ -173,6 +173,17 @@ export class BraveSearchProvider {
     return ((JSON.parse(body) as BraveResponse).web?.results ?? []).slice(0, count);
   }
 
+  get configured(): boolean { return Boolean(this.apiKey?.trim()); }
+
+  /** One bounded web query (Contact Intelligence people search). Throws on provider failure; never retries. */
+  async searchWeb(query: string, count = 10): Promise<readonly { readonly title: string; readonly url: string; readonly description: string | null; readonly pageAge: string | null }[]> {
+    if (!this.configured) throw new Error("NOT_CONFIGURED");
+    const results = await this.fetchResults(query, Math.min(Math.max(count, 1), 10));
+    return results.flatMap((item) => typeof item.url === "string" && item.url.startsWith("http")
+      ? [{ title: safeText(item.title, "", 300), url: item.url, description: typeof item.description === "string" ? item.description.replace(/<[^>]+>/g, "").slice(0, 600) : null, pageAge: pageAgeIso(item.page_age) }]
+      : []);
+  }
+
   /**
    * Multi-trade cycle execution. Each planned query is isolated: one failure is recorded for that query and
    * the cycle continues. A rate-limit response (HTTP 429) stops the cycle and marks the remaining queries

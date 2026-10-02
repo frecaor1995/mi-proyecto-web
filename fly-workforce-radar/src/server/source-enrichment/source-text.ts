@@ -65,7 +65,14 @@ export function extractHtml(html: string): ExtractedSource {
   }
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
   const cleaned = html.replace(/<(script|style|noscript|svg|template|iframe|nav|footer)\b[\s\S]*?<\/\1>/gi, " ").replace(/<!--[\s\S]*?-->/g, " ");
-  const main = cleaned.match(/<(main|article)\b[\s\S]*?<\/\1>/i)?.[0] ?? cleaned.match(/<body\b[\s\S]*<\/body>/i)?.[0] ?? cleaned;
+  // Phone/fax icons carry the only label some sites print for a number; keep them as text.
+  const labelled = cleaned
+    .replace(/<img\b[^>]*\b(?:src|alt|class|title)=["'][^"']*\bfax[^"']*["'][^>]*>/gi, " Fax: ")
+    .replace(/<img\b[^>]*\b(?:src|alt|class|title)=["'][^"']*\b(?:phone|tel)[^"']*["'][^>]*>/gi, " Phone: ");
+  const body = labelled.match(/<body\b[\s\S]*<\/body>/i)?.[0] ?? labelled;
+  // A <main>/<article> is preferred only when it actually holds the page content (some sites ship an empty one).
+  const region = labelled.match(/<(main|article)\b[\s\S]*?<\/\1>/i)?.[0];
+  const main = region && stripTags(region).length >= Math.min(200, stripTags(body).length / 4) ? region : body;
   return { title: title ? stripTags(title).slice(0, 500) : null, text: stripTags(main).slice(0, MAX_EXTRACTED_CHARS), structured: { format: "HTML", ...(jobPosting ? { jobPosting } : {}) } };
 }
 

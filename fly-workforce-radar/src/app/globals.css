@@ -410,3 +410,21 @@ th,dt,.metric-tile-caption,.cc-panel-note,.cc-panel-empty,.nav-planned>summary,.
 .ci-expired{color:var(--stale)!important}.ci-list{margin:0;padding-left:18px}.ci-list span{color:var(--heading-2)}.ci-grid q,.ci-quote{display:block;margin-top:4px;color:var(--text-2);font-size:12px;font-style:italic}
 .ci-status-supported{color:var(--verified)!important}.ci-status-requires_confirmation{color:var(--stale)!important}.ci-status-unknown{color:var(--text-3)!important}
 @media(max-width:760px){.ci-grid{grid-template-columns:1fr}}
+
+/* Contact intelligence workspace (existing tokens only). */
+.ct-warning{margin:0 0 10px}.ct-heading{margin:16px 0 8px;color:var(--heading)}.ct-list{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.ct-card{display:grid;gap:8px;padding:16px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-2)}.ct-name{margin:0;color:var(--heading);font-weight:700}.ct-name span{color:var(--heading-2);font-weight:500}
+.ct-routes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:0}.ct-routes dt{color:var(--heading-2);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.ct-routes dd{margin:2px 0 0;color:var(--heading)}
+.ct-states{display:grid;gap:3px;margin:0;padding:0;list-style:none;font-size:13px}.ct-inline{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.ct-inline p{margin:0;font-size:12px}
+.ct-decision{display:grid;gap:8px}.ct-decision textarea{width:100%;min-height:52px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+
+/* Contact Intelligence 2.0 — buyer identification */
+.by-path{margin:12px 0;padding:14px 16px;border:1px solid var(--accent);border-radius:var(--r-md);background:var(--surface-2)}.by-path h3{margin:0;color:var(--heading)}
+.by-path-none{border-color:var(--warning)}.by-none{color:var(--warning);font-weight:800;letter-spacing:.03em}
+.by-state-commercial_responsibility_confirmed{color:var(--verified)}.by-state-professional_contactable{color:var(--accent)}.by-state-professional_identified{color:var(--heading)}.by-state-corporate_channel_only{color:var(--text-3)}
+.by-start,.by-settings,.by-interaction,.by-strategic{display:grid;gap:10px;margin:10px 0}.by-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.by-field{display:grid;gap:4px;font-size:13px;color:var(--heading-2)}.by-field span{font-weight:700}.by-field small{color:var(--text-3)}
+.by-field input,.by-field select,.by-field textarea{width:100%;min-height:36px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+.by-functions{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;margin:0;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:13px}.by-functions legend{padding:0 4px;color:var(--heading-2);font-weight:700}
+.by-history{font-size:13px;color:var(--text)}.by-channels li{color:var(--text)}
+.by-start button,.by-settings button,.by-interaction button,.by-strategic button{justify-self:start}
