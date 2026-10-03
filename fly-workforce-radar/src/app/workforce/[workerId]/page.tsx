@@ -5,6 +5,8 @@ import { resolveServerLocale } from "../../../i18n/server-locale";
 import { t } from "../../../i18n/translate";
 import { getWorkerProfilePage } from "../../../server/workforce/get-worker-profile-page";
 import { resolveWorkerUiPermissions } from "../../../server/workforce/worker-permissions";
+import { getWorkerIntelligenceFacts } from "../../../server/workforce/get-workforce-intelligence";
+import { WorkerIntelligencePanel } from "../../../components/workforce/worker-intelligence-panel";
 
 export default async function WorkerProfilePage({ params, searchParams = Promise.resolve({}) }: {
   readonly params: Promise<{ workerId: string }>;
@@ -29,5 +31,6 @@ export default async function WorkerProfilePage({ params, searchParams = Promise
     success: one(query.lifecycle) === "archived" || one(query.lifecycle) === "reactivated" ? (one(query.lifecycle) as "archived" | "reactivated") : null,
     error: one(query.lifecycleError) === "archive" || one(query.lifecycleError) === "reactivate" ? (one(query.lifecycleError) as "archive" | "reactivate") : null,
   };
-  return <WorkerProfileView locale={locale} profile={result.profile} taxonomy={result.taxonomy} permissions={permissions} lifecycleOutcome={lifecycleOutcome} />;
+  const intelligence=await getWorkerIntelligenceFacts(workerId);
+  return <><WorkerProfileView locale={locale} profile={result.profile} taxonomy={result.taxonomy} permissions={permissions} lifecycleOutcome={lifecycleOutcome} />{intelligence?<WorkerIntelligencePanel locale={locale} profile={result.profile} facts={intelligence} taxonomy={result.taxonomy} canWrite={permissions.profileWrite}/>:null}</>;
 }

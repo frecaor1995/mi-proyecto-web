@@ -1,4 +1,5 @@
 import type { VerificationState } from "./verification";
+import type { ExplicitState,PerDiemState,ShiftCode,ToolsState,WorkerLevelCode } from "./workforce-intelligence";
 
 /**
  * WORKFORCE-TALENT-A3 domain types over the A2-B canonical worker schema.
@@ -163,6 +164,7 @@ export interface AddWorkerSkillInput {
  * split (INSERT/UPDATE may touch it, ordinary SELECT may not).
  */
 export interface WorkerCredentialRecord {
+  readonly id?: string;
   readonly workerId: string;
   readonly credentialCode: string;
   readonly verificationState: VerificationState;
@@ -170,6 +172,8 @@ export interface WorkerCredentialRecord {
   readonly issuedAt: Date | null;
   readonly expiresAt: Date | null;
   readonly issuingAuthority: string | null;
+  readonly jurisdiction?: string | null;
+  readonly lifecycleStatus?: "CURRENT"|"SUPERSEDED"|"REVOKED"|"UNKNOWN";
   readonly sourceEvidenceId: string | null;
   readonly createdAt: Date;
 }
@@ -182,6 +186,7 @@ export interface AddWorkerCredentialInput {
   readonly issuedAt?: Date | null;
   readonly expiresAt?: Date | null;
   readonly issuingAuthority?: string | null;
+  readonly jurisdiction?: string | null;
   /** Write-only. Never returned by any read method in this domain. */
   readonly rawIdentifier?: string | null;
   readonly sourceEvidenceId?: string | null;
@@ -189,6 +194,7 @@ export interface AddWorkerCredentialInput {
 
 export interface UpdateWorkerCredentialVerificationInput {
   readonly workerId: string;
+  readonly credentialId?: string;
   readonly credentialCode: string;
   readonly verificationState: VerificationState;
   readonly verifiedAt?: Date | null;
@@ -406,7 +412,9 @@ export interface MatchingReadyTradeOccupation {
 }
 
 export interface MatchingReadyCredential {
+  readonly id?: string;
   readonly credentialCode: string;
+  readonly jurisdiction?: string | null;
   readonly verificationState: VerificationState;
   readonly expiresAt: Date | null;
 }
@@ -459,6 +467,11 @@ export interface MatchingReadyWorkerInput {
   readonly availability: Fact<MatchingReadyAvailability>;
   readonly location: Fact<MatchingReadyLocation>;
   readonly compensation: Fact<MatchingReadyCompensation>;
+  readonly level?: Fact<{readonly code:WorkerLevelCode;readonly verificationState:VerificationState}>;
+  readonly mobility?: Fact<{readonly inStateTravel:ExplicitState;readonly outOfStateTravel:ExplicitState;readonly relocation:ExplicitState}>;
+  readonly workConditions?: Fact<{readonly perDiem:PerDiemState;readonly transportation:ExplicitState;readonly tools:ToolsState;readonly maximumHoursPerWeek:number|null;readonly overtime:ExplicitState}>;
+  readonly shifts?: readonly ShiftCode[];
+  readonly presentationConsent?: "GRANTED"|"REVOKED"|"UNKNOWN";
   readonly knownGaps: readonly MatchingInputKnownGap[];
 }
 

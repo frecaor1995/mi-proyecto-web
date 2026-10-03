@@ -26,6 +26,7 @@ const credentialRequirement = (r: CredentialRequirementRow): DemandCredentialReq
 interface MatchingCoreRow {
   id: string; trade_code: string | null; occupation_code: string | null;
   minimum_experience_months: number | null; start_date: string | null;
+  required_level_code:string|null;state:string|null;travel_required:boolean|null;shift:string|null;hours_per_week:string|number|null;overtime_required:boolean|null;per_diem_available:boolean|null;transportation_required:boolean|null;tools_required:boolean|null;
 }
 
 interface CompensationRow {
@@ -82,16 +83,29 @@ export class PostgresDemandRequirementRepository implements DemandRequirementRep
   }
 
   async getMatchingCore(demandSignalId: string): Promise<DemandMatchingCore | null> {
-    const q = await this.client.query<MatchingCoreRow>(
-      "select id, trade_code, occupation_code, minimum_experience_months, start_date from demand_signals where id=$1",
-      [demandSignalId],
-    );
+    let q;
+    try {
+      q = await this.client.query<MatchingCoreRow>(
+        "select id,trade_code,occupation_code,minimum_experience_months,start_date,state,required_level_code,travel_required,shift,hours_per_week,overtime_required,per_diem_available,transportation_required,tools_required from demand_signals where id=$1",
+        [demandSignalId],
+      );
+    } catch (error) {
+      // A compatibility path for isolated repository tests that intentionally
+      // instantiate the pre-4A schema. Production/local canonical databases
+      // use the structured columns above.
+      if ((error as { code?: string }).code !== "42703") throw error;
+      q = await this.client.query<MatchingCoreRow>(
+        "select id,trade_code,occupation_code,minimum_experience_months,start_date,state,travel_required,shift,hours_per_week,per_diem_available,null::text required_level_code,null::boolean overtime_required,null::boolean transportation_required,null::boolean tools_required from demand_signals where id=$1",
+        [demandSignalId],
+      );
+    }
     const row = q.rows[0];
     if (!row) return null;
     return {
       demandSignalId: row.id, tradeCode: row.trade_code, occupationCode: row.occupation_code,
       minimumExperienceMonths: row.minimum_experience_months,
       startDate: row.start_date ? new Date(row.start_date) : null,
+      requiredLevelCode:row.required_level_code,state:row.state,travelRequired:row.travel_required,shift:row.shift,hoursPerWeek:num(row.hours_per_week),overtimeRequired:row.overtime_required,perDiemAvailable:row.per_diem_available,transportationRequired:row.transportation_required,toolsRequired:row.tools_required,
     };
   }
 

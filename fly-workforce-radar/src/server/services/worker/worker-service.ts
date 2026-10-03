@@ -461,20 +461,21 @@ export class WorkerService {
     const workerRecord = await this.repository.findWorkerById(workerId);
     if (!workerRecord) return ok(null);
 
-    const [tradeOccupations, skills, credentials, availabilityRow, locationRow, compensationRow] = await Promise.all([
+    const [tradeOccupations, skills, credentials, availabilityRow, locationRow, compensationRow,intelligence] = await Promise.all([
       this.repository.listTradeOccupations(workerId),
       this.repository.listSkills(workerId),
       this.repository.listCredentials(workerId),
       this.repository.getCurrentAvailability(workerId),
       this.repository.getCurrentLocation(workerId),
       this.repository.getCurrentCompensationExpectation(workerId),
+      this.repository.getIntelligenceFacts(workerId),
     ]);
 
     return ok({
       workerId,
       tradeOccupations: tradeOccupations.map((t) => ({ tradeCode: t.tradeCode, occupationCode: t.occupationCode, roleDesignation: t.roleDesignation, experienceMonths: t.experienceMonths })),
       skills: skills.map((s) => ({ skillCode: s.skillCode, verificationState: s.verificationState })),
-      credentials: credentials.map((c) => ({ credentialCode: c.credentialCode, verificationState: c.verificationState, expiresAt: c.expiresAt })),
+      credentials: credentials.map((c) => ({ id:c.id,credentialCode: c.credentialCode,jurisdiction:c.jurisdiction, verificationState: c.verificationState, expiresAt: c.expiresAt })),
       availability: availabilityRow ? knownFact({ status: availabilityRow.status, availableFrom: availabilityRow.availableFrom }) : unknownFact(),
       location: locationRow
         ? knownFact({ city: locationRow.city, region: locationRow.region, country: locationRow.country, travelWilling: locationRow.travelWilling, travelRadiusMiles: locationRow.travelRadiusMiles, relocationWilling: locationRow.relocationWilling })
@@ -482,6 +483,11 @@ export class WorkerService {
       compensation: compensationRow
         ? knownFact({ rateType: compensationRow.rateType, rateMin: compensationRow.rateMin, ratePreferred: compensationRow.ratePreferred, currency: compensationRow.currency, perDiemRequired: compensationRow.perDiemRequired, negotiable: compensationRow.negotiable })
         : unknownFact(),
+      level:intelligence.level?knownFact(intelligence.level):unknownFact(),
+      mobility:intelligence.mobility?knownFact(intelligence.mobility):unknownFact(),
+      workConditions:intelligence.conditions?knownFact({perDiem:intelligence.conditions.perDiem,transportation:intelligence.conditions.transportation,tools:intelligence.conditions.tools,maximumHoursPerWeek:intelligence.conditions.maximumHoursPerWeek,overtime:intelligence.conditions.overtime}):unknownFact(),
+      shifts:intelligence.shifts.map(s=>s.code),
+      presentationConsent:intelligence.consents.find(c=>c.purpose==="CANDIDATE_PRESENTATION")?.state??"UNKNOWN",
       knownGaps: MATCHING_INPUT_KNOWN_GAPS,
     });
   }

@@ -53,6 +53,14 @@ export function evaluateWorkerDemandMatch(input: EvaluateWorkerDemandMatchInput)
     ...input.demand.credentials.map((requirement) => evaluateCredentialRequirement(requirement, input.worker.credentials, input.evaluationDate)),
     evaluateAvailability(input.demand, input.worker.availability),
     evaluateCompensation(input.demand, input.worker.compensation),
+    evaluateLevel(input.demand,input.worker),
+    evaluateMobility(input.demand,input.worker),
+    evaluateShift(input.demand,input.worker),
+    evaluateHours(input.demand,input.worker),
+    evaluateOvertime(input.demand,input.worker),
+    evaluatePerDiem(input.demand,input.worker),
+    evaluateExplicitRequirement("TRANSPORTATION",input.demand.transportationRequired??null,input.worker.workConditions?.state==="KNOWN"?input.worker.workConditions.value.transportation:"UNKNOWN"),
+    evaluateTools(input.demand,input.worker),
   ];
 
   return { kind: "EVALUATED", evaluation: { outcome: aggregateOutcome(criteria), criteria } };
@@ -213,7 +221,8 @@ function evaluateCredentialRequirement(
   const isHard = requirement.requirementLevel === "REQUIRED";
   const criterion = isHard ? ("REQUIRED_CREDENTIAL" as const) : ("PREFERRED_CREDENTIAL" as const);
   const importance = isHard ? ("HARD" as const) : ("PREFERRED" as const);
-  const match = workerCredentials.find((c) => c.credentialCode === requirement.credentialCode);
+  const candidates = workerCredentials.filter((c) => c.credentialCode === requirement.credentialCode);
+  const match = requirement.jurisdiction ? candidates.find(c=>c.jurisdiction?.toUpperCase()===requirement.jurisdiction?.toUpperCase())??candidates[0] : candidates[0];
 
   if (!match) {
     return {
@@ -221,6 +230,11 @@ function evaluateCredentialRequirement(
       reasonCode: isHard ? "REQUIRED_CREDENTIAL_UNKNOWN" : "PREFERRED_CREDENTIAL_UNKNOWN",
       observedDemand: requirement.credentialCode, observedWorker: null,
     };
+  }
+
+  if(requirement.jurisdiction){
+    if(!match.jurisdiction)return{criterion:"CREDENTIAL_JURISDICTION",subject:requirement.credentialCode,importance,state:"UNKNOWN",reasonCode:"WORKER_CREDENTIAL_JURISDICTION_UNKNOWN",observedDemand:requirement.jurisdiction,observedWorker:null};
+    if(match.jurisdiction.toUpperCase()!==requirement.jurisdiction.toUpperCase())return{criterion:"CREDENTIAL_JURISDICTION",subject:requirement.credentialCode,importance,state:"VIOLATED",reasonCode:"CREDENTIAL_JURISDICTION_MISMATCH",observedDemand:requirement.jurisdiction,observedWorker:match.jurisdiction};
   }
 
   // Jurisdiction is never compared: the published worker credential record
@@ -258,6 +272,29 @@ function evaluateCredentialRequirement(
     observedDemand: requirement.credentialCode, observedWorker: match.verificationState,
   };
 }
+
+function evaluateLevel(demand:MatchingReadyDemandInput,worker:MatchingReadyWorkerInput):CriterionEvaluation{
+ const base={criterion:"WORKER_LEVEL" as const,subject:null,importance:"HARD" as const};
+ if(!demand.requiredLevelCode)return{...base,state:"NOT_APPLICABLE",reasonCode:"DEMAND_LEVEL_NOT_SPECIFIED",observedDemand:null,observedWorker:null};
+ if(!worker.level||worker.level.state==="UNKNOWN")return{...base,state:"UNKNOWN",reasonCode:"WORKER_LEVEL_UNKNOWN",observedDemand:demand.requiredLevelCode,observedWorker:null};
+ return worker.level.value.code===demand.requiredLevelCode?{...base,state:worker.level.value.verificationState==="VERIFIED"?"SATISFIED":"SATISFIED_WITH_LIMITATION",reasonCode:worker.level.value.verificationState==="VERIFIED"?"WORKER_LEVEL_VERIFIED":"WORKER_LEVEL_UNVERIFIED",observedDemand:demand.requiredLevelCode,observedWorker:worker.level.value.code}:{...base,state:"VIOLATED",reasonCode:"WORKER_LEVEL_MISMATCH",observedDemand:demand.requiredLevelCode,observedWorker:worker.level.value.code};
+}
+function evaluateMobility(demand:MatchingReadyDemandInput,worker:MatchingReadyWorkerInput):CriterionEvaluation{
+ const base={criterion:"MOBILITY" as const,subject:null,importance:"HARD" as const};
+ if(!demand.state&&!demand.travelRequired)return{...base,state:"NOT_APPLICABLE",reasonCode:"DEMAND_MOBILITY_NOT_SPECIFIED",observedDemand:null,observedWorker:null};
+ if(worker.location.state==="UNKNOWN")return{...base,state:"UNKNOWN",reasonCode:"WORKER_LOCATION_UNKNOWN",observedDemand:demand.state??null,observedWorker:null};
+ const same=Boolean(demand.state&&worker.location.value.region?.toUpperCase()===demand.state.toUpperCase());
+ if(!demand.travelRequired&&same)return{...base,state:"SATISFIED",reasonCode:"WORKER_LOCATION_COMPATIBLE",observedDemand:demand.state??null,observedWorker:worker.location.value.region};
+ if(!worker.mobility||worker.mobility.state==="UNKNOWN")return{...base,state:"UNKNOWN",reasonCode:"WORKER_MOBILITY_UNKNOWN",observedDemand:demand.state??null,observedWorker:worker.location.value.region};
+ const state=same?worker.mobility.value.inStateTravel:worker.mobility.value.outOfStateTravel;
+ return state==="YES"?{...base,state:"SATISFIED",reasonCode:"WORKER_TRAVEL_CONFIRMED",observedDemand:demand.state??null,observedWorker:state}:state==="NO"?{...base,state:"VIOLATED",reasonCode:"WORKER_TRAVEL_DECLINED",observedDemand:demand.state??null,observedWorker:state}:{...base,state:"UNKNOWN",reasonCode:"WORKER_MOBILITY_UNKNOWN",observedDemand:demand.state??null,observedWorker:state};
+}
+function evaluateShift(d:MatchingReadyDemandInput,w:MatchingReadyWorkerInput):CriterionEvaluation{const b={criterion:"SHIFT_CAPABILITY" as const,subject:null,importance:"HARD" as const};if(!d.shift)return{...b,state:"NOT_APPLICABLE",reasonCode:"DEMAND_SHIFT_NOT_SPECIFIED",observedDemand:null,observedWorker:null};const wanted=d.shift.toUpperCase().includes("NIGHT")?"NIGHT":d.shift.toUpperCase().includes("ROTAT")?"ROTATING":d.shift.toUpperCase().includes("DAY")?"DAY":null;if(!wanted)return{...b,state:"UNKNOWN",reasonCode:"DEMAND_SHIFT_NOT_NORMALIZED",observedDemand:d.shift,observedWorker:null};if(!w.shifts?.length)return{...b,state:"UNKNOWN",reasonCode:"WORKER_SHIFT_UNKNOWN",observedDemand:wanted,observedWorker:null};return w.shifts.includes(wanted)?{...b,state:"SATISFIED",reasonCode:"WORKER_SHIFT_CONFIRMED",observedDemand:wanted,observedWorker:wanted}:{...b,state:"VIOLATED",reasonCode:"WORKER_SHIFT_INCOMPATIBLE",observedDemand:wanted,observedWorker:w.shifts.join(",")};}
+function evaluateHours(d:MatchingReadyDemandInput,w:MatchingReadyWorkerInput):CriterionEvaluation{const b={criterion:"HOURS_CAPACITY" as const,subject:null,importance:"HARD" as const};if(d.hoursPerWeek==null)return{...b,state:"NOT_APPLICABLE",reasonCode:"DEMAND_HOURS_NOT_SPECIFIED",observedDemand:null,observedWorker:null};if(!w.workConditions||w.workConditions.state==="UNKNOWN"||w.workConditions.value.maximumHoursPerWeek==null)return{...b,state:"UNKNOWN",reasonCode:"WORKER_HOURS_CAPACITY_UNKNOWN",observedDemand:String(d.hoursPerWeek),observedWorker:null};return w.workConditions.value.maximumHoursPerWeek>=d.hoursPerWeek?{...b,state:"SATISFIED",reasonCode:"WORKER_HOURS_CAPACITY_CONFIRMED",observedDemand:String(d.hoursPerWeek),observedWorker:String(w.workConditions.value.maximumHoursPerWeek)}:{...b,state:"VIOLATED",reasonCode:"WORKER_HOURS_CAPACITY_BELOW_REQUIREMENT",observedDemand:String(d.hoursPerWeek),observedWorker:String(w.workConditions.value.maximumHoursPerWeek)};}
+function evaluateOvertime(d:MatchingReadyDemandInput,w:MatchingReadyWorkerInput):CriterionEvaluation{return evaluateExplicitRequirement("OVERTIME_CAPABILITY",d.overtimeRequired??null,w.workConditions?.state==="KNOWN"?w.workConditions.value.overtime:"UNKNOWN");}
+function evaluatePerDiem(d:MatchingReadyDemandInput,w:MatchingReadyWorkerInput):CriterionEvaluation{const b={criterion:"PER_DIEM" as const,subject:null,importance:"HARD" as const};if(d.perDiemAvailable==null)return{...b,state:"NOT_APPLICABLE",reasonCode:"DEMAND_PER_DIEM_NOT_SPECIFIED",observedDemand:null,observedWorker:null};if(!w.workConditions||w.workConditions.state==="UNKNOWN"||w.workConditions.value.perDiem==="UNKNOWN")return{...b,state:"UNKNOWN",reasonCode:"WORKER_PER_DIEM_UNKNOWN",observedDemand:String(d.perDiemAvailable),observedWorker:null};if(!d.perDiemAvailable&&w.workConditions.value.perDiem==="REQUIRES")return{...b,state:"VIOLATED",reasonCode:"WORKER_REQUIRES_UNAVAILABLE_PER_DIEM",observedDemand:"false",observedWorker:"REQUIRES"};return{...b,state:"SATISFIED",reasonCode:"WORKER_PER_DIEM_COMPATIBLE",observedDemand:String(d.perDiemAvailable),observedWorker:w.workConditions.value.perDiem};}
+function evaluateExplicitRequirement(criterion:"TRANSPORTATION"|"OVERTIME_CAPABILITY",required:boolean|null,state:"YES"|"NO"|"UNKNOWN"):CriterionEvaluation{const b={criterion,subject:null,importance:"HARD" as const};if(required!==true)return{...b,state:"NOT_APPLICABLE",reasonCode:`DEMAND_${criterion}_NOT_REQUIRED`,observedDemand:required===null?null:String(required),observedWorker:null};return state==="YES"?{...b,state:"SATISFIED",reasonCode:`WORKER_${criterion}_CONFIRMED`,observedDemand:"true",observedWorker:state}:state==="NO"?{...b,state:"VIOLATED",reasonCode:`WORKER_${criterion}_DECLINED`,observedDemand:"true",observedWorker:state}:{...b,state:"UNKNOWN",reasonCode:`WORKER_${criterion}_UNKNOWN`,observedDemand:"true",observedWorker:null};}
+function evaluateTools(d:MatchingReadyDemandInput,w:MatchingReadyWorkerInput):CriterionEvaluation{const b={criterion:"TOOLS" as const,subject:null,importance:"HARD" as const};if(d.toolsRequired!==true)return{...b,state:"NOT_APPLICABLE",reasonCode:"DEMAND_TOOLS_NOT_REQUIRED",observedDemand:d.toolsRequired==null?null:String(d.toolsRequired),observedWorker:null};if(!w.workConditions||w.workConditions.state==="UNKNOWN"||w.workConditions.value.tools==="UNKNOWN")return{...b,state:"UNKNOWN",reasonCode:"WORKER_TOOLS_UNKNOWN",observedDemand:"true",observedWorker:null};return w.workConditions.value.tools==="YES"?{...b,state:"SATISFIED",reasonCode:"WORKER_TOOLS_CONFIRMED",observedDemand:"true",observedWorker:"YES"}:w.workConditions.value.tools==="PARTIAL"?{...b,state:"SATISFIED_WITH_LIMITATION",reasonCode:"WORKER_TOOLS_PARTIAL",observedDemand:"true",observedWorker:"PARTIAL"}:{...b,state:"VIOLATED",reasonCode:"WORKER_TOOLS_UNAVAILABLE",observedDemand:"true",observedWorker:"NO"};}
 
 /* -------------------------------------------------------------------- */
 /* D10 -- AVAILABILITY / START DATE                                      */

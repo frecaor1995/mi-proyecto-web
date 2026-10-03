@@ -6,6 +6,7 @@ import type {
   WorkerContactRouteRecord, WorkerCredentialRecord, WorkerLocationRecord, WorkerRecord, WorkerSearchFilter,
   WorkerSkillRecord, WorkerTradeOccupationRecord, WorkerWorkHistoryRecord,
 } from "../../../domain/worker";
+import type { WorkerIntelligenceFacts } from "../../../domain/workforce-intelligence";
 
 /**
  * WORKFORCE-TALENT-A3 repository surface over the nine A2-B canonical
@@ -35,6 +36,7 @@ export interface WorkerRepository {
 
   // worker_credentials -- SAFE shape only; raw_identifier is write-only
   listCredentials(workerId: string): Promise<WorkerCredentialRecord[]>;
+  getIntelligenceFacts(workerId:string):Promise<WorkerIntelligenceFacts>;
   addCredential(input: AddWorkerCredentialInput): Promise<WorkerCredentialRecord>;
   updateCredentialVerification(input: UpdateWorkerCredentialVerificationInput): Promise<WorkerCredentialRecord>;
 

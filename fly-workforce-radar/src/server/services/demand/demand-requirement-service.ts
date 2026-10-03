@@ -129,6 +129,7 @@ export class DemandRequirementService {
       credentials: credentialRequirements.map((c) => ({ credentialCode: c.credentialCode, requirementLevel: c.requirementLevel, jurisdiction: c.jurisdiction })),
       startDate: core.startDate,
       compensation: compensationFact,
+      requiredLevelCode:core.requiredLevelCode,state:core.state,travelRequired:core.travelRequired,shift:core.shift,hoursPerWeek:core.hoursPerWeek,overtimeRequired:core.overtimeRequired,perDiemAvailable:core.perDiemAvailable,transportationRequired:core.transportationRequired,toolsRequired:core.toolsRequired,
     });
   }
 }

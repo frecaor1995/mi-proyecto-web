@@ -47,7 +47,7 @@ export function fingerprintWorkerInput(worker: MatchingReadyWorkerInput): string
 
   const credentials = [...worker.credentials]
     .sort((a, b) => a.credentialCode.localeCompare(b.credentialCode))
-    .map((c) => ({ credentialCode: c.credentialCode, verificationState: c.verificationState, expiresAt: isoOrNull(c.expiresAt) }));
+    .map((c) => ({ credentialCode: c.credentialCode,jurisdiction:c.jurisdiction??null, verificationState: c.verificationState, expiresAt: isoOrNull(c.expiresAt) }));
 
   const availability =
     worker.availability.state === "UNKNOWN"
@@ -65,7 +65,11 @@ export function fingerprintWorkerInput(worker: MatchingReadyWorkerInput): string
           negotiable: worker.compensation.value.negotiable,
         };
 
-  return canonicalHash({ tradeOccupations, skills, credentials, availability, compensation });
+  const location=worker.location.state==="KNOWN"?worker.location.value:{state:"UNKNOWN"};
+  const level=worker.level?.state==="KNOWN"?worker.level.value:{state:"UNKNOWN"};
+  const mobility=worker.mobility?.state==="KNOWN"?worker.mobility.value:{state:"UNKNOWN"};
+  const workConditions=worker.workConditions?.state==="KNOWN"?worker.workConditions.value:{state:"UNKNOWN"};
+  return canonicalHash({ tradeOccupations, skills, credentials, availability, compensation,location,level,mobility,workConditions,shifts:[...(worker.shifts??[])].sort(),presentationConsent:worker.presentationConsent??"UNKNOWN" });
 }
 
 export function fingerprintDemandInput(demand: MatchingReadyDemandInput): string {
@@ -75,7 +79,7 @@ export function fingerprintDemandInput(demand: MatchingReadyDemandInput): string
 
   const credentials = [...demand.credentials]
     .sort((a, b) => a.credentialCode.localeCompare(b.credentialCode) || a.requirementLevel.localeCompare(b.requirementLevel))
-    .map((c) => ({ credentialCode: c.credentialCode, requirementLevel: c.requirementLevel }));
+    .map((c) => ({ credentialCode: c.credentialCode, requirementLevel: c.requirementLevel,jurisdiction:c.jurisdiction }));
 
   const compensation =
     demand.compensation.state === "UNKNOWN"
@@ -90,6 +94,7 @@ export function fingerprintDemandInput(demand: MatchingReadyDemandInput): string
     credentials,
     startDate: isoOrNull(demand.startDate),
     compensation,
+    requiredLevelCode:demand.requiredLevelCode??null,state:demand.state??null,travelRequired:demand.travelRequired??null,shift:demand.shift??null,hoursPerWeek:demand.hoursPerWeek??null,overtimeRequired:demand.overtimeRequired??null,perDiemAvailable:demand.perDiemAvailable??null,transportationRequired:demand.transportationRequired??null,toolsRequired:demand.toolsRequired??null,
   });
 }
 

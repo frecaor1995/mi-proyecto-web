@@ -102,7 +102,7 @@ export function WorkerProfileView({ locale, profile, taxonomy, permissions, life
         {profile.credentials.length === 0 ? <p className="detail-honest-empty">{t(locale, "workforce.credentials.empty")}</p> : (
           <ul className="workforce-record-list">
             {profile.credentials.map((credential) => (
-              <li key={credential.credentialCode} className="workforce-record">
+              <li key={credential.id ?? `${credential.credentialCode}-${credential.issuedAt?.toISOString() ?? "unknown"}`} className="workforce-record">
                 <div className="workforce-record-main">
                   <strong>{credential.credentialCode}</strong>
                   <small>
@@ -113,6 +113,7 @@ export function WorkerProfileView({ locale, profile, taxonomy, permissions, life
                 {permissions.profileWrite && credential.verificationState !== "VERIFIED" ? (
                   <form action={verifyCredentialAction}>
                     <input type="hidden" name="workerId" value={w.id} />
+                    {credential.id ? <input type="hidden" name="credentialId" value={credential.id} /> : null}
                     <input type="hidden" name="credentialCode" value={credential.credentialCode} />
                     <button type="submit">{t(locale, "workforce.credentials.verifyButton")}</button>
                   </form>

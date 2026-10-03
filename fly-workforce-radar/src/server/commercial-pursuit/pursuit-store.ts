@@ -66,6 +66,7 @@ async function opportunityCompany(client: SqlClient, opportunityId: string): Pro
 export interface PainSignalInput {
   readonly companyId: string | null;
   readonly opportunityId: string | null;
+  readonly unresolvedAssociation?: string | null;
   readonly painType: PainType;
   readonly assertionBasis: AssertionBasis;
   readonly confidence: Confidence;
@@ -83,7 +84,7 @@ export interface PainSignalInput {
 
 export async function recordPainSignal(client: SqlClient, input: PainSignalInput, operatorId: string, now = new Date()): Promise<{ readonly id: string; readonly rawEvidenceId: string }> {
   const errors: Record<string, string> = {};
-  if (!input.companyId && !input.opportunityId) errors.companyId = "required";
+  if (!input.companyId && !input.opportunityId && !clean(input.unresolvedAssociation)) errors.companyId = "associationRequired";
   if (!input.summary.trim()) errors.summary = "required";
   const referral = input.painType === "WORKER_REFERRAL" ? input.workerReferral ?? null : null;
   if (input.painType === "WORKER_REFERRAL" && !referral) errors.workerReferral = "required";
@@ -101,7 +102,16 @@ export async function recordPainSignal(client: SqlClient, input: PainSignalInput
         supervisorName: referral.supervisorName, supervisorTitle: referral.supervisorTitle, neededHeadcount: referral.neededHeadcount, neededRole: referral.neededRoleText,
         consentUseIntelligence: referral.consentUseIntelligence, consentIdentifyWorker: referral.consentIdentifyWorker } } : {}) },
   });
-  await client.query(
+  if (clean(input.unresolvedAssociation)) await client.query(
+    `insert into commercial_pain_signals(id,company_id,opportunity_id,unresolved_association,pain_type,assertion_basis,status,confidence,summary,source_kind,source_url,raw_evidence_id,
+       demand_signal_id,observed_at,recorded_at,entered_by_kind,recorded_by_operator_id,reported_by_worker_id,site_text,city,state,supervisor_name,supervisor_title,
+       needed_headcount,needed_role_text,consent_use_intelligence,consent_identify_worker)
+     values($1,$2,$3,$4,$5,$6,'UNVERIFIED',$7,$8,$9,$10,$11,$12,$13,$14,'HUMAN',$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)`,
+    [id, companyId, input.opportunityId, clean(input.unresolvedAssociation), input.painType, input.assertionBasis, input.confidence, input.summary.trim(), input.sourceKind, clean(input.sourceUrl), rawEvidenceId,
+      input.demandSignalId ?? null, iso(input.observedAt), now.toISOString(), operatorId, referral?.reportedByWorkerId ?? null, clean(referral?.siteText), clean(referral?.city),
+      clean(referral?.state), clean(referral?.supervisorName), clean(referral?.supervisorTitle), referral?.neededHeadcount ?? null, clean(referral?.neededRoleText),
+      referral?.consentUseIntelligence ?? null, referral?.consentIdentifyWorker ?? null]);
+  else await client.query(
     `insert into commercial_pain_signals(id,company_id,opportunity_id,pain_type,assertion_basis,status,confidence,summary,source_kind,source_url,raw_evidence_id,
        demand_signal_id,observed_at,recorded_at,entered_by_kind,recorded_by_operator_id,reported_by_worker_id,site_text,city,state,supervisor_name,supervisor_title,
        needed_headcount,needed_role_text,consent_use_intelligence,consent_identify_worker)
@@ -125,10 +135,10 @@ export async function supersedePainSignal(client: SqlClient, input: { readonly p
   const id = randomUUID();
   const opportunityId = input.opportunityId ?? (previous.opportunity_id as string | null);
   await client.query(
-    `insert into commercial_pain_signals(id,company_id,opportunity_id,pain_type,assertion_basis,status,confidence,summary,source_kind,source_url,raw_evidence_id,
+    `insert into commercial_pain_signals(id,company_id,opportunity_id,unresolved_association,pain_type,assertion_basis,status,confidence,summary,source_kind,source_url,raw_evidence_id,
        demand_signal_id,observed_at,recorded_at,entered_by_kind,recorded_by_operator_id,supersedes_id,reported_by_worker_id,site_text,city,state,supervisor_name,
        supervisor_title,needed_headcount,needed_role_text,consent_use_intelligence,consent_identify_worker)
-     select $1,company_id,$2,pain_type,assertion_basis,$3,confidence,case when $4::text is null then summary else left(summary || ' — ' || $4, 2000) end,source_kind,source_url,
+     select $1,company_id,$2,unresolved_association,pain_type,assertion_basis,$3,confidence,case when $4::text is null then summary else left(summary || ' — ' || $4, 2000) end,source_kind,source_url,
        raw_evidence_id,demand_signal_id,observed_at,$5,'HUMAN',$6,id,reported_by_worker_id,site_text,city,state,supervisor_name,supervisor_title,needed_headcount,
        needed_role_text,consent_use_intelligence,consent_identify_worker from commercial_pain_signals where id=$7`,
     [id, opportunityId, input.status, clean(input.note), now.toISOString(), operatorId, input.painSignalId]);

@@ -1,8 +1,9 @@
-import { WorkforceListView } from "../../components/workforce/workforce-list-view";
+import { WorkforceIntelligenceList } from "../../components/workforce/workforce-intelligence-list";
 import { resolveServerLocale } from "../../i18n/server-locale";
 import { getWorkforceListPage, parseWorkforceListQuery } from "../../server/workforce/get-workforce-list";
 import { getWorkforceTaxonomy } from "../../server/workforce/get-workforce-taxonomy";
 import { resolveWorkerUiPermissions } from "../../server/workforce/worker-permissions";
+import { getWorkforceIntelligenceSummaries } from "../../server/workforce/get-workforce-intelligence";
 
 /**
  * WORKFORCE-TALENT-A4-R6: this route reads the authenticated session and the
@@ -21,10 +22,25 @@ export default async function WorkforcePage({ searchParams = Promise.resolve({})
   ]);
   const query = parseWorkforceListQuery(params);
   const result = await getWorkforceListPage(query);
+  const summaries = await getWorkforceIntelligenceSummaries(result.items.map((item) => item.worker.id));
+  const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] ?? "" : value ?? "").replaceAll(" ", "_");
+  const filters = {
+    availability: first(params.availability).toUpperCase(),
+    level: first(params.level).toUpperCase(),
+    credential: first(params.credential).toUpperCase(),
+    readiness: first(params.readiness).toUpperCase(),
+  };
+  const filteredResult = { ...result, items: result.items.filter((item) => {
+    const summary = summaries.get(item.worker.id);
+    return (!filters.availability || (item.availabilityStatus ?? "UNKNOWN") === filters.availability)
+      && (!filters.level || (summary?.level ?? "UNKNOWN") === filters.level)
+      && (!filters.credential || summary?.expirationBand === filters.credential)
+      && (!filters.readiness || summary?.readiness === filters.readiness);
+  }) };
   return (
-    <WorkforceListView
-      locale={locale} query={query} result={result}
-      trades={taxonomy.trades} occupations={taxonomy.occupations}
+    <WorkforceIntelligenceList
+      locale={locale} query={query} result={filteredResult} filters={filters}
+      summaries={summaries} trades={taxonomy.trades}
       canCreate={permissions.profileWrite}
     />
   );

@@ -60,6 +60,15 @@ export interface DemandMatchingCore {
   readonly occupationCode: string | null;
   readonly minimumExperienceMonths: number | null;
   readonly startDate: Date | null;
+  readonly requiredLevelCode:string|null;
+  readonly state:string|null;
+  readonly travelRequired:boolean|null;
+  readonly shift:string|null;
+  readonly hoursPerWeek:number|null;
+  readonly overtimeRequired:boolean|null;
+  readonly perDiemAvailable:boolean|null;
+  readonly transportationRequired:boolean|null;
+  readonly toolsRequired:boolean|null;
 }
 
 export interface MatchingReadyCompensationDemand {
@@ -88,4 +97,13 @@ export interface MatchingReadyDemandInput {
   readonly credentials: readonly MatchingReadyCredentialRequirement[];
   readonly startDate: Date | null;
   readonly compensation: Fact<MatchingReadyCompensationDemand>;
+  readonly requiredLevelCode?:string|null;
+  readonly state?:string|null;
+  readonly travelRequired?:boolean|null;
+  readonly shift?:string|null;
+  readonly hoursPerWeek?:number|null;
+  readonly overtimeRequired?:boolean|null;
+  readonly perDiemAvailable?:boolean|null;
+  readonly transportationRequired?:boolean|null;
+  readonly toolsRequired?:boolean|null;
 }

@@ -104,10 +104,10 @@ describe("MATCHING-B2-B fingerprintWorkerInput / fingerprintDemandInput", () => 
     expect(fingerprintDemandInput(a)).not.toBe(fingerprintDemandInput(b));
   });
 
-  it("an irrelevant field (worker.location) does not affect the fingerprint -- the engine never reads it", () => {
+  it("worker.location affects the fingerprint now that Phase 4A mobility evaluates it", () => {
     const a = worker({ location: unknownFact() });
     const b = worker({ location: knownFact({ city: "Houston", region: "TX", country: "US", travelWilling: true, travelRadiusMiles: 50, relocationWilling: false }) });
-    expect(fingerprintWorkerInput(a)).toBe(fingerprintWorkerInput(b));
+    expect(fingerprintWorkerInput(a)).not.toBe(fingerprintWorkerInput(b));
   });
 
   it("an irrelevant field (worker.compensation.ratePreferred) does not affect the fingerprint -- never a hard threshold (R1.4)", () => {
@@ -116,10 +116,10 @@ describe("MATCHING-B2-B fingerprintWorkerInput / fingerprintDemandInput", () => 
     expect(fingerprintWorkerInput(a)).toBe(fingerprintWorkerInput(b));
   });
 
-  it("an irrelevant field (demand credential jurisdiction) does not affect the fingerprint -- never compared (D9)", () => {
+  it("demand credential jurisdiction affects the fingerprint under Phase 4A", () => {
     const a = demand({ credentials: [{ credentialCode: "OSHA_10", requirementLevel: "REQUIRED", jurisdiction: null }] });
     const b = demand({ credentials: [{ credentialCode: "OSHA_10", requirementLevel: "REQUIRED", jurisdiction: "TX" }] });
-    expect(fingerprintDemandInput(a)).toBe(fingerprintDemandInput(b));
+    expect(fingerprintDemandInput(a)).not.toBe(fingerprintDemandInput(b));
   });
 
   it("an irrelevant field (demand.compensation.basePayMin) does not affect the fingerprint -- never read by the engine", () => {

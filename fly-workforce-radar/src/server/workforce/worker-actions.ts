@@ -150,7 +150,8 @@ export async function verifyCredentialAction(formData: FormData): Promise<void> 
   if (!service) return;
   const workerId = field(formData, "workerId");
   await service.updateCredentialVerification({
-    workerId, credentialCode: field(formData, "credentialCode"), verificationState: "VERIFIED", verifiedAt: new Date(),
+    workerId, credentialId: optionalField(formData, "credentialId") ?? undefined,
+    credentialCode: field(formData, "credentialCode"), verificationState: "VERIFIED", verifiedAt: new Date(),
   });
   revalidatePath(`/workforce/${workerId}`);
 }

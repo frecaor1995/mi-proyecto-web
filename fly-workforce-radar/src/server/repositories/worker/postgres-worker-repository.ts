@@ -6,6 +6,7 @@ import type {
   WorkerContactRouteRecord, WorkerCredentialRecord, WorkerLocationRecord, WorkerRecord, WorkerSearchFilter,
   WorkerSkillRecord, WorkerTradeOccupationRecord, WorkerWorkHistoryRecord,
 } from "../../../domain/worker";
+import type { WorkerIntelligenceFacts,WorkerLevelCode,ExplicitState,PerDiemState,ToolsState,ShiftCode,WorkerConsentPurpose,WorkerConsentState } from "../../../domain/workforce-intelligence";
 import type { VerificationState } from "../../../domain/verification";
 import type { SqlClient } from "../evidence/postgres-evidence-repository";
 import type { WorkerRepository } from "./worker-repository";
@@ -46,15 +47,16 @@ const skill = (r: SkillRow): WorkerSkillRecord => ({
 });
 
 interface CredentialRow {
+  id:string;
   worker_id: string; credential_code: string; verification_state: VerificationState; verified_at: string | Date | null;
   issued_at: string | Date | null; expires_at: string | Date | null; issuing_authority: string | null;
-  source_evidence_id: string | null; created_at: string | Date;
+  jurisdiction:string|null;lifecycle_status:WorkerCredentialRecord["lifecycleStatus"];source_evidence_id: string | null; created_at: string | Date;
 }
 /** Deliberately excludes raw_identifier -- matches the database's own column-level grant exactly. */
-const CREDENTIAL_SAFE_COLS = "worker_id,credential_code,verification_state,verified_at,issued_at,expires_at,issuing_authority,source_evidence_id,created_at";
+const CREDENTIAL_SAFE_COLS = "id,worker_id,credential_code,verification_state,verified_at,issued_at,expires_at,issuing_authority,jurisdiction,lifecycle_status,source_evidence_id,created_at";
 const credential = (r: CredentialRow): WorkerCredentialRecord => ({
-  workerId: r.worker_id, credentialCode: r.credential_code, verificationState: r.verification_state, verifiedAt: d(r.verified_at),
-  issuedAt: d(r.issued_at), expiresAt: d(r.expires_at), issuingAuthority: r.issuing_authority, sourceEvidenceId: r.source_evidence_id,
+  id:r.id,workerId: r.worker_id, credentialCode: r.credential_code, verificationState: r.verification_state, verifiedAt: d(r.verified_at),
+  issuedAt: d(r.issued_at), expiresAt: d(r.expires_at), issuingAuthority: r.issuing_authority,jurisdiction:r.jurisdiction,lifecycleStatus:r.lifecycle_status, sourceEvidenceId: r.source_evidence_id,
   createdAt: new Date(r.created_at),
 });
 
@@ -227,11 +229,11 @@ export class PostgresWorkerRepository implements WorkerRepository {
 
   async addCredential(i: AddWorkerCredentialInput): Promise<WorkerCredentialRecord> {
     const q = await this.client.query<CredentialRow>(
-      `insert into worker_credentials(worker_id,credential_code,verification_state,verified_at,issued_at,expires_at,issuing_authority,raw_identifier,source_evidence_id)
-       values($1,$2,$3,$4,$5,$6,$7,$8,$9) returning ${CREDENTIAL_SAFE_COLS}`,
+      `insert into worker_credentials(worker_id,credential_code,verification_state,verified_at,issued_at,expires_at,issuing_authority,jurisdiction,raw_identifier,source_evidence_id)
+       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning ${CREDENTIAL_SAFE_COLS}`,
       [
         i.workerId, i.credentialCode, i.verificationState ?? "UNVERIFIED", i.verifiedAt?.toISOString() ?? null,
-        i.issuedAt?.toISOString() ?? null, i.expiresAt?.toISOString() ?? null, i.issuingAuthority ?? null,
+        i.issuedAt?.toISOString() ?? null, i.expiresAt?.toISOString() ?? null, i.issuingAuthority ?? null,i.jurisdiction??null,
         i.rawIdentifier ?? null, i.sourceEvidenceId ?? null,
       ],
     );
@@ -241,11 +243,25 @@ export class PostgresWorkerRepository implements WorkerRepository {
   async updateCredentialVerification(i: UpdateWorkerCredentialVerificationInput): Promise<WorkerCredentialRecord> {
     const q = await this.client.query<CredentialRow>(
       `update worker_credentials set verification_state=$3,verified_at=$4
-       where worker_id=$1 and credential_code=$2 returning ${CREDENTIAL_SAFE_COLS}`,
-      [i.workerId, i.credentialCode, i.verificationState, i.verifiedAt?.toISOString() ?? null],
+       where worker_id=$1 and (${i.credentialId ? "id=$2::uuid" : "credential_code=$2"}) returning ${CREDENTIAL_SAFE_COLS}`,
+      [i.workerId, i.credentialId ?? i.credentialCode, i.verificationState, i.verifiedAt?.toISOString() ?? null],
     );
     if (!q.rows[0]) throw new Error("Worker credential not found");
     return credential(q.rows[0]);
+  }
+
+  async getIntelligenceFacts(workerId:string):Promise<WorkerIntelligenceFacts>{
+    const [level,credentials,mobility,conditions,shifts,consents,documents]=await Promise.all([
+      this.client.query<Record<string,unknown>>(`select level_code,verification_state from worker_level_assignments where worker_id=$1 order by effective_at desc,created_at desc limit 1`,[workerId]),
+      this.listCredentials(workerId),
+      this.client.query<Record<string,unknown>>(`select coalesce(in_state_travel_state,'UNKNOWN') in_state,coalesce(out_of_state_travel_state,'UNKNOWN') out_state,coalesce(relocation_state,'UNKNOWN') relocation from worker_locations where worker_id=$1 order by effective_at desc,created_at desc limit 1`,[workerId]),
+      this.client.query<Record<string,unknown>>(`select * from worker_work_conditions where worker_id=$1 order by effective_at desc,created_at desc limit 1`,[workerId]),
+      this.client.query<Record<string,unknown>>(`select shift_code,verification_state from worker_shift_capabilities where worker_id=$1 order by shift_code`,[workerId]),
+      this.client.query<Record<string,unknown>>(`select distinct on(purpose) purpose,state,effective_at from worker_consents where worker_id=$1 order by purpose,effective_at desc,created_at desc`,[workerId]),
+      this.client.query<Record<string,unknown>>(`select distinct on(document_type) document_type,readiness_state,expires_at,verification_state from worker_document_readiness where worker_id=$1 order by document_type,effective_at desc,created_at desc`,[workerId]),
+    ]);
+    const l=level.rows[0],m=mobility.rows[0],c=conditions.rows[0];
+    return{level:l?{code:String(l.level_code) as WorkerLevelCode,verificationState:String(l.verification_state) as VerificationState}:null,credentials:credentials.map(x=>({id:x.id??"",credentialCode:x.credentialCode,jurisdiction:x.jurisdiction??null,verificationState:x.verificationState,expiresAt:x.expiresAt,lifecycleStatus:x.lifecycleStatus??"UNKNOWN"})),mobility:m?{inStateTravel:String(m.in_state) as ExplicitState,outOfStateTravel:String(m.out_state) as ExplicitState,relocation:String(m.relocation) as ExplicitState}:null,conditions:c?{perDiem:String(c.per_diem_state) as PerDiemState,transportation:String(c.transportation_state) as ExplicitState,tools:String(c.tools_state) as ToolsState,maximumHoursPerWeek:c.maximum_hours_per_week==null?null:Number(c.maximum_hours_per_week),overtime:String(c.overtime_state) as ExplicitState,verificationState:String(c.verification_state) as VerificationState}:null,shifts:shifts.rows.map(x=>({code:String(x.shift_code) as ShiftCode,verificationState:String(x.verification_state) as VerificationState})),consents:consents.rows.map(x=>({purpose:String(x.purpose) as WorkerConsentPurpose,state:String(x.state) as WorkerConsentState,effectiveAt:new Date(String(x.effective_at))})),documents:documents.rows.map(x=>({documentType:String(x.document_type),readinessState:String(x.readiness_state) as WorkerIntelligenceFacts["documents"][number]["readinessState"],expiresAt:d(x.expires_at as string|null),verificationState:String(x.verification_state) as VerificationState}))};
   }
 
   async getCurrentAvailability(workerId: string): Promise<WorkerAvailabilityRecord | null> {
