@@ -106,7 +106,7 @@ export const normalizePerson = (name: string) => name.normalize("NFKD").replace(
 /** Two people with the same name are only grouped when they are at the same organization. */
 export const personKey = (name: string, organization: string) => createHash("sha256").update(`${normalizePerson(name)}|${organization.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()}`).digest("hex");
 
-export type SourceType = "OFFICIAL_SITE" | "PROCUREMENT_DOCUMENT" | "PRESS_RELEASE" | "NEWS_ARTICLE" | "PROFESSIONAL_PROFILE_LISTING" | "DIRECTORY_LISTING" | "PROVIDER" | "SIGNAL_DOCUMENT";
+export type SourceType = "OFFICIAL_SITE" | "PROCUREMENT_DOCUMENT" | "PRESS_RELEASE" | "NEWS_ARTICLE" | "PROFESSIONAL_PROFILE_LISTING" | "DIRECTORY_LISTING" | "PROVIDER" | "SIGNAL_DOCUMENT" | "HUMAN_REFERRAL";
 export type EvidenceCurrency = "CURRENT" | "HISTORICAL" | "UNDATED";
 
 export interface ParsedPerson {
@@ -493,9 +493,20 @@ export type BuyerPath =
 export const NON_COMMERCIAL_MAILBOX = /^(health|insurance|healthinsurance|benefits|helpdesk|help|support|it|careers?|jobs|hr|payroll|privacy|webmaster|noreply|no-reply|marketing|media|press|accounting|ap|invoices?|billing)[@._-]|^[^@]*(insurance|benefit|helpdesk|careers|payroll|privacy)[^@]*@/i;
 const fallbackRank = (channel: CorporateChannel) => (channel.phoneKind === "DEPARTMENT" ? 0 : channel.kind === "MAILBOX" && channel.label ? 1 : channel.phoneKind === "MAIN" ? 2 : channel.kind === "MAILBOX" ? 3 : 4);
 
+/**
+ * Human feedback (Phase 3A): when the latest reached human interaction with a person states they do NOT handle
+ * external labor (e.g. "wrong person"), that person is no longer chosen as the route target. Their web evidence and
+ * the interaction stay recorded; a later human YES restores them. Never used to promote anyone.
+ */
+export function declinedByHuman(person: Pick<PersonGroup, "interactions">): boolean {
+  const latest = [...person.interactions].filter((item) => item.personReached && item.handlesExternalWorkforce !== "UNKNOWN")
+    .sort((a, b) => b.recordedAt.localeCompare(a.recordedAt))[0];
+  return latest?.handlesExternalWorkforce === "NO";
+}
+
 export function buyerPath(input: { readonly organization: string; readonly people: readonly PersonGroup[]; readonly channels: readonly CorporateChannel[]; readonly functions: readonly BuyerFunction[]; readonly sourcesChecked: number }): BuyerPath {
   const fallback = input.channels.filter((channel) => channel.phoneKind !== "NON_COMMERCIAL" && channel.phoneKind !== "FAX" && !(channel.kind === "MAILBOX" && NON_COMMERCIAL_MAILBOX.test(channel.value))).slice().sort((a, b) => fallbackRank(a) - fallbackRank(b))[0] ?? null;
-  const person = input.people.find((item) => item.facts.relevant);
+  const person = input.people.find((item) => item.facts.relevant && !declinedByHuman(item));
   if (!person) {
     return {
       state: "NO_INDIVIDUAL_BUYER_IDENTIFIED", organization: input.organization, sourcesChecked: input.sourcesChecked, functions: input.functions.map((item) => item.label),
@@ -561,7 +572,7 @@ export function actionableRoute(input: {
   // When the organization's own site names the buying department, a person from another function (e.g. a Project
   // Manager when Procurement handles subcontracts) is not presented as the target: the route is departmental.
   const BUYING_FUNCTIONS: readonly ContactFunction[] = ["PROCUREMENT", "SUBCONTRACTS", "SUPPLIER_MANAGEMENT"];
-  const candidate = input.people.find((item) => item.facts.relevant) ?? null;
+  const candidate = input.people.find((item) => item.facts.relevant && !declinedByHuman(item)) ?? null;
   const person = candidate && input.departmentEvidence.length && candidate.state !== "COMMERCIAL_RESPONSIBILITY_CONFIRMED"
     && !BUYING_FUNCTIONS.includes(candidate.fn?.contactFunction ?? "OTHER") ? null : candidate;
   const usable = input.channels.filter((channel) => channel.kind === "PHONE_ROUTE" && channel.phoneKind !== "NON_COMMERCIAL" && channel.phoneKind !== "FAX");

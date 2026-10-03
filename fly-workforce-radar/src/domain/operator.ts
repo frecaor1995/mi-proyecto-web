@@ -33,6 +33,9 @@ export type OperatorStatus = (typeof OPERATOR_STATUSES)[number];
  * evaluation run. It is deliberately distinct from "matching_result.read":
  * execute permits starting a run, read permits reading persisted results,
  * and neither implicitly grants the other.
+ * PHASE-3A adds "commercial_pursuit.write" for recording human commercial pursuit (pain evidence, worker
+ * referrals, activities, staff requests, pursuit roles). It never authorizes worker data reads, matching runs or
+ * Contact Intelligence discovery, and nothing it records is sent to anyone: humans perform every contact.
  */
 export const OPERATOR_PERMISSIONS = [
   "human_verification.write",
@@ -51,6 +54,7 @@ export const OPERATOR_PERMISSIONS = [
   "worker_engagement.read",
   "worker_engagement.write",
   "worker_contact.execute",
+  "commercial_pursuit.write",
 ] as const;
 export type OperatorPermission = (typeof OPERATOR_PERMISSIONS)[number];
 

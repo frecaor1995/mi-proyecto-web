@@ -70,7 +70,7 @@ export interface BuyerInvestigationView {
 }
 
 const iso = (value: string | Date) => new Date(value).toISOString();
-const PROVIDER_SOURCE: Record<string, SourceType> = { SIGNAL_SOURCE: "SIGNAL_DOCUMENT", OFFICIAL_WEBSITE: "OFFICIAL_SITE", PUBLIC_PROCUREMENT_DOCUMENT: "PROCUREMENT_DOCUMENT", HUNTER_DOMAIN_SEARCH: "PROVIDER", WEB_SEARCH_RESULT: "NEWS_ARTICLE" };
+const PROVIDER_SOURCE: Record<string, SourceType> = { SIGNAL_SOURCE: "SIGNAL_DOCUMENT", OFFICIAL_WEBSITE: "OFFICIAL_SITE", PUBLIC_PROCUREMENT_DOCUMENT: "PROCUREMENT_DOCUMENT", HUNTER_DOMAIN_SEARCH: "PROVIDER", WEB_SEARCH_RESULT: "NEWS_ARTICLE", HUMAN_INTERACTION: "HUMAN_REFERRAL" };
 
 interface InvestigationRow { id: string; started_at: string | Date; official_domain: string | null; domain_basis: string | null; target_functions: string[] | null; organization_type: OrganizationType | null; company_id: string | null }
 

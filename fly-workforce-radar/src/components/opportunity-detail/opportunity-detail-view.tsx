@@ -11,16 +11,18 @@ import { OpportunityEconomicsSection } from "../opportunity-economics/opportunit
 import { OpportunityEconomicDecisionSection } from "./opportunity-economic-decision-section";
 import type { OpportunityWorkforceMatchingPageData } from "../../server/opportunity-detail/get-opportunity-workforce-matching";
 import { WorkforceMatchingSection } from "./workforce-matching-section";
+import type { OpportunityPursuitEntry, PageState } from "../../server/commercial-pursuit/get-pursuit-page";
 
 const formatDateTime = (value: string, locale: Locale) => formatDate(locale, new Date(value), { dateStyle: "medium", timeStyle: "short" });
 
-export function OpportunityDetailView({ locale, result, matching }: { readonly locale: Locale; readonly result: OpportunityDetailPageResult; readonly matching?: OpportunityWorkforceMatchingPageData | null }) {
+export function OpportunityDetailView({ locale, result, matching, pursuitEntry }: { readonly locale: Locale; readonly result: OpportunityDetailPageResult; readonly matching?: OpportunityWorkforceMatchingPageData | null; readonly pursuitEntry?: PageState<OpportunityPursuitEntry> | null }) {
   if (result.state !== "READY") return <StateView locale={locale} state={result.state} />;
   const d = result.detail, unknown = t(locale, "opportunityDetail.unknown");
   return <div className="page-stack opportunity-detail-view">
     <Link className="detail-back" href="/opportunities">← {t(locale, "opportunityDetail.back")}</Link>
     <header className="detail-hero"><div className="detail-hero-main"><p className="overline">{t(locale, "opportunityDetail.eyebrow")}</p><h1>{d.title ?? d.project ?? unknown}</h1><p>{t(locale, "opportunityDetail.description")}</p><div className="detail-reference"><span>{t(locale, "opportunityDetail.reference")}</span><code>{d.opportunityId}</code></div></div><div className="detail-status-stack"><span className="detail-readonly">{t(locale, "opportunityDetail.readOnly")}</span><CurrentnessBadge state={d.currentness} locale={locale}/><span>{d.lifecycle}</span></div></header>
     <section className="detail-fact-band" aria-label={t(locale,"opportunityDetail.eyebrow")}><Fact label={t(locale,"opportunityDetail.label.company")} value={d.company ?? unknown}/><Fact label={t(locale,"opportunityDetail.label.project")} value={d.project ?? unknown}/><Fact label={t(locale,"opportunityDetail.label.location")} value={d.location ?? unknown}/><Fact label={t(locale,"opportunityDetail.asOf")} value={formatDateTime(d.asOf, locale)}/></section>
+    <CommercialPursuitEntryPoint locale={locale} entry={pursuitEntry}/>
     <div className="detail-layout"><main className="detail-main"><Section title={t(locale,"opportunityDetail.section.demand")} index="01">{d.demand.length ? d.demand.map((demand, i)=><div className="demand-record" key={demand.id}><div className="record-kicker">#{String(i+1).padStart(2,"0")} · {demand.id}</div><div className="detail-grid"><Field locale={locale} label="trade" field={demand.trade}/><Field locale={locale} label="occupation" field={demand.occupation}/><Field locale={locale} label="specialty" field={demand.specialty}/><Field locale={locale} label="headcount" field={demand.headcount}/><Field locale={locale} label="hours" field={demand.hoursPerWeek}/><Field locale={locale} label="duration" field={demand.duration}/><Field locale={locale} label="start" field={demand.startTiming}/><Field locale={locale} label="perDiem" field={demand.perDiem}/><Fact label={t(locale,"opportunityDetail.label.demandStatus")} value={demand.status}/></div></div>) : <HonestEmpty>{t(locale,"opportunityDetail.empty.demand")}</HonestEmpty>}</Section>
       <Section title={t(locale,"workforceMatching.title")} index="02"><WorkforceMatchingSection locale={locale} opportunityId={d.opportunityId} demands={d.demand.map((demand,index)=>({id:demand.id,label:`#${String(index+1).padStart(2,"0")} · ${String(demand.trade.value??demand.occupation.value??unknown)}`}))} permissions={matching?.permissions??{authenticated:false,canExecute:false,canRead:false}} demandResults={matching?.demandResults??{}}/><Link className="button button-secondary" href={`/opportunities/${d.opportunityId}/candidate-slate`}>{locale==="es-US"?"Abrir lista de candidatos y entrega comercial":"Open Candidate Slate & commercial handoff"}</Link></Section>
       <Section title={t(locale,"opportunityDetail.section.route")} index="03"><CommercialRoute locale={locale} detail={d}/></Section>
@@ -29,6 +31,17 @@ export function OpportunityDetailView({ locale, result, matching }: { readonly l
       <Section title={t(locale,"economicDecision.sectionTitle")} index="06"><OpportunityEconomicDecisionSection locale={locale} decisions={result.economicDecisions}/></Section></main>
       <aside className="detail-rail"><RailSection title={t(locale,"opportunityDetail.section.acceptance")}><Acceptance locale={locale} detail={d}/></RailSection><RailSection title={t(locale,"opportunityDetail.section.verification")}><Verification locale={locale} detail={d}/></RailSection><RailSection title={t(locale,"opportunityDetail.section.gaps")}><Gaps locale={locale} detail={d}/></RailSection></aside></div>
   </div>;
+}
+export function CommercialPursuitEntryPoint({locale,entry}:{readonly locale:Locale;readonly entry?:PageState<OpportunityPursuitEntry>|null}) {
+  if (!entry || entry.state !== "READY") return null;
+  const start = entry.value.mode === "START";
+  const label = locale === "es-US"
+    ? start ? "INICIAR GESTIÓN COMERCIAL" : "ABRIR GESTIÓN COMERCIAL"
+    : start ? "START COMMERCIAL PURSUIT" : "OPEN COMMERCIAL PURSUIT";
+  return <section className="detail-section commercial-pursuit-entry" aria-labelledby="commercial-pursuit-entry-title">
+    <div><p className="overline">{locale === "es-US" ? "OPORTUNIDAD → GESTIÓN COMERCIAL" : "OPPORTUNITY → COMMERCIAL PURSUIT"}</p><h2 id="commercial-pursuit-entry-title">{locale === "es-US" ? "Convierta la demanda verificada en una gestión humana" : "Move verified demand into human pursuit"}</h2><p>{locale === "es-US" ? "La demanda, la gestión y el resultado permanecen separados. Los resultados solo aparecen después de evidencia humana registrada." : "Demand, pursuit and result remain separate. Results appear only after recorded human evidence."}</p></div>
+    <Link className="button button-primary" href={entry.value.href}>{label}</Link>
+  </section>;
 }
 function StateView({locale,state}:{locale:Locale;state:"NOT_FOUND"|"UNAVAILABLE"|"ERROR"}) { const base=state==="NOT_FOUND"?"notFound":state==="UNAVAILABLE"?"unavailable":"error"; return <div className="page-stack detail-state"><Link className="detail-back" href="/opportunities">← {t(locale,"opportunityDetail.back")}</Link><ErrorState locale={locale} title={t(locale,`opportunityDetail.state.${base}Title`)} description={t(locale,`opportunityDetail.state.${base}Description`)}/></div>; }
 function Section({title,index,children}:{title:string;index:string;children:ReactNode}) { return <section className="detail-section"><header><span>{index}</span><h2>{title}</h2></header>{children}</section>; }
