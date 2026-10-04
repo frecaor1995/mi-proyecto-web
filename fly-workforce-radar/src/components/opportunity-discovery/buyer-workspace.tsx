@@ -1,4 +1,5 @@
 import type { Locale } from "../../i18n/locale";
+import Link from "next/link";
 import { formatDate } from "../../i18n/format";
 import type { BuyerInvestigationView } from "../../server/contact-intelligence/buyer-investigation";
 import type { ProviderStatus } from "../../server/contact-intelligence/providers";
@@ -107,6 +108,7 @@ export function BuyerWorkspace({ locale, subject, view, providers, today = today
     <section className="sig-panel ci-panel ct-panel by-panel" aria-labelledby="by-title" id="contacts">
       <h2 id="by-title">{b.title}</h2>
       <p className="sig-panel-lede">{b.lede}</p>
+      {subject.companyId ? <p><Link className="button button-primary" href={`/companies/${subject.companyId}/enrichment`}>{locale === "es-US" ? "Agregar inteligencia de contacto" : "Add contact intelligence"}</Link></p> : null}
 
       <div className={`by-path${route.person ? "" : " by-path-none"}`} aria-labelledby="by-path-title">
         <h3 id="by-path-title">{r.title} · {org.name}{!route.person ? <> · <span className="by-none">{b.noBuyer}</span></> : null}</h3>
