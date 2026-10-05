@@ -26,7 +26,17 @@ export interface WorkforceListResult {
   readonly items: readonly WorkforceListItem[];
   readonly authorized: boolean;
   readonly reason: string | null;
+  readonly pagination?: {
+    readonly page: number;
+    readonly pageSize: number;
+    readonly totalItems: number;
+    readonly totalPages: number;
+    readonly realItems: number;
+    readonly demoItems: number;
+  };
 }
+
+const emptyPagination = (page: number) => ({ page, pageSize: WORKFORCE_LIST_PAGE_SIZE, totalItems: 0, totalPages: 0, realItems: 0, demoItems: 0 });
 
 function one(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
@@ -62,22 +72,24 @@ export function workforceListHref(query: WorkforceListQuery, changes: Partial<Wo
  */
 export async function getWorkforceListPage(query: WorkforceListQuery): Promise<WorkforceListResult> {
   const service = defaultWorkerService();
-  if (!service) return { capability: "UNAVAILABLE", items: [], authorized: false, reason: "DATABASE_CONNECTION_UNAVAILABLE" };
+  if (!service) return { capability: "UNAVAILABLE", items: [], authorized: false, reason: "DATABASE_CONNECTION_UNAVAILABLE", pagination: emptyPagination(query.page) };
 
   const offset = (query.page - 1) * WORKFORCE_LIST_PAGE_SIZE;
-  const searchResult = await service.searchWorkers({
-    lifecycleStatus: query.lifecycleStatus ?? undefined,
-    tradeCode: query.tradeCode ?? undefined,
-    occupationCode: query.occupationCode ?? undefined,
-    limit: WORKFORCE_LIST_PAGE_SIZE,
-    offset,
-  });
-  if (searchResult.kind === "UNAUTHENTICATED" || searchResult.kind === "UNAUTHORIZED") {
-    return { capability: "UNAVAILABLE", items: [], authorized: false, reason: searchResult.kind };
+  const filter = { lifecycleStatus: query.lifecycleStatus ?? undefined, tradeCode: query.tradeCode ?? undefined, occupationCode: query.occupationCode ?? undefined };
+  const [searchResult, countResult] = await Promise.all([
+    service.searchWorkers({ ...filter, limit: WORKFORCE_LIST_PAGE_SIZE, offset }),
+    service.countWorkers(filter),
+  ]);
+  if (searchResult.kind === "UNAUTHENTICATED" || searchResult.kind === "UNAUTHORIZED" || countResult.kind === "UNAUTHENTICATED" || countResult.kind === "UNAUTHORIZED") {
+    const reason = searchResult.kind === "UNAUTHENTICATED" || countResult.kind === "UNAUTHENTICATED" ? "UNAUTHENTICATED" : "UNAUTHORIZED";
+    return { capability: "UNAVAILABLE", items: [], authorized: false, reason, pagination: emptyPagination(query.page) };
   }
-  if (searchResult.kind === "VALIDATION_ERROR") {
-    return { capability: "UNKNOWN", items: [], authorized: true, reason: "WORKFORCE_QUERY_FAILED" };
+  if (searchResult.kind === "VALIDATION_ERROR" || countResult.kind === "VALIDATION_ERROR") {
+    return { capability: "UNKNOWN", items: [], authorized: true, reason: "WORKFORCE_QUERY_FAILED", pagination: emptyPagination(query.page) };
   }
+
+  const counts = countResult.value;
+  const pagination = { page: query.page, pageSize: WORKFORCE_LIST_PAGE_SIZE, totalItems: counts.total, totalPages: Math.ceil(counts.total / WORKFORCE_LIST_PAGE_SIZE), realItems: counts.real, demoItems: counts.demo };
 
   try {
     const items = await Promise.all(searchResult.value.map(async (worker): Promise<WorkforceListItem> => {
@@ -100,8 +112,8 @@ export async function getWorkforceListPage(query: WorkforceListQuery): Promise<W
         missingAvailability: availability.state === "UNKNOWN",
       };
     }));
-    return { capability: "OPERATIONAL", items, authorized: true, reason: null };
+    return { capability: "OPERATIONAL", items, authorized: true, reason: null, pagination };
   } catch {
-    return { capability: "UNKNOWN", items: [], authorized: true, reason: "WORKFORCE_QUERY_FAILED" };
+    return { capability: "UNKNOWN", items: [], authorized: true, reason: "WORKFORCE_QUERY_FAILED", pagination };
   }
 }

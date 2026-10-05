@@ -889,7 +889,7 @@ describe("MATCHING-B3-B demand-to-workforce orchestration", () => {
 
       expect(Object.keys(run).sort()).toEqual([
         "completedAt", "demandSignalId", "eligibleWorkerCount", "evaluatedWorkerCount", "failedWorkerCount", "failures",
-        "ineligibleWorkerCount", "outcomes", "persistedWorkerCount", "startedAt",
+        "ineligibleWorkerCount", "outcomes", "persistedWorkerCount", "startedAt", "workerUniverse",
       ]);
       expect(Object.keys(run.outcomes).sort()).toEqual(["INSUFFICIENT_DATA", "NO_MATCH", "POSSIBLE_MATCH", "STRONG_MATCH"]);
       for (const key of collectKeys(run)) expect(key).not.toMatch(FORBIDDEN_KEYS);

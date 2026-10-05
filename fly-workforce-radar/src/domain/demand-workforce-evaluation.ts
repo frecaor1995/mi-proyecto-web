@@ -1,4 +1,5 @@
 import type { MatchOutcome } from "./matching-engine";
+import type { MatchingWorkerUniverse } from "./workforce-population";
 
 /**
  * MATCHING-B3-B. Execution-result contract for ONE demand-to-workforce
@@ -42,6 +43,7 @@ export type DemandWorkforceOutcomeCounts = { readonly [K in MatchOutcome]: numbe
 
 export interface DemandWorkforceEvaluationRun {
   readonly demandSignalId: string;
+  readonly workerUniverse: MatchingWorkerUniverse;
   readonly startedAt: Date;
   readonly completedAt: Date;
 

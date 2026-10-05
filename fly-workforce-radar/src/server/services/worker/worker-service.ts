@@ -122,6 +122,12 @@ export class WorkerService {
     return ok(await this.repository.searchWorkers(filter));
   }
 
+  async countWorkers(filter: Pick<WorkerSearchFilter, "lifecycleStatus" | "tradeCode" | "occupationCode">): Promise<WorkerOperationResult<{ total: number; real: number; demo: number }>> {
+    const auth = await this.authorize("worker_profile.read");
+    if (!auth.ok) return auth.result;
+    return ok(await this.repository.countWorkers(filter));
+  }
+
   async updateWorker(id: string, patch: UpdateWorkerInput): Promise<WorkerOperationResult<WorkerRecord>> {
     const auth = await this.authorize("worker_profile.write");
     if (!auth.ok) return auth.result;

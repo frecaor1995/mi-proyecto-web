@@ -144,6 +144,8 @@ export interface Dictionary {
     readonly completed: string; readonly partialSuccess: string; readonly partialSuccessDescription: string; readonly failed: string;
     readonly executionPermissionRequired: string;
     readonly runSummary: string; readonly eligibleWorkers: string; readonly evaluatedWorkers: string; readonly persistedWorkers: string; readonly failedWorkers: string;
+    readonly realUniverseEvaluated: string; readonly allUniverseEvaluated: string;
+    readonly realUniverseCurrent: string; readonly allUniverseCurrent: string;
     readonly persistedResultsRestricted: string; readonly persistedResultsRestrictedDescription: string;
     readonly resultsUnavailable: string; readonly resultsUnavailableDescription: string;
     readonly noPersistedResults: string; readonly noPersistedResultsDescription: string;

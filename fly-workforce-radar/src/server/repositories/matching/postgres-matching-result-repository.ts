@@ -38,6 +38,18 @@ export class PostgresMatchingResultRepository implements MatchingResultRepositor
     );
   }
 
+  async supersedeCurrentDemoResults(demandSignalId: string, supersededAt: Date): Promise<number> {
+    const q = await this.client.query<{ id: string }>(
+      `update worker_demand_match_results r set superseded_at=$2
+       from workforce_workers w
+       where r.demand_signal_id=$1 and r.worker_id=w.id and r.superseded_at is null
+         and w.display_name ~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)'
+       returning r.id`,
+      [demandSignalId, supersededAt],
+    );
+    return q.rows.length;
+  }
+
   async insertResult(input: InsertWorkerDemandMatchResultInput): Promise<WorkerDemandMatchResultRecord> {
     const q = await this.client.query<ResultRow>(
       `insert into worker_demand_match_results

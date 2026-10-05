@@ -171,6 +171,8 @@ export const dictionary = {
     completed: "Completed", partialSuccess: "Partial Success", partialSuccessDescription: "{persisted} worker result(s) were persisted; {failed} worker(s) could not be completed.", failed: "Failed",
     executionPermissionRequired: "Execution permission required. Persisted results remain available in read-only mode.",
     runSummary: "This execution", eligibleWorkers: "Eligible snapshot", evaluatedWorkers: "Evaluated", persistedWorkers: "Persisted", failedWorkers: "Failed",
+    realUniverseEvaluated: "{count} REAL workers evaluated", allUniverseEvaluated: "{count} workers evaluated in DEMO LOCAL mode",
+    realUniverseCurrent: "Current universe: {count} REAL workers · DEMO LOCAL excluded", allUniverseCurrent: "Current universe: {count} workers · DEMO LOCAL mode",
     persistedResultsRestricted: "Persisted matching results are restricted", persistedResultsRestrictedDescription: "This run summary is available, but matching_result.read is required to view durable worker results.",
     resultsUnavailable: "Matching results unavailable", resultsUnavailableDescription: "The governed result source could not be read. No result counts are inferred.",
     noPersistedResults: "No persisted matching results", noPersistedResultsDescription: "No current worker results are stored for this demand. This does not claim whether a previous zero-result run occurred.",

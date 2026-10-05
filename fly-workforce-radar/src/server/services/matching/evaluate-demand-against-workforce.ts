@@ -3,6 +3,7 @@ import type {
   DemandWorkforceEvaluationFailure, DemandWorkforceEvaluationRun, DemandWorkforceFailureReasonCode,
 } from "../../../domain/demand-workforce-evaluation";
 import type { MatchOutcome } from "../../../domain/matching-engine";
+import type { MatchingWorkerUniverse } from "../../../domain/workforce-population";
 import { authorizeOperator } from "../../auth/authorization";
 import type { ServerSession } from "../../auth/session";
 import type { OperatorRepository } from "../../repositories/operator/operator-repository";
@@ -55,12 +56,15 @@ export type EvaluateDemandAgainstWorkforceResult =
   | { readonly kind: "DEMAND_LOAD_FAILED" }
   /** The ACTIVE workforce could not be enumerated; no worker was processed. */
   | { readonly kind: "WORKFORCE_ENUMERATION_FAILED" }
+  /** Results were evaluated, but the CURRENT universe could not be finalized safely. */
+  | { readonly kind: "CURRENT_UNIVERSE_FINALIZATION_FAILED" }
   | { readonly kind: "OK"; readonly value: DemandWorkforceEvaluationRun };
 
 export interface EvaluateDemandAgainstWorkforceDeps {
   readonly demandRequirementService: Pick<DemandRequirementService, "getMatchingReadyInput">;
   readonly workerService: Pick<WorkerService, "searchWorkers" | "getWorker" | "buildMatchingReadyInput">;
-  readonly persistenceService: Pick<MatchingPersistenceService, "persist">;
+  readonly persistenceService: Pick<MatchingPersistenceService, "persist"> & Partial<Pick<MatchingPersistenceService, "supersedeDemoResultsForRealDemand">>;
+  readonly workerUniverse?: MatchingWorkerUniverse;
   readonly getSession?: () => Promise<ServerSession | null>;
   readonly operatorRepository?: OperatorRepository | null;
   /** Read once for startedAt (= the run's explicit evaluationDate) and once for completedAt. */
@@ -92,6 +96,7 @@ export async function evaluateDemandAgainstWorkforce(
   }
   const clock = deps.clock ?? (() => new Date());
   const evaluate = deps.evaluate ?? evaluateWorkerDemandMatch;
+  const workerUniverse = deps.workerUniverse ?? "ALL";
 
   const auth = await authorizeOperator("matching.execute", { getSession: deps.getSession, repository: deps.operatorRepository });
   if (auth.state === "UNAUTHENTICATED") return { kind: "UNAUTHENTICATED" };
@@ -125,7 +130,9 @@ export async function evaluateDemandAgainstWorkforce(
   const snapshot = new Set<string>();
   try {
     for (let offset = 0; ; offset += pageSize) {
-      const page = await deps.workerService.searchWorkers({ lifecycleStatus: "ACTIVE", limit: pageSize, offset });
+      const page = await deps.workerService.searchWorkers({
+        lifecycleStatus: "ACTIVE", population: workerUniverse === "REAL" ? "REAL" : undefined, limit: pageSize, offset,
+      });
       const pageAuthFailure = authFailureOf(page);
       if (pageAuthFailure) return { kind: pageAuthFailure };
       if (page.kind !== "OK") return { kind: "WORKFORCE_ENUMERATION_FAILED" };
@@ -161,10 +168,21 @@ export async function evaluateDemandAgainstWorkforce(
     }
   }
 
+  // Only after the eligible run completes do excluded demo rows cease to be
+  // CURRENT. Their immutable rows and criteria remain available as history.
+  if (workerUniverse === "REAL" && deps.persistenceService.supersedeDemoResultsForRealDemand) {
+    try {
+      await deps.persistenceService.supersedeDemoResultsForRealDemand(demandSignalId, clock());
+    } catch {
+      return { kind: "CURRENT_UNIVERSE_FINALIZATION_FAILED" };
+    }
+  }
+
   return {
     kind: "OK",
     value: {
       demandSignalId,
+      workerUniverse,
       startedAt,
       completedAt: clock(),
       eligibleWorkerCount: snapshot.size,

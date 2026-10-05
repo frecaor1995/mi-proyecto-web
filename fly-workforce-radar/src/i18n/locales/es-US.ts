@@ -171,6 +171,8 @@ export const dictionary = {
     completed: "Completada", partialSuccess: "Éxito parcial", partialSuccessDescription: "Se guardaron {persisted} resultado(s); no se pudieron completar {failed} trabajador(es).", failed: "Fallida",
     executionPermissionRequired: "Se requiere permiso de ejecución. Los resultados persistidos permanecen disponibles en modo de solo lectura.",
     runSummary: "Esta ejecución", eligibleWorkers: "Snapshot elegible", evaluatedWorkers: "Evaluados", persistedWorkers: "Persistidos", failedWorkers: "Fallidos",
+    realUniverseEvaluated: "{count} trabajadores REAL evaluados", allUniverseEvaluated: "{count} trabajadores evaluados en modo DEMO LOCAL",
+    realUniverseCurrent: "Universo actual: {count} trabajadores REAL · DEMO LOCAL excluido", allUniverseCurrent: "Universo actual: {count} trabajadores · modo DEMO LOCAL",
     persistedResultsRestricted: "Los resultados persistidos están restringidos", persistedResultsRestrictedDescription: "El resumen de esta ejecución está disponible, pero se requiere matching_result.read para ver resultados duraderos por trabajador.",
     resultsUnavailable: "Resultados de coincidencia no disponibles", resultsUnavailableDescription: "No se pudo leer la fuente gobernada de resultados. No se infieren conteos.",
     noPersistedResults: "No hay resultados de coincidencia persistidos", noPersistedResultsDescription: "No hay resultados actuales guardados para esta demanda. Esto no afirma si antes ocurrió una ejecución sin resultados.",

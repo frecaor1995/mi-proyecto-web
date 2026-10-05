@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { DemandWorkforceEvaluationRun } from "../../domain/demand-workforce-evaluation";
+import { matchingUniverseForOpportunity } from "../../domain/workforce-population";
 import { authorizeOperator } from "../auth/authorization";
 import { PostgresOpportunityRepository } from "../repositories/opportunity/postgres-opportunity-repository";
 import { evaluateDemandAgainstWorkforce } from "../services/matching/evaluate-demand-against-workforce";
@@ -51,6 +52,7 @@ export async function runOpportunityWorkforceMatchingAction(
       workerService: services.workerService,
       persistenceService: services.persistenceService,
       operatorRepository: services.operatorRepository,
+      workerUniverse: matchingUniverseForOpportunity(graph.opportunity.title),
     });
     if (result.kind !== "OK") {
       const errorKey = result.kind === "UNAUTHENTICATED" ? "workforceMatching.error.requiresSignIn"

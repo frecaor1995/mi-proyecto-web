@@ -101,6 +101,8 @@ export interface WorkerSearchFilter {
   readonly lifecycleStatus?: WorkerLifecycleStatus;
   readonly tradeCode?: string;
   readonly occupationCode?: string;
+  /** REAL excludes records explicitly classified by the canonical DEMO token. */
+  readonly population?: import("./workforce-population").WorkerPopulation;
   readonly limit: number;
   readonly offset: number;
 }

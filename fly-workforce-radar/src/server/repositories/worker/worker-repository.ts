@@ -21,6 +21,7 @@ export interface WorkerRepository {
   createWorker(input: CreateWorkerInput): Promise<WorkerRecord>;
   findWorkerById(id: string): Promise<WorkerRecord | null>;
   searchWorkers(filter: WorkerSearchFilter): Promise<WorkerRecord[]>;
+  countWorkers(filter: Pick<WorkerSearchFilter, "lifecycleStatus" | "tradeCode" | "occupationCode">): Promise<{ total: number; real: number; demo: number }>;
   updateWorker(id: string, patch: UpdateWorkerInput): Promise<WorkerRecord>;
 
   // worker_trade_occupations

@@ -26,6 +26,7 @@ export interface InsertWorkerDemandMatchResultInput {
  */
 export interface MatchingResultRepository {
   supersedeCurrentResult(demandSignalId: string, workerId: string, supersededAt: Date): Promise<void>;
+  supersedeCurrentDemoResults(demandSignalId: string, supersededAt: Date): Promise<number>;
   insertResult(input: InsertWorkerDemandMatchResultInput): Promise<WorkerDemandMatchResultRecord>;
   insertCriteria(matchResultId: string, criteria: readonly CriterionEvaluation[]): Promise<void>;
   getCurrentResult(demandSignalId: string, workerId: string): Promise<WorkerDemandMatchResultRecord | null>;

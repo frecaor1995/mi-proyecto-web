@@ -106,4 +106,12 @@ export class MatchingPersistenceService {
       return { kind: "PERSISTED", resultId: inserted.id, outcome };
     });
   }
+
+  /** Preserve history while removing excluded DEMO LOCAL rows from the CURRENT real-opportunity picture. */
+  async supersedeDemoResultsForRealDemand(demandSignalId: string, supersededAt: Date): Promise<number> {
+    return this.deps.transactionRunner(async (client) => {
+      await client.query("select pg_advisory_xact_lock(hashtext($1)::bigint)", [`matching-demand:${demandSignalId}`]);
+      return new PostgresMatchingResultRepository(client).supersedeCurrentDemoResults(demandSignalId, supersededAt);
+    });
+  }
 }

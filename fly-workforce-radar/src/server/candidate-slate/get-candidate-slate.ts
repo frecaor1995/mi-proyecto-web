@@ -4,6 +4,7 @@ import type { CandidateSlatePageData, CandidateSlateQualification } from "../../
 import type { MatchOutcome } from "../../domain/matching-engine";
 import type { WorkerDemandEngagement } from "../../domain/worker-demand-engagement";
 import type { WorkerLifecycleStatus } from "../../domain/worker";
+import { isWorkerEligibleForOpportunity } from "../../domain/workforce-population";
 import { authorizeOperator, type AuthorizationResult } from "../auth/authorization";
 import { getProductionSqlClient } from "../database/production-sql-client";
 import type { SqlClient } from "../repositories/evidence/postgres-evidence-repository";
@@ -43,7 +44,10 @@ left join worker_demand_match_results mr on mr.demand_signal_id=d.id and mr.work
 left join worker_demand_engagements e on e.demand_signal_id=d.id and e.worker_id=w.id
 left join lateral(select x.* from worker_trade_occupations x where x.worker_id=w.id order by (x.trade_code=d.trade_code and x.occupation_code=d.occupation_code) desc,(x.role_designation='PRIMARY') desc,x.created_at limit 1) wto on true
 left join workforce_trades wt on wt.code=wto.trade_code left join workforce_occupations wo on wo.code=wto.occupation_code
-where od.opportunity_id=$1 order by d.id,w.display_name,w.id`;
+where od.opportunity_id=$1
+  and (coalesce(o.title,'') ~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)'
+    or w.display_name !~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)')
+order by d.id,w.display_name,w.id`;
 
 export async function getCandidateSlate(opportunityId:string,deps:CandidateSlateDeps={}):Promise<CandidateSlatePageData>{
   const authorize=deps.authorize??((permission)=>authorizeOperator(permission));
@@ -55,7 +59,9 @@ export async function getCandidateSlate(opportunityId:string,deps:CandidateSlate
     const [opportunityResult,demandResult,workerResult]=await Promise.all([client.query<Raw>(OPPORTUNITY_SQL,[opportunityId]),client.query<Raw>(DEMANDS_SQL,[opportunityId]),client.query<Raw>(WORKERS_SQL,[opportunityId])]);
     const o=opportunityResult.rows[0];if(!o)return{state:"NOT_FOUND",slate:null};
     const demands:CandidateSlateDemandRow[]=demandResult.rows.map(r=>({demandId:String(r.demand_id),tradeCode:str(r.trade_code),tradeLabelEn:str(r.trade_label_en),tradeLabelEs:str(r.trade_label_es),occupationCode:str(r.occupation_code),occupationLabelEn:str(r.occupation_label_en),occupationLabelEs:str(r.occupation_label_es),requestedHeadcount:num(r.headcount_estimate),startDate:str(r.start_date)?.slice(0,10)??null,location:str(r.location)}));
-    const workers:CandidateSlateWorkerRow[]=workerResult.rows.map(r=>({demandId:String(r.demand_id),workerId:String(r.worker_id),displayName:String(r.display_name),lifecycle:r.lifecycle_status as WorkerLifecycleStatus,tradeCode:str(r.trade_code),tradeLabelEn:str(r.trade_label_en),tradeLabelEs:str(r.trade_label_es),occupationCode:str(r.occupation_code),occupationLabelEn:str(r.occupation_label_en),occupationLabelEs:str(r.occupation_label_es),experienceMonths:num(r.experience_months),skills:qualifications(r.skills),credentials:qualifications(r.credentials),matchOutcome:r.outcome==null?null:r.outcome as MatchOutcome,matchReasons:list(r.match_reasons),matchEvaluatedAt:str(r.evaluated_at),hardViolation:bool(r.hard_violation),engagement:engagement(r),validConsentedContactOccurred:bool(r.valid_consented_contact),consentStillGranted:bool(r.consent_still_granted),demandActionable:r.opportunity_lifecycle==="ACTIVE"}));
+    const workers:CandidateSlateWorkerRow[]=workerResult.rows
+      .filter(r=>isWorkerEligibleForOpportunity(String(r.display_name),str(o.title)))
+      .map(r=>({demandId:String(r.demand_id),workerId:String(r.worker_id),displayName:String(r.display_name),lifecycle:r.lifecycle_status as WorkerLifecycleStatus,tradeCode:str(r.trade_code),tradeLabelEn:str(r.trade_label_en),tradeLabelEs:str(r.trade_label_es),occupationCode:str(r.occupation_code),occupationLabelEn:str(r.occupation_label_en),occupationLabelEs:str(r.occupation_label_es),experienceMonths:num(r.experience_months),skills:qualifications(r.skills),credentials:qualifications(r.credentials),matchOutcome:r.outcome==null?null:r.outcome as MatchOutcome,matchReasons:list(r.match_reasons),matchEvaluatedAt:str(r.evaluated_at),hardViolation:bool(r.hard_violation),engagement:engagement(r),validConsentedContactOccurred:bool(r.valid_consented_contact),consentStillGranted:bool(r.consent_still_granted),demandActionable:r.opportunity_lifecycle==="ACTIVE"}));
     return{state:"READY",slate:assembleCandidateSlate({opportunityId:String(o.id),opportunityTitle:str(o.title),customer:str(o.customer),project:str(o.project),location:str(o.location),demands,workers})};
   }catch{return{state:"ERROR",slate:null};}
 }

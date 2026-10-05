@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import type { MatchOutcome } from "../../domain/matching-engine";
+import type { MatchingWorkerUniverse } from "../../domain/workforce-population";
 import type { DemandMatchCriterionExplanation, DemandMatchReadModel, DemandMatchWorkerRow } from "../../domain/matching-results";
 import type { Locale } from "../../i18n/locale";
 import { formatDate } from "../../i18n/format";
@@ -20,9 +21,10 @@ export interface WorkforceMatchingDemandOption {
   readonly label: string;
 }
 
-export function WorkforceMatchingSection({ locale, opportunityId, demands, permissions, demandResults }: {
+export function WorkforceMatchingSection({ locale, opportunityId, workerUniverse = "REAL", demands, permissions, demandResults }: {
   readonly locale: Locale;
   readonly opportunityId: string;
+  readonly workerUniverse?: MatchingWorkerUniverse;
   readonly demands: readonly WorkforceMatchingDemandOption[];
   readonly permissions: WorkforceMatchingUiPermissions;
   readonly demandResults: Readonly<Record<string, DemandMatchingReadState>>;
@@ -79,7 +81,7 @@ export function WorkforceMatchingSection({ locale, opportunityId, demands, permi
       <p>{t(locale, (actionState.errorKey ?? "workforceMatching.error.runFailed") as Parameters<typeof t>[1])}</p>
     </div> : null}
 
-    {permissions.canRead ? <PersistedResults locale={locale} opportunityId={opportunityId} selectedDemandId={selectedDemandId} readState={selectedReadState} readModel={readModel}/> : <div className="matching-panel matching-panel-execute-only">
+    {permissions.canRead ? <PersistedResults locale={locale} opportunityId={opportunityId} workerUniverse={workerUniverse} selectedDemandId={selectedDemandId} readState={selectedReadState} readModel={readModel}/> : <div className="matching-panel matching-panel-execute-only">
       <strong>{t(locale, "workforceMatching.persistedResultsRestricted")}</strong>
       <p>{t(locale, "workforceMatching.persistedResultsRestrictedDescription")}</p>
     </div>}
@@ -93,6 +95,7 @@ function RunSummary({ locale, state }: { readonly locale: Locale; readonly state
   const failed = state.status === "FAILED";
   return <section className={`matching-run-status matching-run-${partial ? "partial" : failed ? "failed" : "completed"}`} role={failed ? "alert" : "status"} aria-live="polite">
     <header><div><span>{t(locale, "workforceMatching.runSummary")}</span><strong>{t(locale, partial ? "workforceMatching.partialSuccess" : failed ? "workforceMatching.failed" : "workforceMatching.completed")}</strong></div><time>{formatDate(locale, new Date(run.completedAt), { dateStyle: "medium", timeStyle: "short" })}</time></header>
+    <p className="matching-universe-note">{t(locale, run.workerUniverse === "REAL" ? "workforceMatching.realUniverseEvaluated" : "workforceMatching.allUniverseEvaluated", { count: String(run.evaluatedWorkerCount) })}</p>
     {partial ? <p>{t(locale, "workforceMatching.partialSuccessDescription", { persisted: String(run.persistedWorkerCount), failed: String(run.failedWorkerCount) })}</p> : null}
     {failed && state.errorKey ? <p>{t(locale, state.errorKey as Parameters<typeof t>[1])}</p> : null}
     <div className="matching-run-metrics">
@@ -107,9 +110,10 @@ function RunSummary({ locale, state }: { readonly locale: Locale; readonly state
   </section>;
 }
 
-function PersistedResults({ locale, opportunityId, selectedDemandId, readState, readModel }: {
+function PersistedResults({ locale, opportunityId, workerUniverse, selectedDemandId, readState, readModel }: {
   readonly locale: Locale;
   readonly opportunityId: string;
+  readonly workerUniverse: MatchingWorkerUniverse;
   readonly selectedDemandId: string;
   readonly readState: DemandMatchingReadState | undefined;
   readonly readModel: DemandMatchReadModel | null;
@@ -120,6 +124,7 @@ function PersistedResults({ locale, opportunityId, selectedDemandId, readState, 
 
   return <section className="matching-persisted-results" aria-labelledby="matching-persisted-title">
     <header className="matching-results-heading"><div><span>{t(locale, "workforceMatching.currentPicture")}</span><h3 id="matching-persisted-title">{t(locale, "workforceMatching.persistedResults")}</h3></div><small>{t(locale, "workforceMatching.persistedResultsBoundary")}</small></header>
+    <p className="matching-universe-note">{t(locale, workerUniverse === "REAL" ? "workforceMatching.realUniverseCurrent" : "workforceMatching.allUniverseCurrent", { count: String(readModel.workers.length) })}</p>
     <div className="matching-outcome-grid">
       {OUTCOME_ORDER.map((outcome) => <OutcomeTile locale={locale} outcome={outcome} count={readModel.counts[outcome]} key={outcome}/>) }
     </div>

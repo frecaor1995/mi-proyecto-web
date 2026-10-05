@@ -26,7 +26,7 @@ const form = (opportunityId = OPPORTUNITY_ID, demandSignalId = DEMAND_ID) => {
   const value = new FormData(); value.set("opportunityId", opportunityId); value.set("demandSignalId", demandSignalId); return value;
 };
 const run = {
-  demandSignalId: DEMAND_ID, startedAt: new Date("2026-09-20T12:00:00Z"), completedAt: new Date("2026-09-20T12:01:00Z"),
+  demandSignalId: DEMAND_ID, workerUniverse: "REAL", startedAt: new Date("2026-09-20T12:00:00Z"), completedAt: new Date("2026-09-20T12:01:00Z"),
   eligibleWorkerCount: 2, evaluatedWorkerCount: 2, persistedWorkerCount: 2, ineligibleWorkerCount: 0, failedWorkerCount: 0,
   outcomes: { STRONG_MATCH: 1, POSSIBLE_MATCH: 1, NO_MATCH: 0, INSUFFICIENT_DATA: 0 }, failures: [],
 };
@@ -35,7 +35,7 @@ describe("MATCHING-B4-B server action boundary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.authorize.mockResolvedValue({ state: "AUTHORIZED", operator: { permissions: ["matching.execute"] } });
-    mocks.loadGraph.mockResolvedValue({ demandSignals: [{ id: DEMAND_ID }] });
+    mocks.loadGraph.mockResolvedValue({ opportunity: { title: "Real electrical opportunity" }, demandSignals: [{ id: DEMAND_ID }] });
     mocks.evaluate.mockResolvedValue({ kind: "OK", value: run });
   });
 
@@ -59,7 +59,12 @@ describe("MATCHING-B4-B server action boundary", () => {
   });
   it("invokes B3 only after authorization and linked-demand validation", async () => {
     const result = await runOpportunityWorkforceMatchingAction(initial, form());
-    expect(result.status).toBe("COMPLETED"); expect(mocks.evaluate).toHaveBeenCalledWith(DEMAND_ID, expect.objectContaining({ demandRequirementService: expect.anything(), workerService: expect.anything(), persistenceService: expect.anything() }));
+    expect(result.status).toBe("COMPLETED"); expect(mocks.evaluate).toHaveBeenCalledWith(DEMAND_ID, expect.objectContaining({ demandRequirementService: expect.anything(), workerService: expect.anything(), persistenceService: expect.anything(), workerUniverse: "REAL" }));
+  });
+  it("preserves the established all-worker behavior for explicit DEMO LOCAL opportunities", async () => {
+    mocks.loadGraph.mockResolvedValue({ opportunity: { title: "DEMO LOCAL electrical opportunity" }, demandSignals: [{ id: DEMAND_ID }] });
+    await runOpportunityWorkforceMatchingAction(initial, form());
+    expect(mocks.evaluate).toHaveBeenCalledWith(DEMAND_ID, expect.objectContaining({ workerUniverse: "ALL" }));
   });
   it("ignores browser-supplied outcomes, workers, criteria, scores, versions, and fingerprints", async () => {
     const value = form(); for (const key of ["workerId", "outcome", "criteria", "score", "ruleVersion", "fingerprint"]) value.set(key, "ATTACKER_CONTROLLED");

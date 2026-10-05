@@ -146,16 +146,35 @@ export class PostgresWorkerRepository implements WorkerRepository {
          where ($1::text is null or w.lifecycle_status=$1)
            and ($2::text is null or t.trade_code=$2)
            and ($3::text is null or t.occupation_code=$3)
-         order by w.id limit $4 offset $5`,
-        [f.lifecycleStatus ?? null, f.tradeCode ?? null, f.occupationCode ?? null, f.limit, f.offset],
+           and ($4::text is null or ($4='REAL' and w.display_name !~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)') or ($4='DEMO_LOCAL' and w.display_name ~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)'))
+         order by w.id limit $5 offset $6`,
+        [f.lifecycleStatus ?? null, f.tradeCode ?? null, f.occupationCode ?? null, f.population ?? null, f.limit, f.offset],
       );
       return q.rows.map(worker);
     }
     const q = await this.client.query<WorkerRow>(
-      `select ${WORKER_COLS} from workforce_workers where ($1::text is null or lifecycle_status=$1) order by id limit $2 offset $3`,
-      [f.lifecycleStatus ?? null, f.limit, f.offset],
+      `select ${WORKER_COLS} from workforce_workers
+       where ($1::text is null or lifecycle_status=$1)
+         and ($2::text is null or ($2='REAL' and display_name !~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)') or ($2='DEMO_LOCAL' and display_name ~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)'))
+       order by id limit $3 offset $4`,
+      [f.lifecycleStatus ?? null, f.population ?? null, f.limit, f.offset],
     );
     return q.rows.map(worker);
+  }
+
+  async countWorkers(f: Pick<WorkerSearchFilter, "lifecycleStatus" | "tradeCode" | "occupationCode">): Promise<{ total: number; real: number; demo: number }> {
+    const q = await this.client.query<{ total: string | number; real: string | number; demo: string | number }>(
+      `select count(*)::int total,
+         count(*) filter (where display_name !~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)')::int real,
+         count(*) filter (where display_name ~* '(^|[^[:alnum:]_])demo([^[:alnum:]_]|$)')::int demo
+       from workforce_workers w
+       where ($1::text is null or w.lifecycle_status=$1)
+         and ($2::text is null or exists (select 1 from worker_trade_occupations t where t.worker_id=w.id and t.trade_code=$2 and ($3::text is null or t.occupation_code=$3)))
+         and ($2::text is not null or $3::text is null or exists (select 1 from worker_trade_occupations t where t.worker_id=w.id and t.occupation_code=$3))`,
+      [f.lifecycleStatus ?? null, f.tradeCode ?? null, f.occupationCode ?? null],
+    );
+    const row = q.rows[0];
+    return { total: Number(row?.total ?? 0), real: Number(row?.real ?? 0), demo: Number(row?.demo ?? 0) };
   }
 
   async updateWorker(id: string, p: UpdateWorkerInput): Promise<WorkerRecord> {
