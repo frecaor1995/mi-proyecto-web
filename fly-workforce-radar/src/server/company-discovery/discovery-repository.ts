@@ -208,8 +208,9 @@ export class PostgresCompanyDiscoveryRepository {
           run_id,discovery_source_id,query_kind,title,candidate_url,normalized_candidate_url,
           source_domain,provider_description,relevance_reason,provider_rank,provider_metadata,
           canonical_evidence_id,correlated_company_id,correlated_project_id,correlated_opportunity_id,human_review_required,
-          destination_policy_decision,processing_reason,destination_capture_failed,previously_seen,query_execution_id
-        ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+          destination_policy_decision,processing_reason,destination_capture_failed,previously_seen,query_execution_id,
+          recipe_id,strategy_kind,observation_state,observation_first_seen_at,observation_last_seen_at,documented_published_at
+        ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
         on conflict(run_id,normalized_candidate_url) do nothing`,
         [runId, BRAVE_DISCOVERY_SOURCE_ID, candidate.queryKind, candidate.title, candidate.url,
           candidate.normalizedUrl, candidate.domain, candidate.providerDescription,
@@ -218,7 +219,9 @@ export class PostgresCompanyDiscoveryRepository {
           candidate.canonicalEvidenceId ?? null, candidate.correlatedCompanyId, candidate.correlatedProjectId,
           candidate.correlatedOpportunityId, candidate.humanReviewRequired,
           candidate.destinationPolicyDecision ?? "REVIEW_REQUIRED", candidate.processingReason ?? "Destination policy review is required",
-          candidate.destinationCaptureFailed ?? false, previouslySeen, candidate.queryExecutionId ?? null],
+          candidate.destinationCaptureFailed ?? false, previouslySeen, candidate.queryExecutionId ?? null,
+          candidate.recipeId ?? null, candidate.strategyKind ?? null, candidate.observationState ?? null,
+          candidate.observationFirstSeenAt ?? null, candidate.observationLastSeenAt ?? null, candidate.providerPageAge ?? null],
       );
     }
     const queryFailures = processing.queryFailures ?? 0;

@@ -52,6 +52,12 @@ export interface DiscoveryCandidate {
   /** Position of the planned multi-trade cycle query that surfaced this candidate. */
   readonly queryPosition?: number;
   readonly queryExecutionId?: string | null;
+  /** Discovery Intelligence lineage is persisted at insert time; runtime does not need candidate UPDATE authority. */
+  readonly recipeId?: string | null;
+  readonly strategyKind?: string | null;
+  readonly observationState?: "BASELINE" | "NEW" | "STILL_OBSERVED" | "NO_LONGER_OBSERVED" | null;
+  readonly observationFirstSeenAt?: string | null;
+  readonly observationLastSeenAt?: string | null;
 }
 
 export type DiscoveryExecutionState =
