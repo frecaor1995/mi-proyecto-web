@@ -1,4 +1,4 @@
-export const VERIFICATION_TARGET_TYPES=["CLAIM","COMPANY_RESOLUTION","COMPANY_ROLE","PROJECT","MANPOWER_ACCEPTANCE","CONTACT_PERSON","CONTACT_ROUTE","CONTACT_ROUTE_GRADE","OPPORTUNITY_CONFLICT"]as const;
+export const VERIFICATION_TARGET_TYPES=["CLAIM","COMPANY_RESOLUTION","COMPANY_ROLE","PROJECT","MANPOWER_ACCEPTANCE","CONTACT_PERSON","CONTACT_ROUTE","CONTACT_ROUTE_GRADE","OPPORTUNITY_CONFLICT","DISCOVERY_QUANTITY","DEMAND_SIGNAL"]as const;
 export const HUMAN_VERIFICATION_DECISIONS=["VERIFY","REJECT","NEEDS_MORE_EVIDENCE","DEFER"]as const;
 export type VerificationTargetType=(typeof VERIFICATION_TARGET_TYPES)[number];export type HumanVerificationDecision=(typeof HUMAN_VERIFICATION_DECISIONS)[number];export type VerificationState="UNVERIFIED"|"VERIFIED"|"REJECTED"|"STALE";
 export interface RecordVerificationInput{targetType:VerificationTargetType;targetId:string;decision:HumanVerificationDecision;reviewerId:string;reason:string;evidenceIds:string[];decidedAt:Date;supersedesDecisionId?:string|null;metadata?:Record<string,unknown>;ruleVersion:string}

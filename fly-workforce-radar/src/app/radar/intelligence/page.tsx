@@ -12,7 +12,7 @@ export default async function DiscoveryIntelligencePage() {
   const review = snapshot.companyDemand.filter((group) => group.resolutionState !== "RESOLVED_CANONICAL");
   return <div className={`page-stack ${styles.page}`}>
     <header className="app-page-header">
-      <p className="po-eyebrow">Discovery Intelligence 1.2 · Company + Demand</p>
+      <p className="po-eyebrow">Discovery Intelligence 1.3 · Human Review</p>
       <h1>Who appears to need people—and what do we actually know?</h1>
       <p>Fly converts stored public observations into explainable company identity and demand intelligence. Every unresolved fact stays explicit and every commercial conclusion still requires human review.</p>
     </header>
@@ -36,6 +36,35 @@ export default async function DiscoveryIntelligencePage() {
         <p>{count(snapshot.metrics.resolvedCanonical)} link to existing canonical companies; {count(snapshot.metrics.identifiedReview)} carry usable identity hints that require review; {count(snapshot.metrics.unresolved)} remain unresolved.</p></div>
       <div className={styles.summaryActions}><Link href="/companies">Review company registry</Link><Link href="/radar">Open Radar</Link></div>
     </section>
+
+    <nav className={styles.workflow} aria-label="Discovery review workflow">
+      {["Discovery", "Review", "Company", "Demand", "Verify", "Promote", "Match", "Talent Gap", "Contact"].map((step, index) => <span key={step}><b>{String(index + 1).padStart(2, "0")}</b>{step}</span>)}
+    </nav>
+
+    <section className={`${styles.panel} ${styles.marketPanel}`} id="market-signals">
+      <header><div><p className="po-eyebrow">Aggregate market signals</p><h2>Where labor demand appears concentrated</h2></div><span>{snapshot.marketPressure.label}</span></header>
+      <p className={styles.marketWarning}>Source-specific market counts are displayed separately. Overlapping aggregator populations are never summed.</p>
+      <div className={styles.marketGrid}>{snapshot.aggregateMarketSignals.map((signal) => <article key={signal.observationId}>
+        <div className={styles.cardTop}><span className={styles.marketBadge}>MARKET SIGNAL</span><span className={styles.health}>{human(signal.sourceRelationship)}</span></div>
+        <p className={styles.marketLocation}>{signal.location ?? "Location in source title"}</p><h3>{human(signal.level)} {human(signal.profession ?? "ELECTRICAL")}</h3>
+        <div className={styles.quantitySplit}><div><small>Aggregate source count</small><strong>{count(signal.count)}</strong></div><div><small>Employer headcount</small><strong>UNKNOWN</strong></div></div>
+        <dl><div><dt>Source</dt><dd>{signal.domain}</dd></div><div><dt>Observed</dt><dd>{date(signal.firstSeenAt)} → {date(signal.lastSeenAt)}</dd></div><div><dt>Decomposition</dt><dd>NOT YET AVAILABLE</dd></div></dl>
+        <p className={styles.boundaryNote}>{signal.warning}</p><a href={signal.url} target="_blank" rel="noreferrer">Inspect stored source ↗</a>
+      </article>)}</div>
+    </section>
+
+    <section className={styles.panel} id="review-queue">
+      <header><div><p className="po-eyebrow">Human review workbench</p><h2>What needs an owner decision?</h2></div><span>{snapshot.reviewQueue.length} observations</span></header>
+      <div className={styles.workbench}>{snapshot.reviewQueue.map((item) => <article key={item.observationId}>
+        <div className={styles.cardTop}><span className={styles.priority}>{item.priority}</span><span className={styles.state}>{item.reviewState}</span></div>
+        <h3>{item.company}</h3><p>{item.title}</p>
+        <dl className={styles.factGrid}><div><dt>Need</dt><dd>{human(item.profession ?? "UNKNOWN")} · {human(item.level)}</dd></div><div><dt>Where</dt><dd>{item.location ?? "UNKNOWN"}</dd></div><div><dt>Source</dt><dd>{item.source} · {human(item.sourceRelationship)}</dd></div><div><dt>Quantity</dt><dd>{human(item.quantity.type)}{item.quantity.value === null ? "" : ` · ${item.quantity.value}`}</dd></div><div><dt>Corroboration</dt><dd>{item.corroboration}</dd></div><div><dt>Safe next action</dt><dd>{item.nextAction}</dd></div></dl>
+        <p className={styles.reasonLine}>{item.reasons.map(human).join(" · ")}</p>
+        <div className={styles.safeActions}><Link href={`/radar/${item.candidateId}`}>Review evidence and demand</Link><Link href="/companies">Link/create through Companies</Link><span>Defer safely</span></div>
+      </article>)}</div>
+    </section>
+
+    <section className={styles.pipeline} id="verified-demand"><div><small>COMPANY</small><strong>Human-confirmed only</strong><span>No automatic canonicalization</span></div><div><small>DEMAND</small><strong>Verification is separate</strong><span>UNKNOWN fields may remain</span></div><div><small>PROMOTION</small><strong>Explicit owner action</strong><span>No automatic opportunity</span></div><div><small>DOWNSTREAM</small><strong>Match → Gap → Contact</strong><span>Only after legitimate promotion</span></div></section>
 
     <section className={styles.panel}>
       <header><div><p className="po-eyebrow">Company demand concentration</p><h2>Who appears behind the observations</h2></div><span>{snapshot.companyDemand.length} identity groups</span></header>

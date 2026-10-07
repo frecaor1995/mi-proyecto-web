@@ -15,6 +15,8 @@ import { getWorkforceReadiness } from "../../../server/source-enrichment/workfor
 import { BuyerWorkspace } from "../../../components/opportunity-discovery/buyer-workspace";
 import { loadBuyerInvestigation } from "../../../server/contact-intelligence/buyer-investigation";
 import { providerStatuses } from "../../../server/contact-intelligence/providers";
+import { loadDiscoveryReviewCase } from "../../../server/discovery-review/discovery-review-workflow";
+import { DiscoveryReviewWorkbench } from "../../../components/discovery-review/discovery-review-workbench";
 
 const formatDateTime = (value: string, locale: Locale) => formatDate(locale, new Date(value), { dateStyle: "medium", timeStyle: "short" });
 
@@ -31,6 +33,10 @@ export default async function SignalPage({ params }: { readonly params: Promise<
     location: s.location, providerPublicationDate: s.publicationDate, status: s.status,
   });
   const client = getProductionSqlClient();
+  // No catch-to-null here: null means this candidate has no governed Discovery
+  // observation. A database/query regression must surface through the route's
+  // error boundary rather than silently restoring the legacy mutation path.
+  const phase13Review = client ? await loadDiscoveryReviewCase(client, s.candidateId) : null;
   const readiness = client ? await getWorkforceReadiness(client, { professions: s.professions, promotedOpportunityId: s.promotedOpportunityId }).catch(() => null) : null;
   const contacts = client ? await loadBuyerInvestigation(client, { kind: "SIGNAL", signal: s, normalizedUrl: s.normalizedUrl }).catch(() => null) : null;
   const facts = [
@@ -53,6 +59,7 @@ export default async function SignalPage({ params }: { readonly params: Promise<
       </header>
 
       <CommercialIntelligencePanel locale={locale} signal={s} intelligence={intelligence} readiness={readiness} />
+      {phase13Review ? <DiscoveryReviewWorkbench review={phase13Review} /> : null}
       {contacts ? <BuyerWorkspace locale={locale} subject={{ signalId: s.candidateId }} view={contacts} providers={providerStatuses()} /> : null}
 
       <div className="sig-columns">
@@ -95,7 +102,8 @@ export default async function SignalPage({ params }: { readonly params: Promise<
         <aside className="sig-side">
           <section className="sig-panel">
             <p className="sig-section-index">F</p><h2>{c.reviewTitle}</h2>
-            {s.status === "PROMOTED" ? <p>{c.promoted}</p> : <><p className="sig-panel-lede">{c.reviewLede}</p><SignalReviewForm locale={locale} candidateId={s.candidateId} /></>}
+            {phase13Review ? <div className="sig-verification-boundary"><strong>Phase 1.3 Human Review</strong><p>This Discovery Intelligence item is governed by the Company → Demand → Promotion workbench above.</p><p>The legacy signal-verification controls are disabled so they cannot bypass company and demand review.</p></div>
+              : s.status === "PROMOTED" ? <p>{c.promoted}</p> : <><p className="sig-panel-lede">{c.reviewLede}</p><SignalReviewForm locale={locale} candidateId={s.candidateId} /></>}
             <div className="sig-verification-boundary"><strong>{c.gapsSection}</strong><p>{c.reviewQuestion}</p><p>{c.verifyBoundary}</p></div>
             <h3>{c.history}</h3>
             {s.reviews.length ? (
@@ -115,7 +123,8 @@ export default async function SignalPage({ params }: { readonly params: Promise<
 
       <section className="sig-panel sig-promote">
         <h2>{c.promoteTitle}</h2>
-        {s.status === "PROMOTED" && s.promotedOpportunityId ? (
+        {phase13Review ? <p className="sig-locked">This governed Discovery item can be promoted only from the Phase 1.3 workbench after canonical company resolution and demand verification.</p>
+          : s.status === "PROMOTED" && s.promotedOpportunityId ? (
           <p>{c.promoted} <Link href={`/opportunities/${s.promotedOpportunityId}`}>{c.openOpportunity} →</Link></p>
         ) : s.status === "VERIFIED" && taxonomy ? (
           <><p className="sig-panel-lede">{c.promoteLede}</p><SignalPromoteForm locale={locale} candidateId={s.candidateId} title={s.title} taxonomy={taxonomy} searchArea={s.searchLocation} searchTrade={s.searchTrade} /></>
