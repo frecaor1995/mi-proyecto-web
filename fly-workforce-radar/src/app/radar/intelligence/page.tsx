@@ -48,8 +48,18 @@ export default async function DiscoveryIntelligencePage() {
         <div className={styles.cardTop}><span className={styles.marketBadge}>MARKET SIGNAL</span><span className={styles.health}>{human(signal.sourceRelationship)}</span></div>
         <p className={styles.marketLocation}>{signal.location ?? "Location in source title"}</p><h3>{human(signal.level)} {human(signal.profession ?? "ELECTRICAL")}</h3>
         <div className={styles.quantitySplit}><div><small>Aggregate source count</small><strong>{count(signal.count)}</strong></div><div><small>Employer headcount</small><strong>UNKNOWN</strong></div></div>
-        <dl><div><dt>Source</dt><dd>{signal.domain}</dd></div><div><dt>Observed</dt><dd>{date(signal.firstSeenAt)} → {date(signal.lastSeenAt)}</dd></div><div><dt>Decomposition</dt><dd>NOT YET AVAILABLE</dd></div></dl>
-        <p className={styles.boundaryNote}>{signal.warning}</p><a href={signal.url} target="_blank" rel="noreferrer">Inspect stored source ↗</a>
+        <dl><div><dt>Source</dt><dd>{signal.domain}</dd></div><div><dt>Observed</dt><dd>{date(signal.firstSeenAt)} → {date(signal.lastSeenAt)}</dd></div><div><dt>Decomposition</dt><dd>{human(signal.decomposition.status)}</dd></div></dl>
+        <div className={styles.decompositionBand}><div><small>Supported postings</small><strong>{signal.decomposition.postingCount}</strong></div><div><small>Unique employers</small><strong>{signal.decomposition.uniqueEmployerCount}</strong></div><div><small>Duplicates suppressed</small><strong>{signal.decomposition.duplicateCount}</strong></div></div>
+        <p className={styles.boundaryNote}>{signal.warning} {signal.decomposition.reason}</p>
+        {signal.decomposition.children.length ? <div className={styles.childPostings}>{signal.decomposition.children.map((child) => <article key={child.identity}>
+          <div className={styles.cardTop}><span className={styles.childBadge}>{human(child.relationship)}</span><span>{child.vendorAcceptance === "UNKNOWN" ? "VENDOR ACCEPTANCE UNKNOWN" : child.vendorAcceptance}</span></div>
+          <h4><a href={child.normalizedUrl} target="_blank" rel="noreferrer">{child.title ?? "Posting title UNKNOWN"}</a></h4>
+          <p>{child.employerName ?? "Employer UNKNOWN"} · {child.location ?? "Location UNKNOWN"}</p>
+          <dl><div><dt>Profession</dt><dd>{child.profession ?? "UNKNOWN"}</dd></div><div><dt>Pay / per diem</dt><dd>{child.pay ?? "UNKNOWN"} · {child.perDiem ?? "UNKNOWN"}</dd></div><div><dt>Headcount</dt><dd>{child.explicitHeadcount ?? "UNKNOWN"}</dd></div><div><dt>Evidence</dt><dd>{child.evidenceIds.length || child.provenance.length} record(s)</dd></div></dl>
+          <p className={styles.evidenceGaps}>{child.evidenceGaps.length ? child.evidenceGaps.map(human).join(" · ") : "No extraction gaps recorded"}</p>
+          <Link href={child.reviewHref}>Governed company and demand review →</Link>
+        </article>)}</div> : <div className={styles.decompositionEmpty}><strong>No individual posting URLs are stored.</strong><p>The aggregate parent remains visible. Review its stored evidence manually; no postings, employers or headcount were invented.</p><Link href={`/radar/${signal.candidateId}`}>Open manual evidence review →</Link></div>}
+        <a href={signal.url} target="_blank" rel="noreferrer">Inspect stored aggregate source ↗</a>
       </article>)}</div>
     </section>
 
