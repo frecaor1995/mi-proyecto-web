@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getDiscoveryIntelligence } from "../../../server/discovery-intelligence/get-discovery-intelligence";
 import { ManualMissForm } from "../../../components/discovery-intelligence/manual-miss-form";
+import { AssistedPostingForm } from "../../../components/discovery-intelligence/assisted-posting-form";
 import styles from "./page.module.css";
 
 const human = (value: string) => value.replaceAll("_", " ");
@@ -36,6 +37,47 @@ export default async function DiscoveryIntelligencePage() {
         <p>{count(snapshot.metrics.resolvedCanonical)} link to existing canonical companies; {count(snapshot.metrics.identifiedReview)} carry usable identity hints that require review; {count(snapshot.metrics.unresolved)} remain unresolved.</p></div>
       <div className={styles.summaryActions}><Link href="/companies">Review company registry</Link><Link href="/radar">Open Radar</Link></div>
     </section>
+
+    <section className={styles.panel} id="individual-postings">
+      <header><div><p className="po-eyebrow">Recipe 2.0 · Individual evidence</p><h2>Individual postings</h2></div><span>{snapshot.individualPostings.length} shown · every posting requires Human Review · vendor acceptance remains UNKNOWN</span></header>
+      {snapshot.individualPostings.length === 0 ? <div className={styles.decompositionEmpty}><strong>No individual posting recorded yet</strong><p>Fixtures and aggregate counts are never shown as real postings. Automated capture stays fail-closed without a persisted ALLOW; assisted capture below records what an operator has seen.</p></div> :
+        <div className={styles.individualPostingList}>{snapshot.individualPostings.map((posting) => <article key={posting.evidenceId}>
+          <div className={styles.cardTop}><span className={styles.childBadge}>{human(posting.provenance)}</span><span>{posting.dataClass}</span><span>{posting.reviewDecision ? `Review: ${human(posting.reviewDecision)}` : "Pending Human Review"}</span></div>
+          <h3>{posting.title ?? "UNKNOWN JOB TITLE"}</h3><p>{posting.employerName ?? "UNKNOWN EMPLOYER"} · {posting.location ?? "UNKNOWN LOCATION"}</p>
+          <dl className={styles.factGrid}>
+            <div><dt>Profession</dt><dd>{posting.profession ?? "UNKNOWN"}</dd></div>
+            <div><dt>{posting.provenance === "AUTOMATED_HTTP" ? "Captured" : "Observed by operator"}</dt><dd>{date(posting.capturedAt)}</dd></div>
+            <div><dt>Salary</dt><dd>{posting.compensation ?? "Not published / not recorded"}</dd></div>
+            <div><dt>Experience</dt><dd>{posting.experience ?? "UNKNOWN"}</dd></div>
+            <div><dt>Licenses</dt><dd>{posting.licenses.length ? posting.licenses.join(" · ") : "UNKNOWN"}</dd></div>
+            <div><dt>Vendor acceptance</dt><dd>UNKNOWN</dd></div>
+            {posting.emailAlert ? <div><dt>Email alert</dt><dd>{posting.emailAlert.sender} · {posting.emailAlert.receivedOn} · {posting.emailAlert.alertReference}</dd></div> : null}
+          </dl>
+          <footer><a href={posting.sourceUrl} target="_blank" rel="noreferrer">Open official posting</a>{posting.reviewHref ? <Link href={posting.reviewHref}>Governed Human Review</Link> : <span>Company resolution required</span>}</footer>
+        </article>)}</div>}
+      <AssistedPostingForm />
+    </section>
+
+    {snapshot.recipe20 ? <section className={styles.panel} id="recipe-2-0">
+      <header><div><p className="po-eyebrow">Recipe 2.0 · Progress and source access</p><h2>Postings, verification and commercial progress</h2></div><span>Goals, not results: {snapshot.recipe20.targets.realPostings} real postings · {snapshot.recipe20.targets.possibleClients} possible clients</span></header>
+      <dl className={styles.factGrid}>
+        <div><dt>Real postings</dt><dd>{snapshot.recipe20.realPostings} / {snapshot.recipe20.targets.realPostings} goal</dd></div>
+        <div><dt>By channel</dt><dd>Automated {snapshot.recipe20.channels.AUTOMATED_HTTP} · Assisted {snapshot.recipe20.channels.ASSISTED_MANUAL} · Email alert {snapshot.recipe20.channels.EMAIL_ALERT}</dd></div>
+        <div><dt>Verified in Human Review</dt><dd>{snapshot.recipe20.verifiedPostings}</dd></div>
+        <div><dt>Duplicates prevented</dt><dd>{snapshot.recipe20.duplicatesPrevented} (re-observations {snapshot.recipe20.reObservations})</dd></div>
+        <div><dt>Restricted sources</dt><dd>{snapshot.recipe20.restrictedSources} of {snapshot.recipe20.sources.length}</dd></div>
+        <div><dt>Commercial signals</dt><dd>{snapshot.recipe20.commercialSignals}</dd></div>
+        <div><dt>Possible clients</dt><dd>{snapshot.recipe20.possibleClients.length} / {snapshot.recipe20.targets.possibleClients} goal{snapshot.recipe20.possibleClients.length ? ` — ${snapshot.recipe20.possibleClients.map((c) => `${c.employer} (${c.signals.map(human).join(", ")})`).join("; ")}` : ""}</dd></div>
+        <div><dt>Conversations · results</dt><dd>{snapshot.recipe20.conversations} · {snapshot.recipe20.results}</dd></div>
+        <div><dt>Demo records (excluded)</dt><dd>{snapshot.recipe20.demoPostings}</dd></div>
+      </dl>
+      <div className={styles.ledger}>{snapshot.recipe20.sources.filter((s) => s.priority || s.wave === 1).sort((a, b) => (a.priority?.rank ?? 99) - (b.priority?.rank ?? 99) || a.wave - b.wave).map((s) => <article key={s.key}>
+        <div className={styles.cardTop}><span className={styles.childBadge}>{s.priority ? `Priority ${s.priority.rank}` : `Wave ${s.wave}`}</span><span>{human(s.effective.policy)}</span><span>{s.platformLabel} · {human(s.preferredRoute)}</span></div>
+        <h3>{s.name}</h3>
+        <p>{s.priority ? s.priority.note : s.effective.reason}</p>
+        <small>{s.review.state === "NOT_STARTED" ? "Access review not started" : `${human(s.review.state)} · ${s.review.minutesElapsed} min since review start`} · assisted capture {s.effective.assistedCaptureAvailable ? "available" : "unavailable"}</small>
+      </article>)}</div>
+    </section> : null}
 
     <nav className={styles.workflow} aria-label="Discovery review workflow">
       {["Discovery", "Review", "Company", "Demand", "Verify", "Promote", "Match", "Talent Gap", "Contact"].map((step, index) => <span key={step}><b>{String(index + 1).padStart(2, "0")}</b>{step}</span>)}

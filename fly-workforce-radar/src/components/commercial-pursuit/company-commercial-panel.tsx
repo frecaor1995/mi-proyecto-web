@@ -5,6 +5,14 @@ import type { CompanyCommercialData, PursuitPermissions } from "../../server/com
 import { pursuitCopy } from "./pursuit-copy";
 import { PainForm, PromotePainForm } from "./pursuit-forms";
 import { PainCard } from "./pursuit-workspace";
+import { COMPANY_ATS_CATALOG } from "../../domain/company-ats-catalog";
+
+const normalizeName = (value: string) => value.toLowerCase().replace(/\(.*?\)/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\b(inc|llc|co|corp|group)\b/g, " ").replace(/\s+/g, " ").trim();
+/** Recipe 2.0 commercial priority for a company, when the owner catalog names it (never implies a contact, need or client). */
+const priorityFor = (companyName: string) => {
+  const name = normalizeName(companyName);
+  return name ? COMPANY_ATS_CATALOG.find((t) => t.commercialPriority && normalizeName(t.name) === name)?.commercialPriority ?? null : null;
+};
 
 /**
  * Company Detail: pain evidence (incl. worker referrals) and this company's opportunities with their pursuit stage.
@@ -21,6 +29,7 @@ export function CompanyCommercialPanel({ locale, companyId, companyName, data, p
       <h2 id="cc-title">{c.companyTitle}</h2>
       <p className="sig-panel-lede">{c.companyLede}</p>
       <p className="dr-note">{c.noOutreach}</p>
+      {priorityFor(companyName) ? <p className="dr-card-note"><strong>Recipe 2.0 · {locale === "es-US" ? "Prioridad" : "Priority"} {priorityFor(companyName)!.rank}</strong> — {priorityFor(companyName)!.note}</p> : null}
       <dl className="ci-grid"><div><dt>{c.pain}</dt><dd>{c.painLevel[data.pain.level]}<small>{c.painCounts(data.pain.usable, data.pain.withheld)}</small></dd></div></dl>
 
       <h3 className="ct-heading">{c.opportunities} · {data.opportunities.length}</h3>

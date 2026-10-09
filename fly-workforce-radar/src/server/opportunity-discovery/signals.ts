@@ -186,7 +186,9 @@ const SIGNAL_COLUMNS = `id, title, candidate_url, source_domain, provider_descri
   first_seen, last_seen, times_seen, status, promoted_opportunity_id, is_latest_run, previously_seen,
   provider_metadata->>'pageAge' as page_age, searched_query, searched_trade_category, searched_occupation, searched_geography_id,
   searched_geography_tier, searched_signal_category, searched_company, enrichment_status, enrichment_title, enrichment_text,
-  enrichment_structured, enrichment_fetched_at`;
+  enrichment_structured, enrichment_fetched_at,
+  (select e.metadata->'posting' from raw_evidence e where e.id = canonical_evidence_id
+    and e.metadata->>'provenance' in ('ASSISTED_MANUAL','EMAIL_ALERT')) as recorded_posting`;
 
 type SignalRow = {
   id: string; title: string; candidate_url: string; source_domain: string; provider_description: string | null; query_kind: string;
@@ -198,6 +200,8 @@ type SignalRow = {
   searched_company?: string | null;
   enrichment_status?: string | null; enrichment_title?: string | null; enrichment_text?: string | null;
   enrichment_structured?: { jobPosting?: PageEvidence["jobPosting"]; documentDate?: string } | null; enrichment_fetched_at?: string | Date | null;
+  /** Company and location an operator recorded from the official posting (ASSISTED_MANUAL / EMAIL_ALERT evidence only). */
+  recorded_posting?: { employerName?: string | null; location?: string | null } | null;
 };
 
 const pageOf = (row: SignalRow): PageEvidence | null => (row.enrichment_status ? {
@@ -220,9 +224,10 @@ const textOf = (row: SignalRow) => `${row.title} ${row.provider_description ?? "
 // trade, company target) are search context, never facts about the source, so they are not used here.
 const companyFrom = (row: SignalRow) => {
   const text = textOf(row).toLowerCase();
-  return [row.searched_company, row.target_text].map((name) => name?.trim()).find((name) => name && text.includes(name.toLowerCase())) ?? null;
+  return [row.searched_company, row.target_text].map((name) => name?.trim()).find((name) => name && text.includes(name.toLowerCase()))
+    ?? row.recorded_posting?.employerName?.trim() ?? null;
 };
-const locationFrom = (row: SignalRow) => detectLocation(textOf(row));
+const locationFrom = (row: SignalRow) => detectLocation(textOf(row)) ?? (row.recorded_posting?.location ? detectLocation(row.recorded_posting.location) : null);
 // The title states what the listing is about; the excerpt often mentions other trades in passing ("start as a
 // plumber, a welder…"). When the title names an occupation it decides; the excerpt is used only when it names none.
 const titleOf = (row: SignalRow) => textOf({ ...row, provider_description: null });
@@ -275,10 +280,14 @@ function toSummary(row: SignalRow): SignalSummary {
   const professions = professionsFrom(row);
   const freshness = freshnessFrom(row);
   const page = pageOf(row);
-  const qualification = qualifyWithSource({
+  const qualified = qualifyWithSource({
     title: titleOf(row), description: row.provider_description ? textOf(row).slice(titleOf(row).length).trim() || null : null, url: row.candidate_url, domain: row.source_domain,
     professions, titleNamesProfession: detectTrades(titleOf(row)).length > 0, location, categories: evidence.categories, stale: freshness === "STALE",
   }, page, DERIVE);
+  // Operator-recorded postings: the employer the operator recorded from the official posting identifies the organization
+  // when the text does not name it (shown as requiring confirmation, since the quote is not in the snippet).
+  const recordedEmployer = row.recorded_posting?.employerName?.trim() || null;
+  const qualification = !qualified.organization && recordedEmployer ? { ...qualified, organization: recordedEmployer } : qualified;
   // A qualified B2B request (manpower, subcontractor, bid, project) often states trade scope, not an occupation:
   // assign the family from that stated scope so it is reachable by profession (no specialty is implied).
   const b2b = qualification.qualified && qualification.category !== "DIRECT_HIRING";
