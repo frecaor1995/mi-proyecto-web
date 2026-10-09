@@ -5,6 +5,7 @@ import { decomposeAggregateObservation, type AggregateDecomposition } from "../.
 import { getProductionSqlClient } from "../database/production-sql-client";
 import { COMPANY_ATS_CATALOG, classifyCommercialSignals } from "../../domain/company-ats-catalog";
 import { loadSourcePolicies } from "./ats-readiness";
+import { asCompanyOutcome, asDemandDecision, asPostingReview, postingProgress, type PostingDecisions, type PostingNextAction, type PostingStage } from "../../domain/posting-workflow";
 
 export interface DiscoveryIntelligenceSnapshot {
   readonly state: "READY" | "UNAVAILABLE" | "ERROR";
@@ -15,7 +16,10 @@ export interface DiscoveryIntelligenceSnapshot {
   readonly companyDemand: readonly CompanyDemandGroup[];
   readonly aggregateMarketSignals: readonly { observationId: string; candidateId: string; title: string; url: string; domain: string; profession: string | null; level: string; location: string | null; count: number; firstSeenAt: string; lastSeenAt: string; sourceRelationship: SourceRelationship; employerHeadcount: null; decomposition: AggregateDecomposition; warning: string }[];
   readonly individualPostings: readonly { identity:string;evidenceId:string;sourceUrl:string;employerName:string|null;title:string|null;profession:string|null;location:string|null;capturedAt:string;relationship:string;vendorAcceptance:"UNKNOWN";parentAggregateObservationId:string|null;evidenceCompleteness:string;reviewHref:string|null;
-    provenance:"AUTOMATED_HTTP"|"ASSISTED_MANUAL"|"EMAIL_ALERT";dataClass:"REAL"|"DEMO";reviewDecision:string|null;experience:string|null;licenses:readonly string[];compensation:string|null;emailAlert:{sender:string;receivedOn:string;alertReference:string}|null }[];
+    provenance:"AUTOMATED_HTTP"|"ASSISTED_MANUAL"|"EMAIL_ALERT";dataClass:"REAL"|"DEMO";reviewDecision:string|null;experience:string|null;licenses:readonly string[];compensation:string|null;emailAlert:{sender:string;receivedOn:string;alertReference:string}|null;
+    candidateId:string|null;decisions:PostingDecisions;companyName:string|null;stage:PostingStage;next:PostingNextAction;open:boolean;
+    /** 1-based position among the observations of the same posting shown here, and their count (re-observations). */
+    observationNumber:number;observationCount:number }[];
   /** Recipe 2.0 channels, verification, restrictions and commercial progress (REAL records only; targets are goals, not results). */
   readonly recipe20: Recipe20Snapshot | null;
   readonly reviewQueue: readonly { observationId: string; candidateId: string; title: string; company: string; resolutionState: CompanyResolutionState; reviewState: string; profession: string | null; level: string; location: string | null; source: string; sourceRelationship: SourceRelationship; corroboration: string; quantity: QuantityClassification; priority: "HIGH REVIEW VALUE" | "MEDIUM REVIEW VALUE" | "NORMAL REVIEW"; reasons: readonly string[]; nextAction: string }[];
@@ -28,7 +32,16 @@ export interface Recipe20Snapshot {
   readonly channels: Readonly<Record<"AUTOMATED_HTTP" | "ASSISTED_MANUAL" | "EMAIL_ALERT", number>>;
   readonly realPostings: number;
   readonly demoPostings: number;
+  /** Postings whose existence an operator verified on the official page (step 1). */
   readonly verifiedPostings: number;
+  /** Postings whose labor demand an operator verified after confirming the company (step 3). Not a client. */
+  readonly demandVerified: number;
+  readonly pendingPostingVerification: number;
+  readonly pendingCompanyOrDemand: number;
+  /** Companies with a recorded follow-up outcome: accepts external labor, staff request, or a WON result. */
+  readonly confirmedClients: number;
+  /** Canonical company for each priority source, only if a human already created/linked it (never auto-created). */
+  readonly priorityCompanies: Readonly<Record<string, string | null>>;
   readonly duplicatesPrevented: number;
   readonly reObservations: number;
   readonly restrictedSources: number;
@@ -71,10 +84,17 @@ export async function getDiscoveryIntelligence(): Promise<DiscoveryIntelligenceS
         coalesce(array_agg(a.normalized_alias) filter(where a.verification_state='VERIFIED' and a.superseded_by_alias_id is null),'{}') verified_aliases,
         (exists(select 1 from contact_routes cr where cr.company_id=c.id) or exists(select 1 from contact_investigations ci where ci.company_id=c.id)) has_contacts
         from companies c left join company_aliases a on a.company_id=c.id where c.merged_into_company_id is null group by c.id order by c.id`),
-      client.query<Record<string,unknown>>(`select e.id,e.source_url,e.captured_at,e.metadata,
-        (select c.id from company_discovery_candidates c where c.canonical_evidence_id=e.id order by c.created_at desc,c.id limit 1) candidate_id,
-        (select r.decision from discovery_signal_reviews r where r.normalized_candidate_url=e.metadata->'posting'->>'normalizedUrl' order by r.decided_at desc,r.id desc limit 1) review_decision
-        from raw_evidence e where e.metadata->>'recipe11'='true' order by e.captured_at desc,e.id limit 50`),
+      client.query<Record<string,unknown>>(`select e.id,e.source_url,e.captured_at,e.metadata,c.id candidate_id,rv.decision review_decision,
+        ca.outcome company_outcome,ca.company_id,ca.company_name,dm.decision demand_decision
+        from raw_evidence e
+        left join lateral(select c.id,c.normalized_candidate_url from company_discovery_candidates c where c.canonical_evidence_id=e.id order by c.created_at desc,c.id limit 1) c on true
+        left join lateral(select r.decision from discovery_signal_reviews r where r.candidate_id=c.id and r.decision<>'PROMOTED' order by r.decided_at desc,r.id desc limit 1) rv on true
+        left join lateral(select o.id from discovery_watch_observations o where o.candidate_id=c.id order by o.captured_at desc,o.id limit 1) ob on true
+        left join lateral(select coalesce(a.confidence_metadata->>'operatorOutcome',a.result::text) outcome,a.candidate_company_id company_id,coalesce(co.common_name,co.legal_name) company_name
+          from company_resolution_audits a left join companies co on co.id=a.candidate_company_id where a.discovery_watch_observation_id=ob.id order by a.resolved_at desc,a.created_at desc,a.id desc limit 1) ca on true
+        left join lateral(select h.decision::text decision from discovery_observation_demand_signals x join human_verification_decisions h on h.target_type='DEMAND_SIGNAL' and h.target_id=x.demand_signal_id
+          where x.discovery_watch_observation_id=ob.id order by h.decided_at desc,h.created_at desc limit 1) dm on true
+        where e.metadata->>'recipe11'='true' order by e.captured_at desc,e.id limit 50`),
     ]);
     const companies: CanonicalCompanyReference[] = companyRows.rows.map((row) => { const metadata = (row.industry_metadata && typeof row.industry_metadata === "object" ? row.industry_metadata : {}) as Record<string, unknown>; return {
       id: String(row.id), name: String(row.common_name ?? row.legal_name), normalizedNames: [row.normalized_common_name, row.normalized_legal_name].filter((item): item is string => typeof item === "string"),
@@ -106,12 +126,19 @@ export async function getDiscoveryIntelligence(): Promise<DiscoveryIntelligenceS
     const individualPostings = postingRows.rows.map((row) => { const metadata = row.metadata as Record<string, unknown>; const posting = (metadata.posting ?? {}) as Record<string, unknown>;
       const provenance = (metadata.provenance === "ASSISTED_MANUAL" || metadata.provenance === "EMAIL_ALERT" ? metadata.provenance : "AUTOMATED_HTTP") as "AUTOMATED_HTTP" | "ASSISTED_MANUAL" | "EMAIL_ALERT";
       const alert = metadata.emailAlert && typeof metadata.emailAlert === "object" ? metadata.emailAlert as Record<string, unknown> : null;
+      const decisions: PostingDecisions = { postingReview: asPostingReview(row.review_decision), companyOutcome: asCompanyOutcome(row.company_outcome), companyId: nullable(row.company_id), demandDecision: asDemandDecision(row.demand_decision) };
       return { identity: String(metadata.postingIdentity), evidenceId: String(row.id), sourceUrl: String(row.source_url), employerName: nullable(posting.employerName), title: nullable(posting.title), profession: nullable(posting.profession),
         location: nullable(posting.location), capturedAt: iso(row.captured_at), relationship: String(posting.relationship ?? "UNKNOWN"), vendorAcceptance: "UNKNOWN" as const, parentAggregateObservationId: nullable(posting.parentAggregateObservationId),
         evidenceCompleteness: String(posting.evidenceCompleteness ?? "PARTIAL"), reviewHref: row.candidate_id ? `/radar/${String(row.candidate_id)}` : null, provenance,
         dataClass: (metadata.dataClass === "DEMO" ? "DEMO" : "REAL") as "REAL" | "DEMO", reviewDecision: nullable(row.review_decision), experience: nullable(posting.experience),
         licenses: Array.isArray(posting.licenses) ? posting.licenses.map(String) : [], compensation: nullable(posting.compensation),
-        emailAlert: alert ? { sender: String(alert.sender ?? ""), receivedOn: String(alert.receivedOn ?? ""), alertReference: String(alert.alertReference ?? "") } : null };
+        emailAlert: alert ? { sender: String(alert.sender ?? ""), receivedOn: String(alert.receivedOn ?? ""), alertReference: String(alert.alertReference ?? "") } : null,
+        candidateId: nullable(row.candidate_id), decisions, companyName: nullable(row.company_name) };
+    }).map((posting, _index, all) => {
+      // Decisions are per observation: only the newest observation of a posting is reviewable; older ones are history.
+      const same = all.filter((p) => p.identity === posting.identity).sort((a, b) => a.capturedAt.localeCompare(b.capturedAt) || a.evidenceId.localeCompare(b.evidenceId));
+      const position = same.indexOf(posting);
+      return { ...posting, ...postingProgress(posting.decisions, { superseded: position < same.length - 1 }), observationNumber: position + 1, observationCount: same.length };
     });
     let recipe20: Recipe20Snapshot | null = null;
     try {
@@ -121,13 +148,18 @@ export async function getDiscoveryIntelligence(): Promise<DiscoveryIntelligenceS
           from discovery_watch_observations o join raw_evidence e on e.id=o.evidence_id where o.metadata->>'recipe11'='true'`),
         client.query<Record<string, unknown>>(`select count(*) filter (where correlation_metadata->>'assistedOutcome'='DUPLICATE')::int duplicates, count(*) filter (where correlation_metadata->>'assistedOutcome'='RE_OBSERVED')::int reobserved from company_discovery_runs where correlation_metadata->>'step'='ASSISTED_CAPTURE'`),
         client.query<Record<string, unknown>>(`select count(*) filter (where outcome in ('CONVERSATION','ACCEPTS_EXTERNAL_LABOR','DOES_NOT_ACCEPT_EXTERNAL_LABOR','NO_CURRENT_NEED','VENDOR_REGISTRATION_REQUIRED','STAFF_REQUEST','NOT_INTERESTED'))::int conversations,
-          count(*) filter (where activity_type='RESULT')::int results from commercial_activities`),
+          count(*) filter (where activity_type='RESULT')::int results,
+          count(distinct company_id) filter (where outcome in ('ACCEPTS_EXTERNAL_LABOR','STAFF_REQUEST') or result='WON')::int confirmed_clients from commercial_activities`),
         loadSourcePolicies(client),
       ]);
       const real = obsRows.rows.filter((r) => r.data_class !== "DEMO");
       const identities = (rows: typeof real) => new Set(rows.map((r) => String(r.observation_identity)));
       const realIds = identities(real);
-      const verifiedUrls = new Set(individualPostings.filter((p) => p.dataClass === "REAL" && (p.reviewDecision === "VERIFIED" || p.reviewDecision === "PROMOTED")).map((p) => p.identity));
+      const realPostings = individualPostings.filter((p) => p.dataClass === "REAL");
+      // Current state of each posting = its newest observation (an older verification never counts for a re-observation).
+      const latest = realPostings.filter((p) => p.stage !== "SUPERSEDED");
+      const verifiedUrls = new Set(latest.filter((p) => p.decisions.postingReview === "VERIFIED").map((p) => p.identity));
+      const demandVerified = new Set(latest.filter((p) => p.decisions.demandDecision === "VERIFY").map((p) => p.identity)).size;
       const byEmployer = new Map<string, typeof real>();
       for (const r of real) { const employer = String(r.employer ?? "").trim(); if (employer) byEmployer.set(employer, [...(byEmployer.get(employer) ?? []), r]); }
       const normalize = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -137,8 +169,16 @@ export async function getDiscoveryIntelligence(): Promise<DiscoveryIntelligenceS
             relationship: (r.relationship === "DIRECT_HIRE_POSTING" || r.relationship === "STAFFING_POSTING" ? r.relationship : "UNKNOWN") as "DIRECT_HIRE_POSTING" | "STAFFING_POSTING" | "UNKNOWN" })) }) }; });
       const channel = (name: string) => identities(real.filter((r) => r.provenance === name)).size;
       const activities = activityRows.rows[0] ?? {};
+      const prioritized = sources.filter((s) => s.priority);
+      const companyMatches = prioritized.length ? (await client.query<{ id: string; name: string }>(
+        "select id,coalesce(common_name,legal_name) name from companies where merged_into_company_id is null and (common_name ilike any($1) or legal_name ilike any($1)) order by id",
+        [prioritized.map((s) => `${s.name.replace(/\s*\(.*\)\s*$/, "").replace(/[%_]/g, "")}%`)])).rows : [];
+      const priorityCompanies = Object.fromEntries(prioritized.map((s) => [s.key, companyMatches.find((c) => normalize(c.name).startsWith(normalize(s.name.replace(/\s*\(.*\)\s*$/, ""))))?.id ?? null]));
       recipe20 = { channels: { AUTOMATED_HTTP: channel("AUTOMATED_HTTP"), ASSISTED_MANUAL: channel("ASSISTED_MANUAL"), EMAIL_ALERT: channel("EMAIL_ALERT") }, realPostings: realIds.size,
-        demoPostings: identities(obsRows.rows.filter((r) => r.data_class === "DEMO")).size, verifiedPostings: verifiedUrls.size,
+        demoPostings: identities(obsRows.rows.filter((r) => r.data_class === "DEMO")).size, verifiedPostings: verifiedUrls.size, demandVerified,
+        pendingPostingVerification: realPostings.filter((p) => p.next === "VERIFY_POSTING" || p.next === "RECHECK_POSTING").length,
+        pendingCompanyOrDemand: realPostings.filter((p) => p.next === "CONFIRM_COMPANY" || p.next === "DECIDE_DEMAND").length,
+        confirmedClients: Number(activities.confirmed_clients ?? 0), priorityCompanies,
         duplicatesPrevented: Number(runRows.rows[0]?.duplicates ?? 0), reObservations: Number(runRows.rows[0]?.reobserved ?? 0),
         restrictedSources: sources.filter((s) => ["BLOCKED_TERMS", "BLOCKED_PENDING_PERMISSION", "RESTRICTED_PLATFORM"].includes(s.effective.policy)).length,
         commercialSignals: classified.reduce((n, c) => n + c.result.reasons.length, 0),

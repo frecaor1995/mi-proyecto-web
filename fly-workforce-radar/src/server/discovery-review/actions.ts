@@ -5,11 +5,16 @@ import { authorizeOperator } from "../auth/authorization";
 import { getProductionTransactionRunner } from "../database/production-sql-client";
 import { PostgresOpportunityRepository } from "../repositories/opportunity/postgres-opportunity-repository";
 import { OpportunityService } from "../services/opportunity/opportunity-service";
-import { COMPANY_REVIEW_OUTCOMES, DEMAND_REVIEW_OUTCOMES, recordCompanyReview, recordDemandReview, type CompanyReviewOutcome, type DemandReviewOutcome } from "./discovery-review-workflow";
+import { postingVerificationGate } from "../discovery-intelligence/posting-verification";
+import { COMPANY_REVIEW_OUTCOMES, DEMAND_REVIEW_OUTCOMES, promotionBlocker, recordCompanyReview, recordDemandReview, type CompanyReviewOutcome, type DemandReviewOutcome, type PromotionBlocker } from "./discovery-review-workflow";
 
 export interface DiscoveryReviewActionState { readonly status:"IDLE"|"SAVED"|"REJECTED"; readonly error:string|null }
 const rejected=(error:string):DiscoveryReviewActionState=>({status:"REJECTED",error});
 const text=(data:FormData,key:string)=>{const value=data.get(key);return typeof value==="string"?value.trim():""};
+// Recorded postings: company and demand decisions require a current verification of this observation (never a superseded one).
+const POSTING_GATE_ERROR="Verify the posting before the company decision.";
+const requireCurrentPosting=async(client:Parameters<typeof postingVerificationGate>[0],candidateId:string)=>{const gate=await postingVerificationGate(client,candidateId);if(gate==="PENDING"||gate==="SUPERSEDED")throw new Error(POSTING_GATE_ERROR);};
+const PROMOTION_ERRORS:Record<PromotionBlocker,string>={POSTING_NOT_VERIFIED:"Verify the posting before promotion.",COMPANY_NOT_CONFIRMED:"Confirm the canonical company before promotion.",DEMAND_NOT_VERIFIED:"Verify the canonical demand before promotion."};
 const refresh=(candidateId:string)=>{revalidatePath("/radar/intelligence");revalidatePath(`/radar/${candidateId}`);};
 
 export async function companyReviewAction(_state:DiscoveryReviewActionState,data:FormData):Promise<DiscoveryReviewActionState>{
@@ -17,7 +22,7 @@ export async function companyReviewAction(_state:DiscoveryReviewActionState,data
   if(!candidateId||!COMPANY_REVIEW_OUTCOMES.includes(outcome)||!reason)return rejected("Complete the decision and reason before confirming.");
   const auth=await authorizeOperator("human_verification.write");if(auth.state!=="AUTHORIZED")return rejected("This action requires Human Verification permission.");
   const runner=getProductionTransactionRunner();if(!runner)return rejected("The governed local database is unavailable.");
-  try{await runner(client=>recordCompanyReview(client,{candidateId,outcome,selectedCompanyId:text(data,"companyId"),companyName:text(data,"companyName"),reason,operatorId:auth.operator.operatorId,now:new Date()}));refresh(candidateId);return{status:"SAVED",error:null};}
+  try{await runner(async client=>{await requireCurrentPosting(client,candidateId);return recordCompanyReview(client,{candidateId,outcome,selectedCompanyId:text(data,"companyId"),companyName:text(data,"companyName"),reason,operatorId:auth.operator.operatorId,now:new Date()});});refresh(candidateId);return{status:"SAVED",error:null};}
   catch(error){return rejected(error instanceof Error?error.message:"Company review could not be saved.");}
 }
 
@@ -26,7 +31,7 @@ export async function demandReviewAction(_state:DiscoveryReviewActionState,data:
   if(!candidateId||!DEMAND_REVIEW_OUTCOMES.includes(outcome)||!reason)return rejected("Complete the decision and reason before confirming.");
   const auth=await authorizeOperator("human_verification.write");if(auth.state!=="AUTHORIZED")return rejected("This action requires Human Verification permission.");
   const runner=getProductionTransactionRunner();if(!runner)return rejected("The governed local database is unavailable.");
-  try{await runner(client=>recordDemandReview(client,{candidateId,outcome,reason,operatorId:auth.operator.operatorId,now:new Date()}));refresh(candidateId);return{status:"SAVED",error:null};}
+  try{await runner(async client=>{await requireCurrentPosting(client,candidateId);return recordDemandReview(client,{candidateId,outcome,reason,operatorId:auth.operator.operatorId,now:new Date()});});refresh(candidateId);return{status:"SAVED",error:null};}
   catch(error){return rejected(error instanceof Error?error.message:"Demand review could not be saved.");}
 }
 
@@ -36,6 +41,7 @@ export async function promoteVerifiedDemandAction(_state:DiscoveryReviewActionSt
   const runner=getProductionTransactionRunner();if(!runner)return rejected("The governed local database is unavailable.");
   let opportunityId:string;
   try{opportunityId=await runner(async client=>{
+    const blocker=await promotionBlocker(client,candidateId);if(blocker)throw new Error(PROMOTION_ERRORS[blocker]);
     const row=await client.query<{demand_signal_id:string;company_id:string;evidence_id:string;title:string;opportunity_id:string|null}>(`select x.demand_signal_id,d.publisher_company_id company_id,d.raw_evidence_id evidence_id,d.title,ods.opportunity_id
       from discovery_observation_demand_signals x join demand_signals d on d.id=x.demand_signal_id
       join lateral(select decision from human_verification_decisions where target_type='DEMAND_SIGNAL' and target_id=d.id order by decided_at desc,created_at desc limit 1)h on h.decision='VERIFY'

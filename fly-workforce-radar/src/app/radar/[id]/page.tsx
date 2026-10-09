@@ -1,4 +1,5 @@
 import Link from "next/link";
+import "./guided-review.css";
 import { notFound } from "next/navigation";
 import { resolveServerLocale } from "../../../i18n/server-locale";
 import { formatDate } from "../../../i18n/format";
@@ -17,6 +18,10 @@ import { loadBuyerInvestigation } from "../../../server/contact-intelligence/buy
 import { providerStatuses } from "../../../server/contact-intelligence/providers";
 import { loadDiscoveryReviewCase } from "../../../server/discovery-review/discovery-review-workflow";
 import { DiscoveryReviewWorkbench } from "../../../components/discovery-review/discovery-review-workbench";
+import { loadRecordedPosting } from "../../../server/discovery-intelligence/posting-verification";
+import { PostingVerificationForm } from "../../../components/discovery-intelligence/posting-verification-form";
+import { guidedCopy, intelligenceCopy, labelFor, queryKindLabel } from "../../../components/discovery-intelligence/intelligence-copy";
+import { asCompanyOutcome, asDemandDecision, asPostingReview, postingProgress } from "../../../domain/posting-workflow";
 
 const formatDateTime = (value: string, locale: Locale) => formatDate(locale, new Date(value), { dateStyle: "medium", timeStyle: "short" });
 
@@ -37,6 +42,8 @@ export default async function SignalPage({ params }: { readonly params: Promise<
   // observation. A database/query regression must surface through the route's
   // error boundary rather than silently restoring the legacy mutation path.
   const phase13Review = client ? await loadDiscoveryReviewCase(client, s.candidateId) : null;
+  // Recorded postings (Recipe 2.x) get the guided review: verify posting -> confirm company -> documented demand.
+  const recorded = client && phase13Review ? await loadRecordedPosting(client, s.candidateId) : null;
   const readiness = client ? await getWorkforceReadiness(client, { professions: s.professions, promotedOpportunityId: s.promotedOpportunityId }).catch(() => null) : null;
   const contacts = client ? await loadBuyerInvestigation(client, { kind: "SIGNAL", signal: s, normalizedUrl: s.normalizedUrl }).catch(() => null) : null;
   const facts = [
@@ -46,20 +53,22 @@ export default async function SignalPage({ params }: { readonly params: Promise<
   const unknownFacts = facts.filter(([, value]) => value === null || value === "");
   const search = [s.searchKeyword, s.searchTrade, s.searchLocation].filter(Boolean).join(" · ");
 
-  return (
-    <div className="page-stack sig-detail">
-      <Link className="sig-back" href="/radar">← {c.back}</Link>
-      <header className="sig-hero">
-        <div className="sig-card-head"><SignalStatusBadge locale={locale} status={s.status} /><span className="sig-kind">{c.kind[s.queryKind] ?? s.queryKind}</span></div>
-        <p className="po-eyebrow">{s.company ?? c.notFound}</p>
-        <h1>{s.title}</h1>
-        <div className="sig-hero-context"><span>{s.location ?? c.notFound}</span><span>{s.trade ?? c.notFound}</span><span>{s.workforceNeed ?? c.notFound}</span></div>
-        <p className="sig-hero-excerpt">{s.description ?? c.noExcerpt}</p>
-        {s.promotedOpportunityId ? <Link className="button button-primary" href={`/opportunities/${s.promotedOpportunityId}`}>{c.openOpportunity}</Link> : null}
-      </header>
+  const q = s.qualification;
+  const documentedDemand = q.qualified ? c.explorer.commercialCategory[q.category ?? ""] ?? q.category : q.noise ? `${c.intel.notQualified} — ${c.explorer.noise[q.noise] ?? q.noise}` : `${c.intel.notQualified} — ${q.missing.map((item) => c.explorer.missing[item]).join(" · ")}`;
+  const g = guidedCopy(locale);
+  const it = intelligenceCopy(locale);
+  const postingReview = recorded ? asPostingReview(recorded.verifications[0]?.decision) : null;
+  const progress = recorded ? postingProgress({ postingReview, companyOutcome: asCompanyOutcome(phase13Review?.companyDecision?.outcome), companyId: phase13Review?.companyDecision?.companyId ?? null, demandDecision: asDemandDecision(phase13Review?.demandDecision?.decision) }, { superseded: recorded.superseded }) : null;
+  const newest = recorded?.linkedObservations.find((o) => o.latest) ?? null;
+  const previousObservation = recorded ? recorded.linkedObservations[recorded.linkedObservations.findIndex((o) => o.current) - 1] ?? null : null;
+  const companyId = phase13Review?.companyDecision?.companyId ?? null;
+  const nextHref = !progress ? null : progress.next === "VERIFY_POSTING" || progress.next === "RECHECK_POSTING" ? "#posting-step" : progress.next === "CONFIRM_COMPANY" || progress.next === "DECIDE_DEMAND" ? "#review-r1-title"
+    : progress.next === "EVALUATE_CLIENT_AND_CONTACT" ? (companyId ? `/companies/${companyId}#commercial` : "/contacts")
+    : progress.next === "SUPERSEDED_BY_NEWER_OBSERVATION" && newest ? `/radar/${newest.candidateId}#guided-review` : "/radar/intelligence#daily-flow";
 
+  const evidence = <>
       <CommercialIntelligencePanel locale={locale} signal={s} intelligence={intelligence} readiness={readiness} />
-      {phase13Review ? <DiscoveryReviewWorkbench review={phase13Review} /> : null}
+      {phase13Review && !recorded ? <DiscoveryReviewWorkbench review={phase13Review} locale={locale} /> : null}
       {contacts ? <BuyerWorkspace locale={locale} subject={{ signalId: s.candidateId }} view={contacts} providers={providerStatuses()} /> : null}
 
       <div className="sig-columns">
@@ -102,7 +111,7 @@ export default async function SignalPage({ params }: { readonly params: Promise<
         <aside className="sig-side">
           <section className="sig-panel">
             <p className="sig-section-index">F</p><h2>{c.reviewTitle}</h2>
-            {phase13Review ? <div className="sig-verification-boundary"><strong>Phase 1.3 Human Review</strong><p>This Discovery Intelligence item is governed by the Company → Demand → Promotion workbench above.</p><p>The legacy signal-verification controls are disabled so they cannot bypass company and demand review.</p></div>
+            {phase13Review ? <div className="sig-verification-boundary"><strong>{locale === "es-US" ? "Revisión humana gobernada" : "Governed Human Review"}</strong><p>{locale === "es-US" ? "Este elemento se decide en la revisión empresa → demanda → promoción." : "This Discovery Intelligence item is governed by the Company → Demand → Promotion workbench."}</p><p>{locale === "es-US" ? "Los controles antiguos de verificación de señales están desactivados para que no puedan saltarse la revisión de empresa y demanda." : "The legacy signal-verification controls are disabled so they cannot bypass company and demand review."}</p></div>
               : s.status === "PROMOTED" ? <p>{c.promoted}</p> : <><p className="sig-panel-lede">{c.reviewLede}</p><SignalReviewForm locale={locale} candidateId={s.candidateId} /></>}
             <div className="sig-verification-boundary"><strong>{c.gapsSection}</strong><p>{c.reviewQuestion}</p><p>{c.verifyBoundary}</p></div>
             <h3>{c.history}</h3>
@@ -123,13 +132,80 @@ export default async function SignalPage({ params }: { readonly params: Promise<
 
       <section className="sig-panel sig-promote">
         <h2>{c.promoteTitle}</h2>
-        {phase13Review ? <p className="sig-locked">This governed Discovery item can be promoted only from the Phase 1.3 workbench after canonical company resolution and demand verification.</p>
+        {phase13Review ? <p className="sig-locked">{locale === "es-US" ? "Este elemento gobernado solo puede promoverse desde la revisión empresa → demanda → promoción, después de resolver la empresa canónica y verificar la demanda." : "This governed Discovery item can be promoted only from the Phase 1.3 workbench after canonical company resolution and demand verification."}</p>
           : s.status === "PROMOTED" && s.promotedOpportunityId ? (
           <p>{c.promoted} <Link href={`/opportunities/${s.promotedOpportunityId}`}>{c.openOpportunity} →</Link></p>
         ) : s.status === "VERIFIED" && taxonomy ? (
           <><p className="sig-panel-lede">{c.promoteLede}</p><SignalPromoteForm locale={locale} candidateId={s.candidateId} title={s.title} taxonomy={taxonomy} searchArea={s.searchLocation} searchTrade={s.searchTrade} /></>
         ) : <p className="sig-locked">{c.promoteLocked}</p>}
       </section>
+  </>;
+
+  return (
+    <div className="page-stack sig-detail">
+      <Link className="sig-back" href={recorded ? "/radar/intelligence#individual-postings" : "/radar"}>{recorded ? g.backToRadar : `← ${c.back}`}</Link>
+      <header className="sig-hero">
+        <div className="sig-card-head"><SignalStatusBadge locale={locale} status={recorded ? (s.status === "PROMOTED" ? "PROMOTED" : postingReview ?? "NEW") : s.status} /><span className="sig-kind">{queryKindLabel(locale, s.queryKind, c.kind[s.queryKind] ?? s.queryKind)}</span></div>
+        <p className="po-eyebrow">{s.company ?? c.notFound}</p>
+        <h1>{recorded?.title ?? s.title}</h1>
+        <div className="sig-hero-context"><span>{s.location ?? c.notFound}</span><span>{s.trade ?? c.notFound}</span><span>{s.workforceNeed ?? c.notFound}</span></div>
+        <p className="sig-hero-excerpt">{s.description ?? c.noExcerpt}</p>
+        {s.promotedOpportunityId ? <Link className="button button-primary" href={`/opportunities/${s.promotedOpportunityId}`}>{c.openOpportunity}</Link> : null}
+      </header>
+      {recorded && phase13Review && progress ? <>
+        <section className="sig-panel guided-review" id="guided-review" aria-labelledby="guided-title">
+          <p className="po-eyebrow">{g.eyebrow}</p><h2 id="guided-title">{g.title}</h2><p className="sig-panel-lede">{g.lede}</p>
+          {recorded.superseded && newest ? <p className="review-r1-warning" role="status">{g.supersededNotice} <Link href={`/radar/${newest.candidateId}#guided-review`}>{g.openLatest}</Link></p> : null}
+          <div className="guided-next" role="status"><small>{g.nextAction}</small><strong>{it.nextLabel[progress.next]}</strong>{nextHref ? <Link className="button button-primary" href={nextHref}>{it.goNext}</Link> : null}</div>
+          {recorded.linkedObservations.length > 1 ? <div className="guided-linked">
+            <h3>{g.linkedTitle}</h3><p className="sig-muted">{g.linkedLede}</p>
+            <div className="guided-table-wrap"><table>
+              <thead><tr><th>{g.observation}</th><th>{g.postingCol}</th><th>{g.companyCol}</th><th>{g.demandCol}</th><th></th></tr></thead>
+              <tbody>{recorded.linkedObservations.map((o, index) => <tr key={o.observationId} className={o.current ? "is-current" : undefined}>
+                <td>{index + 1}. {o.observedOn ?? o.capturedAt.slice(0, 10)}{o.current ? ` · ${g.thisOne}` : ""}{o.latest ? ` · ${g.latestTag}` : ""}</td>
+                <td>{o.postingDecision ? g.decisions[o.postingDecision] ?? o.postingDecision : g.pending}</td>
+                <td>{o.companyOutcome ? `${labelFor(locale, o.companyOutcome)}${o.companyName ? ` · ${o.companyName}` : ""}` : g.none}</td>
+                <td>{o.demandDecision ? labelFor(locale, o.demandDecision) : g.none}</td>
+                <td>{o.current ? null : <Link href={`/radar/${o.candidateId}#guided-review`}>{g.open}</Link>}</td>
+              </tr>)}</tbody>
+            </table></div>
+            {recorded.changesFromPrevious && previousObservation ? <p className="guided-changes"><b>{g.changesTitle} ({previousObservation.observedOn ?? previousObservation.capturedAt.slice(0, 10)}):</b> {recorded.changesFromPrevious.length ? recorded.changesFromPrevious.map((f) => g.fields[f] ?? f).join(" · ") : g.noChanges}</p> : null}
+            {previousObservation?.postingDecision && !recorded.superseded ? <p className="sig-muted">{g.previousDecision(g.decisions[previousObservation.postingDecision] ?? previousObservation.postingDecision, previousObservation.observedOn ?? previousObservation.capturedAt.slice(0, 10))}</p> : null}
+          </div> : null}
+          <h3>{g.recorded}</h3>
+          <dl className="guided-facts">
+            <div><dt>{g.company}</dt><dd>{recorded.employerName ?? g.unknown}</dd></div>
+            <div><dt>{g.jobTitle}</dt><dd>{recorded.title ?? g.unknown}</dd></div>
+            <div><dt>{g.location}</dt><dd>{recorded.location ?? g.unknown}</dd></div>
+            <div><dt>{g.experience}</dt><dd>{recorded.experience ?? g.unknown}</dd></div>
+            <div><dt>{g.licenses}</dt><dd>{recorded.licenses.length ? recorded.licenses.join(" · ") : g.unknown}</dd></div>
+            <div><dt>{g.salary}</dt><dd>{recorded.compensation ?? g.salaryNone}</dd></div>
+            <div><dt>{g.provenance}</dt><dd>{recorded.provenance}{locale === "es-US" ? ` · ${labelFor(locale, recorded.provenance)}` : ""}</dd></div>
+            <div><dt>{g.dataClass}</dt><dd>{recorded.dataClass}</dd></div>
+            <div><dt>{g.postingId}</dt><dd>{recorded.externalPostingId ?? g.unknown}</dd></div>
+            <div><dt>{g.observedOn}</dt><dd>{recorded.observedOn ?? g.unknown} · {g.recordedAt} {formatDateTime(recorded.recordedAt, locale)}</dd></div>
+            {recorded.emailAlert ? <div><dt>{g.emailAlert}</dt><dd>{recorded.emailAlert.sender} · {recorded.emailAlert.receivedOn} · {recorded.emailAlert.alertReference}</dd></div> : null}
+            <div className="guided-wide"><dt>{g.summary}</dt><dd>{recorded.summary ?? g.unknown}</dd></div>
+          </dl>
+          <p className="sig-muted">{g.urlNotVisited}</p>
+
+          <div className="review-r1-card guided-step" id="posting-step">
+            <span className="review-r1-number">01</span><h3>{g.step1}</h3><p>{g.step1Lede}</p>
+            <a className="button button-secondary" href={recorded.sourceUrl} target="_blank" rel="noreferrer noopener">{g.openOfficial}</a>
+            <p className="review-r1-current"><b>{g.current}:</b> {postingReview ? g.decisions[postingReview] : g.pending}</p>
+            {recorded.superseded ? null : <PostingVerificationForm locale={locale} candidateId={s.candidateId} />}
+            <h4>{g.history}</h4>
+            {recorded.verifications.length ? <ol className="sig-history">{recorded.verifications.map((v, index) => <li key={`${v.decidedAt}-${index}`}><strong>{g.decisions[v.decision] ?? v.decision}</strong><span> {formatDateTime(v.decidedAt, locale)}{v.decidedBy ? ` · ${v.decidedBy}` : ""}</span>{v.note ? <p>{v.note}</p> : null}</li>)}</ol> : <p className="sig-muted">{g.noHistory}</p>}
+          </div>
+
+          <dl className="guided-facts">
+            <div className="guided-wide"><dt>{g.documented}</dt><dd>{documentedDemand}<small> {g.documentedNote}</small></dd></div>
+            <div className="guided-wide"><dt>{g.supplier}</dt><dd>{c.intel.supplier[intelligence.supplierEligibility]}</dd></div>
+          </dl>
+        </section>
+        <DiscoveryReviewWorkbench review={phase13Review} locale={locale} postingVerified={postingReview === "VERIFIED" && !recorded.superseded} firstStep={2} />
+        <details className="sig-panel guided-evidence"><summary>{g.allEvidence}</summary>{evidence}</details>
+      </> : evidence}
     </div>
   );
 }

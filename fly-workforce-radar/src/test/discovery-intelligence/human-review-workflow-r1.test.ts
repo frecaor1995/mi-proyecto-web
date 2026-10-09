@@ -82,7 +82,7 @@ describe("Phase 1.3 R1 transactional review contract",()=>{
     const queue=await source("src/app/radar/intelligence/page.tsx"),detail=await source("src/app/radar/[id]/page.tsx"),workflow=await source("src/server/discovery-review/discovery-review-workflow.ts");
     expect(queue).toContain('href={`/radar/${item.candidateId}`}');
     expect(detail).toContain("loadDiscoveryReviewCase(client, s.candidateId)");
-    expect(detail).toContain("<DiscoveryReviewWorkbench review={phase13Review} />");
+    expect(detail).toContain("<DiscoveryReviewWorkbench review={phase13Review} locale={locale}");
     expect(workflow).toContain("join company_discovery_runs r on r.id=c.run_id");
     expect(workflow).not.toContain("c.target_text");expect(workflow).not.toContain("c.correlation_metadata");
   });

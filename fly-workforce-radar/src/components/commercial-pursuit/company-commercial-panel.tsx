@@ -6,12 +6,14 @@ import { pursuitCopy } from "./pursuit-copy";
 import { PainForm, PromotePainForm } from "./pursuit-forms";
 import { PainCard } from "./pursuit-workspace";
 import { COMPANY_ATS_CATALOG } from "../../domain/company-ats-catalog";
+import { intelligenceCopy } from "../discovery-intelligence/intelligence-copy";
 
 const normalizeName = (value: string) => value.toLowerCase().replace(/\(.*?\)/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\b(inc|llc|co|corp|group)\b/g, " ").replace(/\s+/g, " ").trim();
 /** Recipe 2.0 commercial priority for a company, when the owner catalog names it (never implies a contact, need or client). */
 const priorityFor = (companyName: string) => {
   const name = normalizeName(companyName);
-  return name ? COMPANY_ATS_CATALOG.find((t) => t.commercialPriority && normalizeName(t.name) === name)?.commercialPriority ?? null : null;
+  const target = name ? COMPANY_ATS_CATALOG.find((t) => t.commercialPriority && normalizeName(t.name) === name) : undefined;
+  return target?.commercialPriority ? { ...target.commercialPriority, key: target.key } : null;
 };
 
 /**
@@ -24,12 +26,13 @@ export function CompanyCommercialPanel({ locale, companyId, companyName, data, p
   const c = pursuitCopy(locale);
   const day = (value: string) => formatDate(locale, new Date(`${value}T12:00:00Z`), { dateStyle: "medium" });
   const returnPath = `/companies/${companyId}`;
+  const priority = priorityFor(companyName);
   return (
     <section className="sig-panel ci-panel ct-panel" aria-labelledby="cc-title" id="commercial">
       <h2 id="cc-title">{c.companyTitle}</h2>
       <p className="sig-panel-lede">{c.companyLede}</p>
       <p className="dr-note">{c.noOutreach}</p>
-      {priorityFor(companyName) ? <p className="dr-card-note"><strong>Recipe 2.0 · {locale === "es-US" ? "Prioridad" : "Priority"} {priorityFor(companyName)!.rank}</strong> — {priorityFor(companyName)!.note}</p> : null}
+      {priority ? <p className="dr-card-note"><strong>{locale === "es-US" ? "Receta 2.0 · Prioridad" : "Recipe 2.0 · Priority"} {priority.rank}</strong> — {intelligenceCopy(locale).priorityNotes[priority.key] ?? priority.note}</p> : null}
       <dl className="ci-grid"><div><dt>{c.pain}</dt><dd>{c.painLevel[data.pain.level]}<small>{c.painCounts(data.pain.usable, data.pain.withheld)}</small></dd></div></dl>
 
       <h3 className="ct-heading">{c.opportunities} · {data.opportunities.length}</h3>

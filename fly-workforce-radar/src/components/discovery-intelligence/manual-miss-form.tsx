@@ -3,8 +3,12 @@
 import { useState, useTransition } from "react";
 import { DISCOVERY_STRATEGIES, type DiscoveryStrategy } from "../../domain/discovery-intelligence";
 import { recordManualMiss } from "../../server/discovery-intelligence/actions";
+import type { Locale } from "../../i18n/locale";
 
-export function ManualMissForm() {
+const ES: Record<string, string> = {"What Radar missed *": "¿Qué no vio Radar? *", "Company": "Empresa", "Source *": "Fuente *", "Public HTTPS URL": "URL pública HTTPS", "Profession": "Profesión", "Level — only if evidenced": "Nivel — solo si hay evidencia", "Location": "Ubicación", "Project — only if evidenced": "Proyecto — solo si hay evidencia", "How it was found *": "Cómo se encontró *", "Search/query used": "Búsqueda/consulta usada", "Discovery strategy *": "Estrategia de descubrimiento *", "Notes": "Notas", "Recording…": "Registrando…", "Record manual miss": "Registrar omisión manual"};
+
+export function ManualMissForm({ locale = "en-US" }: { readonly locale?: Locale } = {}) {
+  const t = (text: string) => (locale === "es-US" ? ES[text] ?? text : text);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   return <form onSubmit={(event) => {
@@ -19,20 +23,20 @@ export function ManualMissForm() {
     });
   }}>
     <div className="sig-form-grid">
-      <label><span>What Radar missed *</span><input name="summary" maxLength={1000} required /></label>
-      <label><span>Company</span><input name="company" maxLength={300} /></label>
-      <label><span>Source *</span><input name="source" maxLength={300} required /></label>
-      <label><span>Public HTTPS URL</span><input name="sourceUrl" type="url" pattern="https://.*" maxLength={2000} /></label>
-      <label><span>Profession</span><input name="profession" maxLength={200} /></label>
-      <label><span>Level — only if evidenced</span><input name="level" maxLength={120} /></label>
-      <label><span>Location</span><input name="location" maxLength={300} /></label>
-      <label><span>Project — only if evidenced</span><input name="project" maxLength={300} /></label>
-      <label><span>How it was found *</span><input name="method" maxLength={300} required /></label>
-      <label><span>Search/query used</span><input name="query" maxLength={500} /></label>
-      <label><span>Discovery strategy *</span><select name="strategy" defaultValue="AGGREGATOR_SEARCH">{DISCOVERY_STRATEGIES.map((strategy) => <option key={strategy}>{strategy}</option>)}</select></label>
-      <label><span>Notes</span><input name="notes" maxLength={4000} /></label>
+      <label><span>{t("What Radar missed *")}</span><input name="summary" maxLength={1000} required /></label>
+      <label><span>{t("Company")}</span><input name="company" maxLength={300} /></label>
+      <label><span>{t("Source *")}</span><input name="source" maxLength={300} required /></label>
+      <label><span>{t("Public HTTPS URL")}</span><input name="sourceUrl" type="url" pattern="https://.*" maxLength={2000} /></label>
+      <label><span>{t("Profession")}</span><input name="profession" maxLength={200} /></label>
+      <label><span>{t("Level — only if evidenced")}</span><input name="level" maxLength={120} /></label>
+      <label><span>{t("Location")}</span><input name="location" maxLength={300} /></label>
+      <label><span>{t("Project — only if evidenced")}</span><input name="project" maxLength={300} /></label>
+      <label><span>{t("How it was found *")}</span><input name="method" maxLength={300} required /></label>
+      <label><span>{t("Search/query used")}</span><input name="query" maxLength={500} /></label>
+      <label><span>{t("Discovery strategy *")}</span><select name="strategy" defaultValue="AGGREGATOR_SEARCH">{DISCOVERY_STRATEGIES.map((strategy) => <option key={strategy}>{strategy}</option>)}</select></label>
+      <label><span>{t("Notes")}</span><input name="notes" maxLength={4000} /></label>
     </div>
-    <div className="radar-filter-actions"><button type="submit" disabled={pending}>{pending ? "Recording…" : "Record manual miss"}</button></div>
+    <div className="radar-filter-actions"><button type="submit" disabled={pending}>{pending ? t("Recording…") : t("Record manual miss")}</button></div>
     {message ? <p role="status" aria-live="polite">{message}</p> : null}
   </form>;
 }

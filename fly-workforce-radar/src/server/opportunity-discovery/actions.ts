@@ -66,6 +66,12 @@ export async function promoteSignalAction(_previous: SignalActionState, data: Fo
   const signal = found.signal;
   if (signal.status === "PROMOTED" && signal.promotedOpportunityId) redirect(`/opportunities/${signal.promotedOpportunityId}`);
   if (signal.status !== "VERIFIED") return rejected("notVerified");
+  // Governed Discovery items (a watch observation exists for this URL) are promoted only from the company → demand →
+  // promotion workbench; a posting verification must never open this legacy path around those decisions.
+  const governed = await client.query<{ governed: boolean }>(
+    "select exists(select 1 from discovery_watch_observations o join company_discovery_candidates c on c.id=o.candidate_id where c.normalized_candidate_url=$1) governed",
+    [signal.normalizedUrl]);
+  if (governed.rows[0]?.governed) return rejected("invalid");
 
   const reviewerNote = signal.reviews.find((review) => review.decision === "VERIFIED")?.note;
   const evidenceSummary = [
