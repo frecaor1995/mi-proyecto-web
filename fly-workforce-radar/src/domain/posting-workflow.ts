@@ -59,3 +59,17 @@ export function postingEvidenceChanges(previous: Readonly<Record<string, unknown
   const norm = (value: unknown) => JSON.stringify(Array.isArray(value) ? value.map(String) : value ?? null);
   return COMPARED_POSTING_FIELDS.filter((field) => norm(previous[field]) !== norm(current[field]));
 }
+
+/** Calendar day (YYYY-MM-DD) of an instant in the Houston operating timezone. */
+export const houstonDay = (value: string | Date) =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
+
+/**
+ * Daily goal (Recipe 2.2): NEW real postings registered on `day` — a posting identity counts only on the day of its
+ * first observation. Re-observations, corrected links and DEMO records never count; duplicates create no observation.
+ */
+export function newPostingsRegisteredOn<T extends { readonly identity: string; readonly recordedAt: string; readonly dataClass: string }>(observations: readonly T[], day: string): readonly T[] {
+  const first = new Map<string, T>();
+  for (const o of [...observations].filter((x) => x.dataClass !== "DEMO").sort((a, b) => a.recordedAt.localeCompare(b.recordedAt))) if (!first.has(o.identity)) first.set(o.identity, o);
+  return [...first.values()].filter((o) => houstonDay(o.recordedAt) === day);
+}

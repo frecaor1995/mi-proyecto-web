@@ -28,11 +28,15 @@ export async function recordAssistedPostingAction(_previous: AssistedCaptureStat
     salary: optional(data, "salary"), experience: optional(data, "experience"), licenses: optional(data, "licenses"), observedOn: text(data, "observedOn"),
     summary: text(data, "summary"), provenance, dataClass: text(data, "dataClass") === "DEMO" ? "DEMO" : "REAL",
     emailAlert: provenance === "EMAIL_ALERT" ? { sender: text(data, "emailSender"), receivedOn: text(data, "emailReceivedOn"), alertReference: text(data, "emailAlertReference") } : null,
+    // Recipe 2.2: official-link correction of an already recorded posting (new linked observation, never an overwrite)
+    correction: text(data, "correctsCandidateId") ? { previousCandidateId: text(data, "correctsCandidateId"), reason: text(data, "correctionReason"),
+      rule: text(data, "correctionRule") === "TALEO_BE_REQUISITION_JSP" ? "TALEO_BE_REQUISITION_JSP" : null } : null,
   };
   try {
     const result = await runner((client) => recordAssistedPosting(client, input, authorization.operator.operatorId));
     revalidatePath("/radar/intelligence");
     revalidatePath("/radar");
+    if (input.correction) revalidatePath(`/radar/${input.correction.previousCandidateId}`);
     return { state: "DONE", outcome: result.outcome, reviewHref: result.reviewHref, errors: {} };
   } catch (error) {
     if (error instanceof AssistedCaptureValidationError) return { state: "INVALID", outcome: null, reviewHref: null, errors: error.errors };

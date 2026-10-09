@@ -20,8 +20,12 @@ import { loadDiscoveryReviewCase } from "../../../server/discovery-review/discov
 import { DiscoveryReviewWorkbench } from "../../../components/discovery-review/discovery-review-workbench";
 import { loadRecordedPosting } from "../../../server/discovery-intelligence/posting-verification";
 import { PostingVerificationForm } from "../../../components/discovery-intelligence/posting-verification-form";
-import { guidedCopy, intelligenceCopy, labelFor, queryKindLabel } from "../../../components/discovery-intelligence/intelligence-copy";
+import { guidedCopy, intelligenceCopy, labelFor, queryKindLabel, supplierCopy } from "../../../components/discovery-intelligence/intelligence-copy";
 import { asCompanyOutcome, asDemandDecision, asPostingReview, postingProgress } from "../../../domain/posting-workflow";
+import { OBSOLETE_URL_EXPLANATION, detectObsoleteAtsUrl } from "../../../domain/ats-url-hygiene";
+import { AssistedPostingForm } from "../../../components/discovery-intelligence/assisted-posting-form";
+import { SupplierAnswerSummary } from "../../../components/discovery-intelligence/external-supplier-answer-summary";
+import { loadSupplierAnswers } from "../../../server/discovery-intelligence/external-supplier-answers";
 
 const formatDateTime = (value: string, locale: Locale) => formatDate(locale, new Date(value), { dateStyle: "medium", timeStyle: "short" });
 
@@ -44,6 +48,7 @@ export default async function SignalPage({ params }: { readonly params: Promise<
   const phase13Review = client ? await loadDiscoveryReviewCase(client, s.candidateId) : null;
   // Recorded postings (Recipe 2.x) get the guided review: verify posting -> confirm company -> documented demand.
   const recorded = client && phase13Review ? await loadRecordedPosting(client, s.candidateId) : null;
+  const supplierAnswers = client && recorded?.employerName ? await loadSupplierAnswers(client, { companyName: recorded.employerName, companyId: phase13Review?.companyDecision?.companyId ?? null }).catch(() => []) : [];
   const readiness = client ? await getWorkforceReadiness(client, { professions: s.professions, promotedOpportunityId: s.promotedOpportunityId }).catch(() => null) : null;
   const contacts = client ? await loadBuyerInvestigation(client, { kind: "SIGNAL", signal: s, normalizedUrl: s.normalizedUrl }).catch(() => null) : null;
   const facts = [
@@ -62,6 +67,22 @@ export default async function SignalPage({ params }: { readonly params: Promise<
   const newest = recorded?.linkedObservations.find((o) => o.latest) ?? null;
   const previousObservation = recorded ? recorded.linkedObservations[recorded.linkedObservations.findIndex((o) => o.current) - 1] ?? null : null;
   const companyId = phase13Review?.companyDecision?.companyId ?? null;
+  const obsolete = recorded ? detectObsoleteAtsUrl(recorded.sourceUrl) : null;
+  const supplierLatest = supplierAnswers[0] ?? null;
+  const verifiedNow = postingReview === "VERIFIED" && !recorded?.superseded;
+  const lastVerification = recorded?.verifications[0] ?? null;
+  const stageTrack = !recorded ? [] : [
+    { key: "REGISTER", status: "done", state: g.done, evidence: `${recorded.provenance} · ${recorded.observedOn ?? recorded.recordedAt.slice(0, 10)}`, pending: "—", href: "#guided-title" },
+    { key: "VERIFY", status: verifiedNow ? "done" : "open", state: postingReview ? g.decisions[postingReview] : g.pending,
+      evidence: lastVerification ? `${lastVerification.linkCategory ? `${g.linkCategories[lastVerification.linkCategory]} · ` : ""}${(lastVerification.note ?? "").slice(0, 90)}` : g.noneYet,
+      pending: verifiedNow ? "—" : obsolete ? g.obsoleteTitle : g.step1, href: obsolete && !recorded.superseded ? "#correct-link" : "#posting-step" },
+    { key: "COMPANY", status: !verifiedNow ? "locked" : phase13Review?.demandDecision?.decision === "VERIFY" ? "done" : "open",
+      state: phase13Review?.companyDecision ? `${labelFor(locale, phase13Review.companyDecision.outcome)}${phase13Review.companyDecision.companyName ? ` · ${phase13Review.companyDecision.companyName}` : ""}` : !verifiedNow ? g.lockedShort : g.pendingShort,
+      evidence: phase13Review?.demandDecision ? `${g.demandCol}: ${labelFor(locale, phase13Review.demandDecision.decision)}` : g.noneYet, pending: !verifiedNow ? g.step1 : g.pendingShort, href: "#review-r1-title" },
+    { key: "CONTACT", status: supplierLatest && supplierLatest.answer !== "NOT_INVESTIGATED" ? "done" : "open",
+      state: supplierLatest ? supplierCopy(locale).answers[supplierLatest.answer] : supplierCopy(locale).answers.NOT_INVESTIGATED,
+      evidence: supplierLatest?.evidenceReference ?? g.noneYet, pending: supplierLatest?.nextAction ?? supplierCopy(locale).question, href: companyId ? `/companies/${companyId}#external-suppliers` : "#supplier-question" },
+  ];
   const nextHref = !progress ? null : progress.next === "VERIFY_POSTING" || progress.next === "RECHECK_POSTING" ? "#posting-step" : progress.next === "CONFIRM_COMPANY" || progress.next === "DECIDE_DEMAND" ? "#review-r1-title"
     : progress.next === "EVALUATE_CLIENT_AND_CONTACT" ? (companyId ? `/companies/${companyId}#commercial` : "/contacts")
     : progress.next === "SUPERSEDED_BY_NEWER_OBSERVATION" && newest ? `/radar/${newest.candidateId}#guided-review` : "/radar/intelligence#daily-flow";
@@ -157,12 +178,24 @@ export default async function SignalPage({ params }: { readonly params: Promise<
           <p className="po-eyebrow">{g.eyebrow}</p><h2 id="guided-title">{g.title}</h2><p className="sig-panel-lede">{g.lede}</p>
           {recorded.superseded && newest ? <p className="review-r1-warning" role="status">{g.supersededNotice} <Link href={`/radar/${newest.candidateId}#guided-review`}>{g.openLatest}</Link></p> : null}
           <div className="guided-next" role="status"><small>{g.nextAction}</small><strong>{it.nextLabel[progress.next]}</strong>{nextHref ? <Link className="button button-primary" href={nextHref}>{it.goNext}</Link> : null}</div>
+          <h3>{g.stagesTitle}</h3>
+          <ol className="guided-stages">{stageTrack.map((stage, index) => <li key={stage.key} className={`is-${stage.status}`}>
+            <b>{String(index + 1).padStart(2, "0")} · {g.stages[stage.key]}</b>
+            <dl><div><dt>{g.stageState}</dt><dd>{stage.state}</dd></div><div><dt>{g.stageEvidence}</dt><dd>{stage.evidence}</dd></div><div><dt>{g.stagePending}</dt><dd>{stage.pending}</dd></div></dl>
+            <Link href={stage.href}>{g.stageNext}: {g.stageGo}</Link>
+          </li>)}</ol>
+          {recorded.urlCorrection ? <div className="guided-changes"><b>{g.correctionOf}.</b> {g.previousLink}: <code>{recorded.urlCorrection.previousUrl}</code> · <Link href={`/radar/${recorded.urlCorrection.previousCandidateId}#guided-review`}>{g.open}</Link><br />{g.correctionReasonLabel}: {recorded.urlCorrection.reason}</div> : null}
+          {obsolete && !recorded.superseded ? <div className="review-r1-warning guided-obsolete" role="status">
+            <strong>{g.obsoleteTitle}</strong> <span>{g.obsoleteBody}</span>
+            <a href={obsolete.proposedUrl} target="_blank" rel="noreferrer noopener"><code>{obsolete.proposedUrl}</code></a>
+            <small>{g.obsoleteExplanation}: {OBSOLETE_URL_EXPLANATION[obsolete.rule]}</small>
+          </div> : null}
           {recorded.linkedObservations.length > 1 ? <div className="guided-linked">
             <h3>{g.linkedTitle}</h3><p className="sig-muted">{g.linkedLede}</p>
             <div className="guided-table-wrap"><table>
               <thead><tr><th>{g.observation}</th><th>{g.postingCol}</th><th>{g.companyCol}</th><th>{g.demandCol}</th><th></th></tr></thead>
               <tbody>{recorded.linkedObservations.map((o, index) => <tr key={o.observationId} className={o.current ? "is-current" : undefined}>
-                <td>{index + 1}. {o.observedOn ?? o.capturedAt.slice(0, 10)}{o.current ? ` · ${g.thisOne}` : ""}{o.latest ? ` · ${g.latestTag}` : ""}</td>
+                <td>{index + 1}. {o.observedOn ?? o.capturedAt.slice(0, 10)}{o.current ? ` · ${g.thisOne}` : ""}{o.latest ? ` · ${g.latestTag}` : ""}{o.urlCorrection ? ` · ${g.correctedTag}` : ""}</td>
                 <td>{o.postingDecision ? g.decisions[o.postingDecision] ?? o.postingDecision : g.pending}</td>
                 <td>{o.companyOutcome ? `${labelFor(locale, o.companyOutcome)}${o.companyName ? ` · ${o.companyName}` : ""}` : g.none}</td>
                 <td>{o.demandDecision ? labelFor(locale, o.demandDecision) : g.none}</td>
@@ -180,6 +213,7 @@ export default async function SignalPage({ params }: { readonly params: Promise<
             <div><dt>{g.experience}</dt><dd>{recorded.experience ?? g.unknown}</dd></div>
             <div><dt>{g.licenses}</dt><dd>{recorded.licenses.length ? recorded.licenses.join(" · ") : g.unknown}</dd></div>
             <div><dt>{g.salary}</dt><dd>{recorded.compensation ?? g.salaryNone}</dd></div>
+            <div><dt>{g.level}</dt><dd>{g.levels[recorded.levelClass]}<small> {g.levelNote}</small></dd></div>
             <div><dt>{g.provenance}</dt><dd>{recorded.provenance}{locale === "es-US" ? ` · ${labelFor(locale, recorded.provenance)}` : ""}</dd></div>
             <div><dt>{g.dataClass}</dt><dd>{recorded.dataClass}</dd></div>
             <div><dt>{g.postingId}</dt><dd>{recorded.externalPostingId ?? g.unknown}</dd></div>
@@ -195,13 +229,22 @@ export default async function SignalPage({ params }: { readonly params: Promise<
             <p className="review-r1-current"><b>{g.current}:</b> {postingReview ? g.decisions[postingReview] : g.pending}</p>
             {recorded.superseded ? null : <PostingVerificationForm locale={locale} candidateId={s.candidateId} />}
             <h4>{g.history}</h4>
-            {recorded.verifications.length ? <ol className="sig-history">{recorded.verifications.map((v, index) => <li key={`${v.decidedAt}-${index}`}><strong>{g.decisions[v.decision] ?? v.decision}</strong><span> {formatDateTime(v.decidedAt, locale)}{v.decidedBy ? ` · ${v.decidedBy}` : ""}</span>{v.note ? <p>{v.note}</p> : null}</li>)}</ol> : <p className="sig-muted">{g.noHistory}</p>}
+            {recorded.verifications.length ? <ol className="sig-history">{recorded.verifications.map((v, index) => <li key={`${v.decidedAt}-${index}`}><strong>{g.decisions[v.decision] ?? v.decision}</strong>{v.linkCategory ? <em> · {g.linkCategories[v.linkCategory]}</em> : null}<span> {formatDateTime(v.decidedAt, locale)}{v.decidedBy ? ` · ${v.decidedBy}` : ""}</span>{v.note ? <p>{v.note}</p> : null}</li>)}</ol> : <p className="sig-muted">{g.noHistory}</p>}
           </div>
+
+          {recorded.superseded ? null : <div className="guided-correction">
+            <p className="sig-muted">{g.correctLinkHint}</p>
+            <AssistedPostingForm locale={locale} prefill={{ url: obsolete?.proposedUrl ?? "", company: recorded.employerName ?? "", title: recorded.title ?? "", city: (recorded.location ?? "").split(",")[0]?.trim() ?? "",
+              state: (recorded.location ?? "").split(",")[1]?.trim() ?? "", salary: recorded.compensation, experience: recorded.experience, licenses: recorded.licenses.join("; ") || null, summary: recorded.summary }}
+              correction={{ candidateId: s.candidateId, rule: obsolete?.rule ?? null, reason: obsolete ? OBSOLETE_URL_EXPLANATION[obsolete.rule] : "" }} />
+          </div>}
 
           <dl className="guided-facts">
             <div className="guided-wide"><dt>{g.documented}</dt><dd>{documentedDemand}<small> {g.documentedNote}</small></dd></div>
             <div className="guided-wide"><dt>{g.supplier}</dt><dd>{c.intel.supplier[intelligence.supplierEligibility]}</dd></div>
           </dl>
+          <div id="supplier-question"><h3>{supplierCopy(locale).question}</h3><SupplierAnswerSummary locale={locale} answers={supplierAnswers} />
+            <Link href={companyId ? `/companies/${companyId}#external-suppliers` : "/radar/intelligence#priority-companies"}>{supplierCopy(locale).record} →</Link></div>
         </section>
         <DiscoveryReviewWorkbench review={phase13Review} locale={locale} postingVerified={postingReview === "VERIFIED" && !recorded.superseded} firstStep={2} />
         <details className="sig-panel guided-evidence"><summary>{g.allEvidence}</summary>{evidence}</details>

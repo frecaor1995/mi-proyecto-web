@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { COMPANY_ATS_CATALOG } from "../../domain/company-ats-catalog";
-import { PLATFORM_ACCESS, REVIEW_TIMEBOX_MINUTES, effectivePolicy, externalIdFromUrl, platformFromUrl, reviewTimeboxState } from "../../domain/ats-capture-readiness";
+import { PLATFORM_ACCESS, REVIEW_TIMEBOX_MINUTES, activeRouteFor, effectivePolicy, externalIdFromUrl, platformFromUrl, reviewTimeboxState } from "../../domain/ats-capture-readiness";
 import { toAssistedPosting, validateAssistedPosting, type AssistedPostingInput } from "../../domain/assisted-posting-capture";
 
 const NOW = new Date("2026-10-09T15:00:00Z");
@@ -27,7 +27,10 @@ describe("Recipe 2.0 — platform access matrix", () => {
     expect(effectivePolicy(target("trillium"), allowed, NOW).policy).toBe("BLOCKED_TERMS");
     expect(effectivePolicy(target("fsg"), allowed, NOW).policy).toBe("BLOCKED_PENDING_PERMISSION");
     expect(effectivePolicy(target("enterprise"), allowed, NOW).policy).toBe("REVIEW_TIMEBOX_EXPIRED");
-    expect(effectivePolicy(target("walker"), allowed, NOW).policy).toBe("ASSISTED_ONLY");
+    // Recipe 2.2: Taleo BE has automatic preference, which grants nothing — without an ALLOW the active route is assisted
+    expect(effectivePolicy(target("walker"), allowed, NOW).policy).toBe("REVIEW_REQUIRED");
+    expect(activeRouteFor(effectivePolicy(target("walker"), allowed, NOW).policy)).toBe("ASSISTED_CAPTURE");
+    expect(activeRouteFor(effectivePolicy(target("strike"), allowed, NOW).policy)).toBe("AUTOMATED_CAPTURE");
     expect(effectivePolicy(target("rosendin"), allowed, NOW).policy).toBe("RESTRICTED_PLATFORM");
     expect(COMPANY_ATS_CATALOG.every((t) => effectivePolicy(t, allowed, NOW).assistedCaptureAvailable)).toBe(true);
   });
@@ -60,7 +63,7 @@ describe("Recipe 2.0 — assisted capture validation", () => {
     const { posting, platform } = toAssistedPosting(walker);
     expect(platform).toBe("TALEO_BUSINESS_EDITION");
     expect(posting).toMatchObject({ externalPostingId: "441", employerName: "Walker Engineering", title: "Apprentice Electrician", location: "Houston, TX", profession: "ELECTRICAL APPRENTICE",
-      professionalLevel: "APPRENTICE", compensation: null, perDiem: null, postingDate: null, explicitEmployerHeadcount: null, relationship: "UNKNOWN", vendorAcceptance: "UNKNOWN",
+      professionalLevel: "APPRENTICE_OR_JOURNEYMAN", compensation: null, // Recipe 2.2: apprentice requiring experience = mixed level perDiem: null, postingDate: null, explicitEmployerHeadcount: null, relationship: "UNKNOWN", vendorAcceptance: "UNKNOWN",
       licenses: ["TDLR apprentice or journeyman license"], capturedAt: "2026-10-09T12:00:00.000Z" });
     expect(posting.normalizedUrl).toBe("https://phg.tbe.taleo.net/phg04/ats/careers/v2/requisition.jsp?cws=37&org=WP3X5Q&rid=441");
   });

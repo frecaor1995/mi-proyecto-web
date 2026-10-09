@@ -1,3 +1,4 @@
+import type { PostingLevelClass } from "./posting-level";
 /**
  * Recipe 1.1 v2 — Company ATS catalog.
  *
@@ -90,7 +91,7 @@ export const COMPANY_ATS_CATALOG: readonly CompanyAtsTarget[] = [
     entryLevelSeen: "YES", visiblePostings: "~60 + 7 travelers", status: "VERIFIED", ownerNotes: "Comfort Systems USA subsidiary. 14 openings in Houston.",
     localEvidence: { evidence: "Phase 2J local target; JS-rendered and no documented public API", verifiedAt: "2026-08-29", jobsUrl: "https://phg.tbe.taleo.net/phg04/ats/careers/v2/searchResults?org=WP3X5Q&cws=37", atsIdentifier: "WP3X5Q/cws37" },
     conflicts: ["Phase 2J recorded the board as JS-rendered; the owner records it as simple HTML. Capture method needs confirmation on a real sample."],
-    commercialPriority: { rank: 2, focus: "WORKFORCE_SOURCE_B2B_UNCONFIRMED", note: "Employment source for Fly workers; possible B2B client, unconfirmed. Postings are direct hires, not external-labor requests." } }),
+    commercialPriority: { rank: 2, focus: "WORKFORCE_SOURCE_B2B_UNCONFIRMED", note: "Employment source for experienced, licensed Fly workers; B2B client unconfirmed. Postings are direct hires, not external-labor requests. Record a real answer about external suppliers before raising its commercial priority." } }),
   t({ key: "bergelectric", ownerRank: 4, name: "Bergelectric", companyType: "ELECTRICAL_CONTRACTOR", trades: ["ELECTRICAL"], market: "El Paso, Laredo, Dallas",
     officialSite: "https://careers-bergelectric.icims.com", ats: "ICIMS", atsLabel: "iCIMS", atsIdentifier: "bergelectric", identifierBasis: "OWNER_VERIFIED",
     jobsUrl: "https://careers-bergelectric.icims.com/jobs/search?ss=1", ownerCaptureMethod: "SIMPLE_HTML", wave: 1, pilot: false, watchTier: "WEEKLY", roles: ["POSSIBLE_CLIENT"],
@@ -228,7 +229,9 @@ export const COMPANY_ATS_CATALOG: readonly CompanyAtsTarget[] = [
  * never shown as Radar postings; they serve only to validate future captures.
  */
 export const OWNER_SEEN_ENTRY_POSTINGS: readonly { readonly company: string; readonly title: string; readonly city: string; readonly pay: string | null; readonly reference: string;
-  readonly levelRule: "ENTRY" | "MIXED"; readonly url: string; readonly state: "SEEN_IN_RESEARCH_NOT_CAPTURED" | "POSSIBLY_EXPIRED" | "HUMAN_REVIEW_REFERENCE_NOT_CAPTURED";
+  readonly levelRule: "ENTRY" | "MIXED"; readonly url: string;
+  /** Recipe 2.2: corrected official URL checked by the owner; `url` keeps the original reference unchanged. */
+  readonly currentUrl?: string; readonly urlNote?: string; readonly state: "SEEN_IN_RESEARCH_NOT_CAPTURED" | "POSSIBLY_EXPIRED" | "HUMAN_REVIEW_REFERENCE_NOT_CAPTURED";
   readonly requirements?: string; readonly note?: string }[] = [
   { company: "enterprise", title: "Apprentice Commercial Electrician", city: "Houston / Pasadena / Texas City / South Houston", pay: null, reference: "Workable", levelRule: "ENTRY", url: "https://apply.workable.com/enterprise-electrical/jobs/view/BDFDCFF05F.md", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
   { company: "enterprise", title: "Apprentice Electrician – Mission Critical Data Center", city: "Temple", pay: null, reference: "Workable", levelRule: "ENTRY", url: "https://apply.workable.com/enterprise-electrical/", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
@@ -241,7 +244,9 @@ export const OWNER_SEEN_ENTRY_POSTINGS: readonly { readonly company: string; rea
     requirements: "Current apprentice license; 2+ years of experience (as published)", note: "Automated capture blocked pending FSG written permission (owner decision 2026-10-09)." },
   { company: "fsg", title: "Commercial Apprentice Electrician", city: "Houston", pay: null, reference: "#2528", levelRule: "MIXED", url: "https://careers-fsg.icims.com/jobs/search?ss=1", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
   { company: "fsg", title: "Entry Level Data Technician / Helper", city: "Jarrell", pay: null, reference: "#2545", levelRule: "ENTRY", url: "https://careers-fsg.icims.com/jobs/search?ss=1", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
-  { company: "walker", title: "Apprentice Electrician", city: "Houston", pay: null, reference: "rid 441", levelRule: "ENTRY", url: "https://phg.tbe.taleo.net/phg04/ats/careers/v2/requisition.jsp?org=WP3X5Q&cws=37&rid=441", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
+  { company: "walker", title: "Apprentice Electrician", city: "Houston", pay: null, reference: "rid 441", levelRule: "MIXED", url: "https://phg.tbe.taleo.net/phg04/ats/careers/v2/requisition.jsp?org=WP3X5Q&cws=37&rid=441",
+    currentUrl: "https://phg.tbe.taleo.net/phg04/ats/careers/v2/viewRequisition?org=WP3X5Q&cws=37&rid=441",
+    urlNote: "404 causado por formato de URL obsoleto en el catálogo (requisition.jsp → viewRequisition); no se demostró que la vacante estuviera vencida. MIXED: requires 1 year of commercial experience and a TDLR apprentice or journeyman license.", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
   { company: "strike", title: "Apprentice Electrician", city: "Midland", pay: null, reference: "JazzHR", levelRule: "ENTRY", url: "https://strike.applytojob.com/apply", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
   { company: "bergelectric", title: "Electrician Apprentice", city: "El Paso", pay: null, reference: "#1767", levelRule: "ENTRY", url: "https://careers-bergelectric.icims.com/jobs/search?ss=1", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
   { company: "bergelectric", title: "Electrician Apprentice", city: "Laredo", pay: null, reference: "#1768", levelRule: "ENTRY", url: "https://careers-bergelectric.icims.com/jobs/search?ss=1", state: "SEEN_IN_RESEARCH_NOT_CAPTURED" },
@@ -288,6 +293,8 @@ export interface PostingObservationEvidence {
   readonly observedAt: string;
   readonly evidenceId: string;
   readonly relationship: "DIRECT_HIRE_POSTING" | "STAFFING_POSTING" | "UNKNOWN";
+  /** Level from what the posting states; when present, only ENTRY_LEVEL postings count as apprentice/helper demand. */
+  readonly level?: PostingLevelClass;
 }
 export interface CommercialSignalInput {
   readonly companyType: CompanyType;
@@ -330,7 +337,7 @@ export function classifyCommercialSignals(input: CommercialSignalInput) {
     reasons.push({ signal: "SIMULTANEOUS_CONCENTRATION", reason: `${recent.length} distinct individually evidenced postings observed within the same 7 days. This counts postings, not workers required.`,
       evidence: recent.map((o) => o.evidenceId) });
   }
-  const entry = [...new Map(input.observations.filter((o) => /\b(apprentice|helper|trainee)\b/i.test(o.title ?? "")).map((o) => [o.postingIdentity, o])).values()];
+  const entry = [...new Map(input.observations.filter((o) => (o.level ? o.level === "ENTRY_LEVEL" : /\b(apprentice|helper|trainee)\b/i.test(o.title ?? ""))).map((o) => [o.postingIdentity, o])).values()];
   if (entry.length) reasons.push({ signal: "APPRENTICE_HELPER_DEMAND", reason: `${entry.length} individually evidenced posting(s) explicitly name apprentice, helper or trainee.`, evidence: entry.map((o) => o.evidenceId) });
   if (input.explicitExternalNeed?.text.trim() && input.explicitExternalNeed.evidenceId.trim()) {
     reasons.push({ signal: "EXPLICIT_EXTERNAL_NEED", reason: input.explicitExternalNeed.text.trim(), evidence: [input.explicitExternalNeed.evidenceId.trim()] });

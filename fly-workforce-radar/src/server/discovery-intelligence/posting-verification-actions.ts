@@ -7,7 +7,7 @@ import { PostingVerificationError, recordPostingVerification } from "./posting-v
 
 export interface PostingVerificationState {
   readonly status: "IDLE" | "SAVED" | "REJECTED";
-  readonly error: "invalid" | "noteRequired" | "notRecipePosting" | "supersededObservation" | "restricted" | "unavailable" | "failed" | null;
+  readonly error: "invalid" | "noteRequired" | "notRecipePosting" | "supersededObservation" | "notEnoughToClose" | "categoryNotForVerified" | "restricted" | "unavailable" | "failed" | null;
   readonly decision: string | null;
 }
 
@@ -22,7 +22,7 @@ export async function recordPostingVerificationAction(_previous: PostingVerifica
   const runner = getProductionTransactionRunner();
   if (!runner) return { status: "REJECTED", error: "unavailable", decision: null };
   try {
-    const saved = await runner((client) => recordPostingVerification(client, { candidateId, decision, note, operatorId: auth.operator.operatorId, now: new Date() }));
+    const saved = await runner((client) => recordPostingVerification(client, { candidateId, decision, note, linkCategory: String(data.get("linkCategory") ?? "").trim() || null, operatorId: auth.operator.operatorId, now: new Date() }));
     revalidatePath(`/radar/${candidateId}`);
     revalidatePath("/radar/intelligence");
     revalidatePath("/radar");

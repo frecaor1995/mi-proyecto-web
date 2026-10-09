@@ -5,6 +5,7 @@ import { normalizeCompanyName } from "../services/company/company-name-normaliza
 import type { SqlClient } from "../repositories/evidence/postgres-evidence-repository";
 import { toSafeEvidenceText } from "../../domain/safe-evidence-text";
 import { postingVerificationGate } from "../discovery-intelligence/posting-verification";
+import { classifyPostingLevel, matchingLevelFor } from "../../domain/posting-level";
 
 export const COMPANY_REVIEW_OUTCOMES = ["LINK", "CREATE", "DEFER", "REJECT_MATCH", "UNSUPPORTED", "NOT_ACTIONABLE", "KEEP_UNRESOLVED"] as const;
 export type CompanyReviewOutcome = (typeof COMPANY_REVIEW_OUTCOMES)[number];
@@ -13,7 +14,7 @@ export type DemandReviewOutcome = (typeof DEMAND_REVIEW_OUTCOMES)[number];
 
 type ObservationRow = {
   observation_id: string; candidate_id: string; title: string; description: string | null; normalized_url: string;
-  source_domain: string; source_id: string; evidence_id: string | null; observed_company: string | null; recorded_location: string | null;
+  source_domain: string; source_id: string; evidence_id: string | null; observed_company: string | null; recorded_location: string | null; recorded_posting: Record<string, unknown> | null;
   observation_identity: string; observation_state: string; source_type: string; platform: string | null; health_status: string;
   first_seen_at: string | Date; last_seen_at: string | Date; published_at: string | Date | null; metadata: Record<string, unknown>;
 };
@@ -30,7 +31,7 @@ export interface DiscoveryReviewCase {
 async function observation(client: SqlClient, candidateId: string): Promise<ObservationRow | null> {
   const result = await client.query<ObservationRow>(`select o.id observation_id,o.candidate_id,c.title,c.provider_description description,o.normalized_url,
     c.source_domain,w.source_id,o.evidence_id,coalesce(r.correlation_metadata->>'company',r.search_request->>'company',ev.metadata->'posting'->>'employerName') observed_company,
-    ev.metadata->'posting'->>'location' recorded_location,
+    ev.metadata->'posting'->>'location' recorded_location,ev.metadata->'posting' recorded_posting,
     o.observation_identity,o.state observation_state,w.source_type,w.platform,w.health_status,
     o.first_seen_at,o.last_seen_at,o.published_at,o.metadata
     from discovery_watch_observations o join discovery_watch_sources w on w.id=o.watch_source_id
@@ -57,12 +58,14 @@ export async function loadDiscoveryReviewCase(client: SqlClient, candidateId: st
   const latest = resolution.rows[0]; const demandLatest = demand.rows[0];
   const quantity = classifyDiscoveryQuantity({ title: row.title, description: row.description, domain: row.source_domain, url: row.normalized_url });
   const storedObservation:StoredDiscoveryObservation={id:row.observation_id,identity:row.observation_identity,title:row.title,description:row.description,normalizedUrl:row.normalized_url,domain:row.source_domain,sourceType:row.source_type,platform:row.platform,explicitCompanyId:null,level:typeof row.metadata?.electricalLevel==="string"?row.metadata.electricalLevel as StoredDiscoveryObservation["level"]:"UNKNOWN",watchState:row.observation_state,watchHealth:row.health_status,firstSeenAt:new Date(row.first_seen_at).toISOString(),lastSeenAt:new Date(row.last_seen_at).toISOString(),publishedAt:row.published_at?new Date(row.published_at).toISOString():null,canonicalEvidence:Boolean(row.evidence_id)};
+  const rp=row.recorded_posting;const recordedLevel=rp?matchingLevelFor(classifyPostingLevel({title:rp.title==null?null:String(rp.title),experience:rp.experience==null?null:String(rp.experience),licenses:Array.isArray(rp.licenses)?rp.licenses.map(String):null}),rp.title==null?null:String(rp.title)):null;
   const interpretedDemand=interpretStoredDemand(storedObservation);const resolvedIdentity=resolveObservationCompany(storedObservation,[]);
   const companyId = latest?.candidate_company_id ?? null;
   const contacts = companyId ? await client.query<{ present: boolean }>(`select exists(select 1 from contact_routes where company_id=$1 union all select 1 from contact_investigations where company_id=$1) present`, [companyId]) : { rows: [] };
   return { observationId: row.observation_id, candidateId, title: toSafeEvidenceText(row.title) ?? "Stored Discovery observation", description: toSafeEvidenceText(row.description), url: row.normalized_url, source: row.source_domain,
     observedCompany: row.observed_company??resolvedIdentity.observedCompany, location: interpretedDemand.location ?? row.recorded_location,
-    profession: interpretedDemand.profession, level: interpretedDemand.level, quantity,
+    // recorded postings: level from what the posting states (an "Apprentice" requiring experience/journeyman license is mixed)
+    profession: interpretedDemand.profession, level: recordedLevel ?? interpretedDemand.level, quantity,
     companyDecision: latest ? { outcome: String(latest.confidence_metadata?.operatorOutcome ?? latest.result), companyId, companyName: latest.company_name, reason: latest.reason, decidedAt: new Date(latest.resolved_at).toISOString() } : null,
     demandDecision: demandLatest ? { decision: demandLatest.decision, demandSignalId: demandLatest.demand_signal_id, reason: demandLatest.reason, decidedAt: new Date(demandLatest.decided_at).toISOString(), opportunityId: demandLatest.opportunity_id } : null,
     companies: companies.rows, contactIntelligenceAvailable: Boolean(contacts.rows[0]?.present) };

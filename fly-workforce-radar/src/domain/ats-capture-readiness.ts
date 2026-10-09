@@ -103,9 +103,9 @@ export const PLATFORM_ACCESS: readonly PlatformAccess[] = [
   { platform: "WORKABLE", label: "Workable", preferredRoute: "AUTOMATIC", authorization: "REVIEW_PENDING", basis: "Documented public accounts endpoint; commercial use not confirmed (Enterprise ficha 2026-10-08)." },
   { platform: "SMARTRECRUITERS", label: "SmartRecruiters", preferredRoute: "AUTOMATIC", authorization: "REVIEW_PENDING", basis: "Public postings; employer terms decide per source." },
   { platform: "JAZZHR", label: "JazzHR", preferredRoute: "AUTOMATIC", authorization: "REVIEW_PENDING", basis: "The Strike host ALLOW does not extend to other JazzHR boards." },
-  { platform: "ICIMS", label: "iCIMS", preferredRoute: "ASSISTED", authorization: "REVIEW_PENDING", basis: "Employer terms vary; FSG requires written permission (2026-10-09)." },
+  { platform: "ICIMS", label: "iCIMS", preferredRoute: "AUTOMATIC", authorization: "REVIEW_PENDING", basis: "Employer terms vary; FSG requires written permission (2026-10-09)." },
   { platform: "ICIMS_JIBE", label: "iCIMS (Jibe)", preferredRoute: "ASSISTED", authorization: "REVIEW_PENDING", basis: "Employer terms vary; endpoint behaviour partial (IES)." },
-  { platform: "TALEO_BUSINESS_EDITION", label: "Taleo Business Edition", preferredRoute: "ASSISTED", authorization: "REVIEW_PENDING", basis: "Terms not reviewed; JS-vs-HTML evidence conflicts (Walker)." },
+  { platform: "TALEO_BUSINESS_EDITION", label: "Taleo Business Edition", preferredRoute: "AUTOMATIC", authorization: "REVIEW_PENDING", basis: "Terms not reviewed; JS-vs-HTML evidence conflicts (Walker)." },
   { platform: "ORACLE_TALEO", label: "Oracle Taleo", preferredRoute: "SPECIAL", authorization: "RESTRICTED", basis: "JavaScript-rendered enterprise portal." },
   { platform: "WORKDAY", label: "Workday", preferredRoute: "SPECIAL", authorization: "RESTRICTED", basis: "CXS requires POST/JavaScript." },
   { platform: "UKG_PRO", label: "UKG / UltiPro", preferredRoute: "SPECIAL", authorization: "RESTRICTED", basis: "Job board requires JavaScript/POST." },
@@ -138,6 +138,13 @@ export type EffectivePolicy = "AUTOMATED_CAPTURE_ALLOWED" | "ASSISTED_ONLY" | "B
  * clock. Assisted capture stays available for any public posting an operator can see: it never visits the URL and never
  * copies the full description, so it is not a way around a source's restrictions on automated collection.
  */
+/**
+ * The way work continues today. A platform preference never grants access: without a current persisted ALLOW the
+ * active route is assisted capture, so a block or a pending review changes the route instead of stopping the Radar.
+ */
+export type ActiveRoute = "AUTOMATED_CAPTURE" | "ASSISTED_CAPTURE";
+export function activeRouteFor(policy: EffectivePolicy): ActiveRoute { return policy === "AUTOMATED_CAPTURE_ALLOWED" ? "AUTOMATED_CAPTURE" : "ASSISTED_CAPTURE"; }
+
 export function effectivePolicy(target: CompanyAtsTarget, persistedAllowHosts: ReadonlySet<string>, now: Date): { readonly policy: EffectivePolicy; readonly assistedCaptureAvailable: boolean; readonly reason: string } {
   const host = (() => { try { return target.jobsUrl ? new URL(target.jobsUrl).hostname.toLowerCase() : null; } catch { return null; } })();
   const platform = PLATFORM_ACCESS.find((p) => p.platform === target.ats)!;

@@ -1,6 +1,8 @@
 import { canonicalPostingUrl, type CapturedPosting } from "./individual-posting-capture";
 import { externalIdFromUrl, platformFromUrl } from "./ats-capture-readiness";
 import type { AtsPlatform } from "./company-ats-catalog";
+import type { ObsoleteUrlRule } from "./ats-url-hygiene";
+import { classifyPostingLevel, matchingLevelFor } from "./posting-level";
 
 /**
  * Recipe 2.0 — assisted capture: an operator records a public posting they have seen (on the official page or in an
@@ -10,7 +12,17 @@ import type { AtsPlatform } from "./company-ats-catalog";
 export type AssistedProvenance = "ASSISTED_MANUAL" | "EMAIL_ALERT";
 export type DataClass = "REAL" | "DEMO";
 
-export const ASSISTED_LIMITS = { company: 200, title: 200, city: 120, salary: 120, experience: 300, licenses: 300, summary: 600, sender: 200, alertReference: 200 } as const;
+export const ASSISTED_LIMITS = { company: 200, title: 200, city: 120, salary: 120, experience: 300, licenses: 300, summary: 600, sender: 200, alertReference: 200, correctionReason: 600 } as const;
+
+/**
+ * Recipe 2.2 — official-link correction: the same posting recorded again under its corrected official URL, as a NEW
+ * observation linked to the earlier one (which keeps its URL, its error and its human decisions untouched).
+ */
+export interface UrlCorrection {
+  readonly previousCandidateId: string;
+  readonly reason: string;
+  readonly rule: ObsoleteUrlRule | null;
+}
 
 export interface AssistedPostingInput {
   readonly url: string;
@@ -26,6 +38,7 @@ export interface AssistedPostingInput {
   readonly provenance: AssistedProvenance;
   readonly dataClass: DataClass;
   readonly emailAlert: { readonly sender: string; readonly receivedOn: string; readonly alertReference: string } | null;
+  readonly correction?: UrlCorrection | null;
 }
 
 const trim = (value: string | null | undefined) => (value ?? "").trim();
@@ -59,6 +72,11 @@ export function validateAssistedPosting(input: AssistedPostingInput, now: Date):
   if (input.dataClass === "DEMO" && !demoNamed) errors.dataClass = "demoMustBeNamedDemoLocal";
   if (input.dataClass === "REAL" && demoNamed) errors.dataClass = "realCannotBeDemoLocal";
   if (input.dataClass !== "REAL" && input.dataClass !== "DEMO") errors.dataClass = "invalid";
+  if (input.correction) {
+    const reason = trim(input.correction.reason);
+    if (!/^[0-9a-f-]{36}$/i.test(trim(input.correction.previousCandidateId))) errors.correction = "invalid";
+    if (!reason) errors.correctionReason = "required"; else if (reason.length > ASSISTED_LIMITS.correctionReason) errors.correctionReason = "tooLong";
+  }
   return errors;
 }
 
@@ -77,12 +95,14 @@ export function toAssistedPosting(input: AssistedPostingInput): { readonly posti
   const normalizedUrl = canonicalPostingUrl(trim(input.url))!;
   const role = roleOf(trim(input.title));
   const licenses = listOf(input.licenses);
+  const levelClass = classifyPostingLevel({ title: trim(input.title), experience: trim(input.experience) || null, licenses });
   return {
     platform: platformFromUrl(normalizedUrl),
     identitySource: new URL(normalizedUrl).hostname,
     posting: {
       sourceUrl: trim(input.url), normalizedUrl, externalPostingId: externalIdFromUrl(normalizedUrl), employerName: trim(input.company), title: trim(input.title),
-      profession: role.profession, professionalLevel: role.level, location: `${trim(input.city)}, ${trim(input.state).toUpperCase()}`,
+      // level from what the posting states (an "Apprentice" requiring experience or a journeyman license is MIXED)
+      profession: role.profession, professionalLevel: levelClass === "UNKNOWN" ? role.level : matchingLevelFor(levelClass, trim(input.title)), location: `${trim(input.city)}, ${trim(input.state).toUpperCase()}`,
       compensation: trim(input.salary) || null, perDiem: null, experience: trim(input.experience) || null, licenses, certifications: [],
       // The operator records when they OBSERVED the posting; the source's posting date is not inferred from it.
       postingDate: null, explicitEmployerHeadcount: null, applicationUrl: normalizedUrl,

@@ -2,26 +2,46 @@ import Link from "next/link";
 import { getDiscoveryIntelligence } from "../../../server/discovery-intelligence/get-discovery-intelligence";
 import { ManualMissForm } from "../../../components/discovery-intelligence/manual-miss-form";
 import { AssistedPostingForm } from "../../../components/discovery-intelligence/assisted-posting-form";
-import { intelligenceCopy, labelFor } from "../../../components/discovery-intelligence/intelligence-copy";
+import { intelligenceCopy, labelFor, opsCopy } from "../../../components/discovery-intelligence/intelligence-copy";
+import { ExternalSupplierAnswerForm } from "../../../components/discovery-intelligence/external-supplier-answer-form";
+import { SupplierAnswerSummary } from "../../../components/discovery-intelligence/external-supplier-answer-summary";
 import { resolveServerLocale } from "../../../i18n/server-locale";
 import { formatDate, formatNumber } from "../../../i18n/format";
 import { nextPostingToWork } from "../../../domain/posting-workflow";
 import styles from "./page.module.css";
 
+const LEVELS = ["ENTRY_LEVEL", "MIXED_APPRENTICE_EXPERIENCED", "EXPERIENCED", "UNKNOWN"] as const;
+const PRIORITY_KEYS = ["enterprise", "walker", "fsg"] as const;
+
 export default async function DiscoveryIntelligencePage({ searchParams = Promise.resolve({}) }: { readonly searchParams?: Promise<Record<string, string | string[] | undefined>> } = {}) {
   const [snapshot, locale, params] = await Promise.all([getDiscoveryIntelligence(), resolveServerLocale(), searchParams]);
   const t = intelligenceCopy(locale);
+  const o = opsCopy(locale);
   const label = (value: string) => labelFor(locale, value);
   const count = (value: number | null) => value === null ? "—" : formatNumber(locale, value);
   const date = (value: string | null) => value ? formatDate(locale, new Date(value), { month: "short", day: "numeric", year: "numeric" }) : t.unknown;
   const prefillCompany = typeof params.company === "string" ? params.company.slice(0, 200) : "";
+  const levelFilter = LEVELS.find((l) => l === params.level) ?? null;
   const review = snapshot.companyDemand.filter((group) => group.resolutionState !== "RESOLVED_CANONICAL");
   const r20 = snapshot.recipe20;
   const realPostings = snapshot.individualPostings.filter((p) => p.dataClass === "REAL");
   const nextWork = nextPostingToWork(realPostings.filter((p) => p.reviewHref));
-  const flowLinks = ["#register", "#individual-postings", nextWork?.reviewHref ? `${nextWork.reviewHref}#guided-review` : "#individual-postings", "#recipe-2-0", "/contacts", "/opportunities/pursuits"];
-  const hints = t.flowHints(r20?.realPostings ?? realPostings.length, r20?.pendingPostingVerification ?? 0, r20?.pendingCompanyOrDemand ?? 0, r20?.possibleClients.length ?? 0, r20?.conversations ?? 0);
+  const nextOf = (kinds: readonly string[]) => nextPostingToWork(realPostings.filter((p) => p.reviewHref && kinds.includes(p.next)));
+  const nextVerify = nextOf(["VERIFY_POSTING", "RECHECK_POSTING"]);
+  const nextCompany = nextOf(["CONFIRM_COMPANY", "DECIDE_DEMAND"]);
+  const shownPostings = levelFilter ? snapshot.individualPostings.filter((p) => p.levelClass === levelFilter) : snapshot.individualPostings;
   const enterprise = r20?.sources.find((s) => s.key === "enterprise") ?? null;
+  const unasked = r20 ? PRIORITY_KEYS.filter((k) => !r20.supplierAnswers[k]).length : 0;
+  const stages = r20 ? [
+    { key: "REGISTER", state: o.registerState(r20.today.registered, r20.today.goal, r20.realPostings, r20.targets.realPostings), evidence: o.registerEvidence(r20.channels.ASSISTED_MANUAL, r20.channels.EMAIL_ALERT, r20.channels.AUTOMATED_HTTP),
+      pending: o.registerPending(r20.capturePriorities.slice(0, 3).map((p) => p.name).join(", ")), next: o.registerNext, href: "#register" },
+    { key: "VERIFY", state: o.verifyState(r20.verifiedPostings), evidence: o.verifyEvidence, pending: o.verifyPending(r20.pendingPostingVerification, r20.obsoleteUrlsPending),
+      next: nextVerify ? `${o.verifyNext}: ${nextVerify.title ?? ""} — ${nextVerify.employerName ?? ""}` : o.verifyNext, href: nextVerify?.reviewHref ? `${nextVerify.reviewHref}#guided-review` : "#individual-postings" },
+    { key: "COMPANY", state: o.companyState(r20.demandVerified), evidence: o.companyEvidence(r20.commercialSignals, r20.possibleClients.length), pending: o.companyPending(r20.pendingCompanyOrDemand),
+      next: nextCompany ? `${o.companyNext}: ${nextCompany.title ?? ""} — ${nextCompany.employerName ?? ""}` : o.companyNext, href: nextCompany?.reviewHref ? `${nextCompany.reviewHref}#review-r1-title` : "#recipe-2-0" },
+    { key: "CONTACT", state: o.contactState(r20.supplierAnswerCounts.YES, r20.supplierAnswerCounts.NO, r20.supplierAnswerCounts.OWN_AGENCY_ONLY, r20.supplierAnswerCounts.NO_RESPONSE),
+      evidence: o.contactEvidence(r20.conversations, r20.staffRequests), pending: o.contactPending(unasked), next: o.contactNext, href: "#priority-companies" },
+  ] : [];
   return <div className={`page-stack ${styles.page}`}>
     <header className="app-page-header">
       <p className="po-eyebrow">{t.eyebrow}</p>
@@ -32,22 +52,45 @@ export default async function DiscoveryIntelligencePage({ searchParams = Promise
     {snapshot.state !== "READY" ? <section className={styles.boundary} role="status"><strong>{snapshot.state === "UNAVAILABLE" ? t.dbUnavailable : t.modelUnavailable}</strong><span>{t.noFabrication}</span></section> : null}
 
     <section className={styles.panel} id="daily-flow" aria-labelledby="daily-flow-title">
-      <header><div><p className="po-eyebrow">{t.flowEyebrow}</p><h2 id="daily-flow-title">{t.flowTitle}</h2></div></header>
-      <ol className={styles.dailyFlow}>{t.flowSteps.map((step, index) => <li key={step}><Link href={flowLinks[index]}><b>{String(index + 1).padStart(2, "0")}</b><strong>{step}</strong><small>{hints[index]}</small></Link></li>)}</ol>
+      <header><div><p className="po-eyebrow">{o.stagesEyebrow}</p><h2 id="daily-flow-title">{o.stagesTitle}</h2></div></header>
+      <ol className={styles.stageFlow}>{stages.map((stage, index) => <li key={stage.key}>
+        <b>{String(index + 1).padStart(2, "0")} · {o.stage[stage.key]}</b>
+        <dl><div><dt>{o.state}</dt><dd>{stage.state}</dd></div><div><dt>{o.evidence}</dt><dd>{stage.evidence}</dd></div><div><dt>{o.pending}</dt><dd>{stage.pending}</dd></div></dl>
+        <Link href={stage.href}>{o.next}: {stage.next} →</Link>
+      </li>)}</ol>
       <div className={styles.nextAction} role="status">
         <small>{t.nextActionTitle}</small>
         {nextWork ? <><strong>{t.nextLabel[nextWork.next]}</strong><p>{nextWork.title ?? t.unknownTitle} — {nextWork.employerName ?? t.unknownEmployer} · {nextWork.location ?? t.unknownLocation}</p>
           <Link className="button button-primary" href={`${nextWork.reviewHref}#guided-review`}>{t.goNext}</Link></>
-          : <><p>{t.nothingPending}</p><Link className="button button-secondary" href="#register">{t.flowSteps[0]} →</Link></>}
+          : <><p>{t.nothingPending}</p><Link className="button button-secondary" href="#register">{o.registerNext} →</Link></>}
       </div>
     </section>
 
+    {r20 ? <section className={styles.panel} id="today-goal" aria-labelledby="today-goal-title">
+      <header><div><p className="po-eyebrow">{r20.today.date}</p><h2 id="today-goal-title">{o.todayTitle}</h2></div><span>{o.todayObservations(r20.today.observationsRecorded)}</span></header>
+      <div className={styles.todayGoal}><strong>{o.todayLine(r20.today.registered, r20.today.goal)}</strong>
+        <meter min={0} max={r20.today.goal} value={Math.min(r20.today.registered, r20.today.goal)} aria-label={o.todayTitle} />
+        <p>{o.byOperator}: {r20.today.byOperator.length ? r20.today.byOperator.map((x) => `${x.name} ${x.count}`).join(" · ") : o.nobodyYet}</p>
+        <p className="sig-muted">{o.todayNote}</p></div>
+      <h3>{o.priorities}</h3>
+      <ol className={styles.captureList}>{r20.capturePriorities.map((p) => <li key={p.key}>
+        <strong>{p.name}</strong><span>{label(p.policy)} · {o.activeRoute[p.activeRoute]}</span>
+        <Link href={`?company=${encodeURIComponent(p.name.replace(/\s*\(.*\)\s*$/, ""))}#register`}>{t.registerFor(p.name)} →</Link>
+      </li>)}</ol>
+      <p className={styles.boundaryNote}>{o.routeNote}</p>
+    </section> : null}
+
     <section className={styles.panel} id="individual-postings">
       <header><div><p className="po-eyebrow">{t.postingsEyebrow}</p><h2>{t.postingsTitle}</h2></div><span>{t.postingsSummary(snapshot.individualPostings.length)}</span></header>
-      {snapshot.individualPostings.length === 0 ? <div className={styles.decompositionEmpty}><strong>{t.noPostingsTitle}</strong><p>{t.noPostingsBody}</p></div> :
-        <div className={styles.individualPostingList}>{snapshot.individualPostings.map((posting) => <article key={posting.evidenceId}>
+      <nav className={styles.levelFilter} aria-label={o.levelFilter}><span>{o.levelFilter}:</span>
+        <Link href="?#individual-postings" aria-current={levelFilter ? undefined : "true"}>{o.allLevels}</Link>
+        {LEVELS.map((l) => <Link key={l} href={`?level=${l}#individual-postings`} aria-current={levelFilter === l ? "true" : undefined}>{o.level[l]}</Link>)}</nav>
+      {shownPostings.length === 0 ? <div className={styles.decompositionEmpty}><strong>{t.noPostingsTitle}</strong><p>{t.noPostingsBody}</p></div> :
+        <div className={styles.individualPostingList}>{shownPostings.map((posting) => <article key={posting.evidenceId}>
           <div className={styles.cardTop}><span className={styles.childBadge}>{label(posting.provenance)}</span><span>{label(posting.dataClass)}</span><span>{t.stageLabel[posting.stage]}</span>{posting.observationCount > 1 ? <span>{t.observationOf(posting.observationNumber, posting.observationCount)}</span> : null}</div>
           <h3>{posting.title ?? t.unknownTitle}</h3><p>{posting.employerName ?? t.unknownEmployer} · {posting.location ?? t.unknownLocation}</p>
+          <p className={styles.levelBadge}>{o.level[posting.levelClass]}{posting.urlCorrected ? ` · ${o.correctedBadge}` : ""}</p>
+          {posting.obsoleteUrl && posting.stage !== "SUPERSEDED" ? <p className={styles.obsoleteNote}><b>{o.obsoleteBadge}</b> → <code>{posting.obsoleteUrl.proposedUrl}</code>{posting.reviewHref ? <> <Link href={`${posting.reviewHref}#correct-link`}>{o.fixLink}</Link></> : null}</p> : null}
           <p className={posting.open ? styles.postingNext : styles.postingClosed}><b>{t.nextStep}:</b> {t.nextLabel[posting.next]}</p>
           <dl className={styles.factGrid}>
             <div><dt>{t.profession}</dt><dd>{posting.profession ? label(posting.profession) : t.unknown}</dd></div>
@@ -67,28 +110,35 @@ export default async function DiscoveryIntelligencePage({ searchParams = Promise
     {r20 ? <section className={styles.panel} id="recipe-2-0">
       <header><div><p className="po-eyebrow">{t.progressEyebrow}</p><h2>{t.progressTitle}</h2></div><span>{t.goalsLine(r20.targets.realPostings, r20.targets.possibleClients)}</span></header>
       <dl className={styles.factGrid}>
-        <div><dt>{t.mRegistered}</dt><dd>{r20.realPostings} / {r20.targets.realPostings} {t.mGoal}</dd></div>
+        <div><dt>{o.mVacancies}</dt><dd>{r20.realPostings} / {r20.targets.realPostings} {t.mGoal}</dd></div>
         <div><dt>{t.mByChannel}</dt><dd>{t.automated} {r20.channels.AUTOMATED_HTTP} · {t.assisted} {r20.channels.ASSISTED_MANUAL} · {t.emailAlert} {r20.channels.EMAIL_ALERT}</dd></div>
-        <div><dt>{t.mPostingVerified}</dt><dd>{r20.verifiedPostings}</dd></div>
-        <div><dt>{t.mDemandVerified}</dt><dd>{r20.demandVerified}</dd></div>
-        <div><dt>{t.mPendingPosting}</dt><dd>{r20.pendingPostingVerification}</dd></div>
-        <div><dt>{t.mPendingDecision}</dt><dd>{r20.pendingCompanyOrDemand}</dd></div>
-        <div><dt>{t.mSignals}</dt><dd>{r20.commercialSignals}</dd></div>
-        <div><dt>{t.mPossible}</dt><dd>{r20.possibleClients.length} / {r20.targets.possibleClients} {t.mGoal}{r20.possibleClients.length ? ` — ${r20.possibleClients.map((c) => `${c.employer} (${c.signals.map(label).join(", ")})`).join("; ")}` : ""}</dd></div>
-        <div><dt>{t.mConfirmed}</dt><dd>{r20.confirmedClients}</dd></div>
+        <div><dt>{o.mVerified}</dt><dd>{r20.verifiedPostings}</dd></div>
+        <div><dt>{o.mPending}</dt><dd>{r20.pendingPostingVerification + r20.pendingCompanyOrDemand}</dd></div>
+        <div><dt>{o.mDuplicates}</dt><dd>{r20.duplicatesPrevented} ({t.reobs} {r20.reObservations})</dd></div>
+        <div><dt>{o.mCorrections}</dt><dd>{r20.urlCorrections}</dd></div>
+        <div><dt>{o.mDemand}</dt><dd>{r20.demandVerified}</dd></div>
+        <div><dt>{o.mSignals}</dt><dd>{r20.commercialSignals}</dd></div>
+        <div><dt>{o.mPossible}</dt><dd>{r20.possibleClients.length} / {r20.targets.possibleClients} {t.mGoal}{r20.possibleClients.length ? ` — ${r20.possibleClients.map((c) => `${c.employer} (${c.signals.map(label).join(", ")})`).join("; ")}` : ""}</dd></div>
+        <div><dt>{o.mConfirmed}</dt><dd>{r20.confirmedClients}</dd></div>
+        <div><dt>{o.mStaff}</dt><dd>{r20.staffRequests}</dd></div>
         <div><dt>{t.mConversations}</dt><dd>{r20.conversations} · {r20.results}</dd></div>
-        <div><dt>{t.mDuplicates}</dt><dd>{r20.duplicatesPrevented} ({t.reobs} {r20.reObservations})</dd></div>
+        <div><dt>{o.mLevels}</dt><dd>{LEVELS.map((l) => `${o.level[l]} ${r20.levels[l]}`).join(" · ")}</dd></div>
+        <div><dt>{o.mSuppliers}</dt><dd>{o.contactState(r20.supplierAnswerCounts.YES, r20.supplierAnswerCounts.NO, r20.supplierAnswerCounts.OWN_AGENCY_ONLY, r20.supplierAnswerCounts.NO_RESPONSE)}</dd></div>
         <div><dt>{t.mRestricted}</dt><dd>{r20.restrictedSources} {t.of} {r20.sources.length}</dd></div>
         <div><dt>{t.mDemo}</dt><dd>{r20.demoPostings}</dd></div>
       </dl>
-      <p className={styles.boundaryNote}>{t.metricsNote}</p>
+      <p className={styles.boundaryNote}>{o.separation} {t.metricsNote}</p>
 
+      <div id="priority-companies">
       {enterprise ? <article className={styles.priorityFocus} id="enterprise-investigation">
-        <div className={styles.cardTop}><span className={styles.childBadge}>{t.priority} 1</span><span>{label(enterprise.effective.policy)}</span><span>{enterprise.platformLabel} · {label(enterprise.preferredRoute)}</span></div>
+        <div className={styles.cardTop}><span className={styles.childBadge}>{t.priority} 1</span><span>{label(enterprise.effective.policy)}</span><span>{enterprise.platformLabel} · {o.activeRoute[enterprise.activeRoute]}</span></div>
         <h3>{t.enterpriseTitle}</h3>
         <p>{t.enterpriseLede}</p>
         <p className={styles.reasonLine}>{t.enterpriseStatus}</p>
         <ol>{t.enterpriseQuestions.map((q) => <li key={q}>{q}</li>)}</ol>
+        <h4>{o.supplierTitle}</h4>
+        <SupplierAnswerSummary locale={locale} answers={r20.supplierAnswers.enterprise ? [r20.supplierAnswers.enterprise] : []} />
+        <ExternalSupplierAnswerForm locale={locale} catalogKey="enterprise" companyId={r20.priorityCompanies.enterprise ?? null} companyName={enterprise.name} />
         <div className={styles.safeActions}>
           <Link href={`?company=${encodeURIComponent(enterprise.name)}#register`}>{t.registerFor(enterprise.name)}</Link>
           {r20.priorityCompanies.enterprise ? <Link href={`/companies/${r20.priorityCompanies.enterprise}#commercial`}>{t.canonicalCompany} →</Link> : <span>{t.noCanonical}</span>}
@@ -100,10 +150,13 @@ export default async function DiscoveryIntelligencePage({ searchParams = Promise
         <div className={styles.cardTop}><span className={styles.childBadge}>{s.priority ? `${t.priority} ${s.priority.rank}` : `${t.wave} ${s.wave}`}</span><span>{label(s.effective.policy)}</span><span>{s.platformLabel} · {label(s.preferredRoute)}</span></div>
         <h3>{s.name}</h3>
         <p>{s.priority ? t.priorityNotes[s.key] ?? s.priority.note : t.policyNotes[s.effective.policy] ?? s.effective.reason}</p>
-        <small>{s.review.state === "NOT_STARTED" ? t.reviewNotStarted : `${label(s.review.state)} · ${s.review.minutesElapsed} ${t.minSince}`} · {s.effective.assistedCaptureAvailable ? t.assistedAvailable : t.assistedUnavailable}</small>
+        <small>{o.activeRoute[s.activeRoute]} · {s.review.state === "NOT_STARTED" ? t.reviewNotStarted : `${label(s.review.state)} · ${s.review.minutesElapsed} ${t.minSince}`}</small>
+        {s.priority && s.key !== "enterprise" ? <><h4>{o.supplierTitle}</h4><SupplierAnswerSummary locale={locale} answers={r20.supplierAnswers[s.key] ? [r20.supplierAnswers[s.key]!] : []} />
+          <ExternalSupplierAnswerForm locale={locale} catalogKey={s.key} companyId={r20.priorityCompanies[s.key] ?? null} companyName={s.name} /></> : null}
         {s.priority ? <div className={styles.safeActions}><Link href={`?company=${encodeURIComponent(s.name.replace(/\s*\(.*\)\s*$/, ""))}#register`}>{t.registerFor(s.name)}</Link>
           {r20.priorityCompanies[s.key] ? <Link href={`/companies/${r20.priorityCompanies[s.key]}#commercial`}>{t.canonicalCompany} →</Link> : null}</div> : null}
       </article>)}</div>
+      </div>
     </section> : null}
 
     <section className={styles.metrics} aria-label={t.scorecard}>
