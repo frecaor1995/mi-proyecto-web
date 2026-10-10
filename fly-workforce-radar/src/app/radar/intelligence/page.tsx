@@ -5,6 +5,7 @@ import { AssistedPostingForm } from "../../../components/discovery-intelligence/
 import { intelligenceCopy, labelFor, opsCopy } from "../../../components/discovery-intelligence/intelligence-copy";
 import { ExternalSupplierAnswerForm } from "../../../components/discovery-intelligence/external-supplier-answer-form";
 import { SupplierAnswerSummary } from "../../../components/discovery-intelligence/external-supplier-answer-summary";
+import { StaffingIntelligenceSection } from "../../../components/staffing-intelligence/staffing-intelligence";
 import { resolveServerLocale } from "../../../i18n/server-locale";
 import { formatDate, formatNumber } from "../../../i18n/format";
 import { nextPostingToWork } from "../../../domain/posting-workflow";
@@ -79,6 +80,8 @@ export default async function DiscoveryIntelligencePage({ searchParams = Promise
       </li>)}</ol>
       <p className={styles.boundaryNote}>{o.routeNote}</p>
     </section> : null}
+
+    <StaffingIntelligenceSection locale={locale} />
 
     <section className={styles.panel} id="individual-postings">
       <header><div><p className="po-eyebrow">{t.postingsEyebrow}</p><h2>{t.postingsTitle}</h2></div><span>{t.postingsSummary(snapshot.individualPostings.length)}</span></header>

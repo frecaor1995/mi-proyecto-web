@@ -8,6 +8,7 @@ import { PainCard } from "./pursuit-workspace";
 import { COMPANY_ATS_CATALOG } from "../../domain/company-ats-catalog";
 import { intelligenceCopy } from "../discovery-intelligence/intelligence-copy";
 import { CompanySupplierAnswers } from "../discovery-intelligence/external-supplier-answer-summary";
+import { CompanyStaffingBlock } from "../staffing-intelligence/staffing-intelligence";
 
 const normalizeName = (value: string) => value.toLowerCase().replace(/\(.*?\)/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\b(inc|llc|co|corp|group)\b/g, " ").replace(/\s+/g, " ").trim();
 /** Recipe 2.0 commercial priority for a company, when the owner catalog names it (never implies a contact, need or client). */
@@ -34,6 +35,7 @@ export function CompanyCommercialPanel({ locale, companyId, companyName, data, p
       <p className="sig-panel-lede">{c.companyLede}</p>
       <p className="dr-note">{c.noOutreach}</p>
       {priority ? <p className="dr-card-note"><strong>{locale === "es-US" ? "Receta 2.0 · Prioridad" : "Recipe 2.0 · Priority"} {priority.rank}</strong> — {intelligenceCopy(locale).priorityNotes[priority.key] ?? priority.note}</p> : null}
+      <CompanyStaffingBlock locale={locale} companyId={companyId} />
       <CompanySupplierAnswers locale={locale} companyId={companyId} companyName={companyName} canWrite={permissions.canWrite} />
       <dl className="ci-grid"><div><dt>{c.pain}</dt><dd>{c.painLevel[data.pain.level]}<small>{c.painCounts(data.pain.usable, data.pain.withheld)}</small></dd></div></dl>
 
