@@ -8,6 +8,7 @@ import {
 } from "../../domain/staffing-demand";
 import { loadSupplierAnswers } from "../discovery-intelligence/external-supplier-answers";
 import { loadProjectSignals, type ProjectSignalView } from "./project-signals";
+import { supplierAnswerFromCall, type CallSupplierAnswer } from "../../domain/company-contact-desk";
 
 /**
  * Staffing commercial intelligence read model: one row per company, built only from evidence that already exists
@@ -51,7 +52,7 @@ const iso = (value: unknown) => new Date(String(value)).toISOString();
 const str = (value: unknown) => (value == null || value === "" ? null : String(value));
 
 export async function loadStaffingIntelligence(db: SqlClient, now = new Date(), only?: { readonly companyId: string }): Promise<StaffingSnapshot> {
-  const [postings, pains, activities, acceptance, people, routes, supply, companies, projects, answers] = await Promise.all([
+  const [postings, pains, activities, acceptance, people, routes, supply, companies, projects, answers, calls, nextActions] = await Promise.all([
     db.query<Record<string, unknown>>(`select distinct on (o.observation_identity) o.observation_identity identity,o.captured_at,e.metadata->'posting' posting,
         coalesce(e.metadata->>'dataClass','REAL') data_class,
         (select min(o2.captured_at) from discovery_watch_observations o2 where o2.observation_identity=o.observation_identity) first_seen,
@@ -72,6 +73,9 @@ export async function loadStaffingIntelligence(db: SqlClient, now = new Date(), 
     db.query<{ id: string; name: string }>("select id,coalesce(common_name,legal_name) name from companies where merged_into_company_id is null"),
     loadProjectSignals(db),
     loadSupplierAnswers(db),
+    // company-level calls and next actions (Contact Intelligence); DEMO records never count as real activity
+    db.query<Record<string, unknown>>(`select id,company_id,to_char(contact_date,'YYYY-MM-DD') contact_date,call_outcome,external_supplier_answer,notes,recorded_at from contact_interactions where company_id is not null and is_demo=false`),
+    db.query<Record<string, unknown>>(`select company_id,action,to_char(due_date,'YYYY-MM-DD') due_date,created_at from company_next_actions where status='OPEN' and is_demo=false`),
   ]);
   const electricalWorkers = Number(supply.rows[0]?.real ?? 0);
   const companyById = new Map(companies.rows.map((c) => [c.id, c.name]));
@@ -137,7 +141,25 @@ export async function loadStaffingIntelligence(db: SqlClient, now = new Date(), 
       headcount: row.headcount_estimate == null ? null : Number(row.headcount_estimate), role: str(row.demand_title) });
     b.dates.push(iso(row.performed_at));
   }
+  for (const row of calls.rows) {
+    const s = subjectFor({ companyId: str(row.company_id) }); if (!s) continue;
+    // a real call is a conversation attempt; it joins the follow-up timeline like an activity
+    activitiesBy.set(s.key, [...(activitiesBy.get(s.key) ?? []), { performed_at: `${String(row.contact_date)}T12:00:00.000Z`, notes: row.notes, outcome: row.call_outcome, next_action: null, result: null }]);
+    bucket(s).dates.push(iso(row.recorded_at));
+  }
+  for (const row of nextActions.rows) {
+    const s = subjectFor({ companyId: str(row.company_id) }); if (!s) continue;
+    activitiesBy.set(s.key, [...(activitiesBy.get(s.key) ?? []), { performed_at: row.created_at, notes: null, outcome: null, next_action: row.action, next_action_due: row.due_date, result: null, actionOnly: true }]);
+  }
   const answersBy = new Map<string, RecordedSupplierAnswer[]>();
+  for (const row of calls.rows) {
+    const answer = supplierAnswerFromCall(String(row.external_supplier_answer) as CallSupplierAnswer);
+    if (!answer) continue; // NOT_ASKED is not an answer
+    const s = subjectFor({ companyId: str(row.company_id) }); if (!s) continue;
+    answersBy.set(s.key, [...(answersBy.get(s.key) ?? []), { evidenceId: `call:${String(row.id)}`, answer, catalogKey: s.catalogKey, companyId: s.companyId, companyName: s.name,
+      conversationDate: str(row.contact_date), responderName: null, responderRole: null, channel: "CALL", summary: str(row.notes), evidenceReference: `call:${String(row.id)}`,
+      nextAction: null, recordedByOperatorId: "", recordedBy: null, recordedAt: iso(row.recorded_at) }]);
+  }
   for (const a of answers) { const s = subjectFor({ companyId: a.companyId, catalogKey: a.catalogKey, name: a.companyName }); if (s) { answersBy.set(s.key, [...(answersBy.get(s.key) ?? []), a]); bucket(s).dates.push(a.recordedAt); } }
   const acceptanceBy = new Map(acceptance.rows.map((r) => [String(r.company_id), String(r.result)]));
   const peopleBy = new Map(people.rows.map((r) => [String(r.company_id), Number(r.n)]));
@@ -156,7 +178,7 @@ export async function loadStaffingIntelligence(db: SqlClient, now = new Date(), 
       manpowerAcceptance: accept === "VERIFIED_POSITIVE" || accept === "VERIFIED_NEGATIVE" ? accept : accept ? "OTHER" : null, verifiableContacts: verifiedRoutes,
       networkWorkers: electrical ? electricalWorkers : 0, lastEvidenceAt, now });
     const acts = (activitiesBy.get(s.key) ?? []).sort((x, y) => iso(y.performed_at).localeCompare(iso(x.performed_at)));
-    const lastActivity = acts[0] ?? null;
+    const lastActivity = acts.find((a) => !a.actionOnly) ?? null;
     const lastConversation = [
       answer && answer.answer !== "NOT_INVESTIGATED" ? { date: answer.conversationDate ?? answer.recordedAt.slice(0, 10), kind: "SUPPLIER_ANSWER" as const, summary: answer.summary } : null,
       lastActivity ? { date: iso(lastActivity.performed_at).slice(0, 10), kind: "ACTIVITY" as const, summary: str(lastActivity.notes) ?? str(lastActivity.outcome) } : null,
