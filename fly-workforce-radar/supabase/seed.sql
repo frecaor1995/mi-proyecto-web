@@ -36,7 +36,7 @@ insert into workforce_operators (
   '10000000-0000-4000-8000-000000000001',
   'local-workforce-operator@example.invalid',
   'DEMO LOCAL Workforce Operator', 'ACTIVE',
-  array['human_verification.write','commercial_economics.write','commercial_economics.decide'],
+  array['human_verification.write','commercial_economics.write','commercial_economics.decide','company_discovery.run'],
   '2026-09-01T12:00:00Z', '2026-09-01T12:00:00Z'
 );
 
