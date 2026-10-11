@@ -174,6 +174,9 @@ export interface WorkerCredentialRecord {
   readonly issuedAt: Date | null;
   readonly expiresAt: Date | null;
   readonly issuingAuthority: string | null;
+  readonly credentialDesignation?: WorkerCredentialDesignation | null;
+  /** Public-safe professional license number; never an identity-document number. */
+  readonly professionalLicenseNumber?: string | null;
   readonly jurisdiction?: string | null;
   readonly lifecycleStatus?: "CURRENT"|"SUPERSEDED"|"REVOKED"|"UNKNOWN";
   readonly sourceEvidenceId: string | null;
@@ -188,11 +191,20 @@ export interface AddWorkerCredentialInput {
   readonly issuedAt?: Date | null;
   readonly expiresAt?: Date | null;
   readonly issuingAuthority?: string | null;
+  readonly credentialDesignation?: WorkerCredentialDesignation | null;
+  readonly professionalLicenseNumber?: string | null;
   readonly jurisdiction?: string | null;
   /** Write-only. Never returned by any read method in this domain. */
   readonly rawIdentifier?: string | null;
   readonly sourceEvidenceId?: string | null;
 }
+
+export const WORKER_CREDENTIAL_DESIGNATIONS = [
+  "APPRENTICE_ELECTRICIAN",
+  "JOURNEYMAN_ELECTRICIAN",
+  "MASTER_ELECTRICIAN",
+] as const;
+export type WorkerCredentialDesignation = (typeof WORKER_CREDENTIAL_DESIGNATIONS)[number];
 
 export interface UpdateWorkerCredentialVerificationInput {
   readonly workerId: string;

@@ -26,10 +26,11 @@ export type NormalizedWorker = {
   displayName: string;
   tradeCode: "ELECTRICAL";
   occupationCode: "ELECTRICIAN";
-  levelCode: "APPRENTICE" | "JOURNEYMAN";
+  levelCode: "APPRENTICE" | "JOURNEYMAN" | "MASTER";
   experienceMonths: number;
   availability: "AVAILABLE";
-  tdlrType: "APPRENTICE" | "JOURNEYMAN";
+  tdlrType: "APPRENTICE" | "JOURNEYMAN" | "MASTER" | null;
+  credentialDesignation: "APPRENTICE_ELECTRICIAN" | "JOURNEYMAN_ELECTRICIAN" | "MASTER_ELECTRICIAN" | null;
   tdlrNumber: string;
   tdlrExpiration: string | null;
   tdlrVerification: "UNKNOWN";
@@ -77,10 +78,11 @@ export function normalizeRows(rows: RawRow[]): NormalizedWorker[] {
     const oshaRaw = row.values.OSHA.trim().toUpperCase();
     if (!id || !name) throw new Error(`MISSING_IDENTITY_ROW_${row.rowNumber}`);
     if (row.values.TRADE.trim().toUpperCase() !== "ELECTRICAL") throw new Error(`UNSUPPORTED_TRADE_ROW_${row.rowNumber}`);
-    if (level !== "APPRENTICE" && level !== "JOURNEYMAN") throw new Error(`UNSUPPORTED_LEVEL_ROW_${row.rowNumber}`);
+    if (!["APPRENTICE", "JOURNEYMAN", "MASTER"].includes(level)) throw new Error(`UNSUPPORTED_LEVEL_ROW_${row.rowNumber}`);
     if (!Number.isFinite(years) || years < 0 || !Number.isInteger(years)) throw new Error(`INVALID_EXPERIENCE_ROW_${row.rowNumber}`);
     if (row.values.AVAILABILITY.trim().toUpperCase() !== "AVAILABLE_NOW") throw new Error(`UNSUPPORTED_AVAILABILITY_ROW_${row.rowNumber}`);
-    if (row.values["TDLR TYPE"].trim().toUpperCase() !== level) throw new Error(`TDLR_LEVEL_CONFLICT_ROW_${row.rowNumber}`);
+    const tdlrType = row.values["TDLR TYPE"].trim().toUpperCase();
+    if (tdlrType && !["APPRENTICE", "JOURNEYMAN", "MASTER"].includes(tdlrType)) throw new Error(`UNSUPPORTED_TDLR_TYPE_ROW_${row.rowNumber}`);
     if (!row.values["TDLR NUMBER"].trim()) throw new Error(`MISSING_TDLR_ROW_${row.rowNumber}`);
     if (row.values["TDLR VERIFICATION"].trim().toUpperCase() !== "UNKNOWN") throw new Error(`TDLR_VERIFICATION_CONFLICT_ROW_${row.rowNumber}`);
     if (oshaRaw && oshaRaw !== "OSHA_10" && oshaRaw !== "OSHA_30") throw new Error(`UNSUPPORTED_OSHA_ROW_${row.rowNumber}`);
@@ -88,7 +90,8 @@ export function normalizeRows(rows: RawRow[]): NormalizedWorker[] {
     if (row.values["CONSENT TO PRESENT"].trim().toUpperCase() !== "UNKNOWN") throw new Error(`CONSENT_CONFLICT_ROW_${row.rowNumber}`);
     return {
       sourceRow: row.rowNumber, sourceWorkerId: id, displayName: name, tradeCode: "ELECTRICAL", occupationCode: "ELECTRICIAN",
-      levelCode: level, experienceMonths: years * 12, availability: "AVAILABLE", tdlrType: level,
+      levelCode: level as NormalizedWorker["levelCode"], experienceMonths: years * 12, availability: "AVAILABLE", tdlrType: tdlrType ? tdlrType as NormalizedWorker["tdlrType"] : null,
+      credentialDesignation: tdlrType ? `${tdlrType}_ELECTRICIAN` as NormalizedWorker["credentialDesignation"] : null,
       tdlrNumber: row.values["TDLR NUMBER"].trim(), tdlrExpiration: excelDate(row.values["TDLR EXPIRATION"]),
       tdlrVerification: "UNKNOWN", osha: oshaRaw ? oshaRaw as "OSHA_10" | "OSHA_30" : null, workAuthorizationStatus: "UNKNOWN", candidatePresentationConsent: "UNKNOWN",
     };
@@ -164,7 +167,7 @@ async function applyImport(client: Client, workers: NormalizedWorker[], payload:
       await client.query("insert into workforce_workers(id,display_name,lifecycle_status,profile_verification_state,source_of_record,first_seen_at,last_seen_at) values($1,$2,'ACTIVE','UNVERIFIED','IMPORTED',$3,$3) on conflict(id) do update set display_name=excluded.display_name,lifecycle_status='ACTIVE',profile_verification_state='UNVERIFIED',verified_at=null,source_of_record='IMPORTED',last_seen_at=excluded.last_seen_at,updated_at=now()", [workerId, worker.displayName, effectiveAt]);
       await client.query("insert into worker_trade_occupations(worker_id,trade_code,occupation_code,role_designation,experience_months,verification_state) values($1,'ELECTRICAL','ELECTRICIAN','PRIMARY',$2,'UNVERIFIED') on conflict(worker_id,occupation_code,trade_code) do update set role_designation='PRIMARY',experience_months=excluded.experience_months,verification_state='UNVERIFIED',source_evidence_id=null", [workerId, worker.experienceMonths]);
       await client.query("insert into worker_level_assignments(id,worker_id,trade_code,occupation_code,level_code,verification_state,source,effective_at) values($1,$2,'ELECTRICAL','ELECTRICIAN',$3,'UNVERIFIED','OPERATOR_ENTERED',$4) on conflict(id) do update set level_code=excluded.level_code,verification_state='UNVERIFIED',source='OPERATOR_ENTERED',effective_at=excluded.effective_at", [deterministicUuid("level", key), workerId, worker.levelCode, effectiveAt]);
-      await client.query("insert into worker_credentials(id,worker_id,credential_code,verification_state,verified_at,expires_at,issuing_authority,jurisdiction,lifecycle_status,raw_identifier) values($1,$2,'ELECTRICAL_LICENSE','UNVERIFIED',null,$3,'Texas Department of Licensing and Regulation','TX','CURRENT',$4) on conflict(id) do update set verification_state='UNVERIFIED',verified_at=null,expires_at=excluded.expires_at,issuing_authority=excluded.issuing_authority,jurisdiction='TX',lifecycle_status='CURRENT',raw_identifier=excluded.raw_identifier,source_evidence_id=null", [deterministicUuid("credential-tdlr", key), workerId, worker.tdlrExpiration, worker.tdlrNumber]);
+      await client.query("insert into worker_credentials(id,worker_id,credential_code,verification_state,verified_at,expires_at,issuing_authority,credential_designation,professional_license_number,jurisdiction,lifecycle_status,raw_identifier) values($1,$2,'ELECTRICAL_LICENSE','UNVERIFIED',null,$3,'Texas Department of Licensing and Regulation',$4,$5,'TX','CURRENT',$5) on conflict(id) do update set verification_state='UNVERIFIED',verified_at=null,expires_at=excluded.expires_at,issuing_authority=excluded.issuing_authority,credential_designation=excluded.credential_designation,professional_license_number=excluded.professional_license_number,jurisdiction='TX',lifecycle_status='CURRENT',raw_identifier=excluded.raw_identifier,source_evidence_id=null", [deterministicUuid("credential-tdlr", key), workerId, worker.tdlrExpiration, worker.credentialDesignation, worker.tdlrNumber]);
       if (worker.osha) await client.query("insert into worker_credentials(id,worker_id,credential_code,verification_state,verified_at,issuing_authority,jurisdiction,lifecycle_status,raw_identifier) values($1,$2,$3,'UNVERIFIED',null,'Occupational Safety and Health Administration','US','CURRENT',null) on conflict(id) do update set credential_code=excluded.credential_code,verification_state='UNVERIFIED',verified_at=null,issuing_authority=excluded.issuing_authority,jurisdiction='US',lifecycle_status='CURRENT',raw_identifier=null,source_evidence_id=null", [deterministicUuid(`credential-${worker.osha.toLowerCase()}`, key), workerId, worker.osha]);
       await client.query("insert into worker_availability(id,worker_id,status,source,effective_at,verification_state) values($1,$2,'AVAILABLE','OPERATOR_ENTERED',$3,'UNVERIFIED') on conflict(id) do update set status='AVAILABLE',source='OPERATOR_ENTERED',effective_at=excluded.effective_at,verification_state='UNVERIFIED'", [deterministicUuid("availability", key), workerId, effectiveAt]);
       for (const purpose of ["DATA_USE", "CANDIDATE_PRESENTATION"] as const) await client.query("insert into worker_consents(id,worker_id,purpose,state,captured_at,source,recorded_by_operator_id,effective_at) values($1,$2,$3,'UNKNOWN',null,null,null,$4) on conflict(id) do update set state='UNKNOWN',captured_at=null,source=null,recorded_by_operator_id=null,effective_at=excluded.effective_at", [deterministicUuid(`consent-${purpose.toLowerCase()}`, key), workerId, purpose, effectiveAt]);

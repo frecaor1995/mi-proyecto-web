@@ -33,4 +33,27 @@ describe("controlled Workforce 31 importer", () => {
     expect(deterministicUuid("worker", "FW1")).toBe(first);
     expect(deterministicUuid("worker", "FW2")).not.toBe(first);
   });
+
+  it("accepts an explicit worker level and TDLR designation that differ", () => {
+    const rows = Array.from({ length: 31 }, (_, index) => row(index + 2, `FW-${index + 1}`, `Worker ${index + 1}`));
+    rows[0].values.LEVEL = "JOURNEYMAN";
+    rows[0].values["TDLR TYPE"] = "APPRENTICE";
+    const worker = normalizeRows(rows)[0];
+    expect(worker.levelCode).toBe("JOURNEYMAN");
+    expect(worker.credentialDesignation).toBe("APPRENTICE_ELECTRICIAN");
+  });
+
+  it("keeps an absent TDLR designation null without copying worker level", () => {
+    const rows = Array.from({ length: 31 }, (_, index) => row(index + 2, `FW-${index + 1}`, `Worker ${index + 1}`));
+    rows[0].values.LEVEL = "JOURNEYMAN";
+    rows[0].values["TDLR TYPE"] = "";
+    expect(normalizeRows(rows)[0]).toMatchObject({ levelCode: "JOURNEYMAN", tdlrType: null, credentialDesignation: null });
+  });
+
+  it("supports MASTER level and credential designation as independent controlled values", () => {
+    const rows = Array.from({ length: 31 }, (_, index) => row(index + 2, `FW-${index + 1}`, `Worker ${index + 1}`));
+    rows[0].values.LEVEL = "MASTER";
+    rows[0].values["TDLR TYPE"] = "JOURNEYMAN";
+    expect(normalizeRows(rows)[0]).toMatchObject({ levelCode: "MASTER", credentialDesignation: "JOURNEYMAN_ELECTRICIAN" });
+  });
 });

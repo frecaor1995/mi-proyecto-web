@@ -11,7 +11,7 @@ export type WorkerConsentState="GRANTED"|"REVOKED"|"UNKNOWN";
 export type CredentialExpirationBand="EXPIRED"|"WITHIN_30"|"WITHIN_60"|"WITHIN_90"|"LATER"|"UNKNOWN";
 
 export interface WorkerLevelFact{readonly code:WorkerLevelCode;readonly verificationState:VerificationState}
-export interface WorkerCredentialIntelligence{readonly id:string;readonly credentialCode:string;readonly jurisdiction:string|null;readonly verificationState:VerificationState;readonly expiresAt:Date|null;readonly lifecycleStatus:"CURRENT"|"SUPERSEDED"|"REVOKED"|"UNKNOWN"}
+export interface WorkerCredentialIntelligence{readonly id:string;readonly credentialCode:string;readonly credentialDesignation?:import("./worker").WorkerCredentialDesignation|null;readonly professionalLicenseNumber?:string|null;readonly jurisdiction:string|null;readonly verificationState:VerificationState;readonly expiresAt:Date|null;readonly lifecycleStatus:"CURRENT"|"SUPERSEDED"|"REVOKED"|"UNKNOWN"}
 export interface WorkerMobilityFact{readonly inStateTravel:ExplicitState;readonly outOfStateTravel:ExplicitState;readonly relocation:ExplicitState}
 export interface WorkerConditionFact{readonly perDiem:PerDiemState;readonly transportation:ExplicitState;readonly tools:ToolsState;readonly maximumHoursPerWeek:number|null;readonly overtime:ExplicitState;readonly verificationState:VerificationState}
 export interface WorkerConsentFact{readonly purpose:WorkerConsentPurpose;readonly state:WorkerConsentState;readonly effectiveAt:Date}

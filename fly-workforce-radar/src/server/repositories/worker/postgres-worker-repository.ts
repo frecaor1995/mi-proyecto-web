@@ -50,13 +50,15 @@ interface CredentialRow {
   id:string;
   worker_id: string; credential_code: string; verification_state: VerificationState; verified_at: string | Date | null;
   issued_at: string | Date | null; expires_at: string | Date | null; issuing_authority: string | null;
+  credential_designation: WorkerCredentialRecord["credentialDesignation"]; professional_license_number: string | null;
   jurisdiction:string|null;lifecycle_status:WorkerCredentialRecord["lifecycleStatus"];source_evidence_id: string | null; created_at: string | Date;
 }
 /** Deliberately excludes raw_identifier -- matches the database's own column-level grant exactly. */
-const CREDENTIAL_SAFE_COLS = "id,worker_id,credential_code,verification_state,verified_at,issued_at,expires_at,issuing_authority,jurisdiction,lifecycle_status,source_evidence_id,created_at";
+const CREDENTIAL_SAFE_COLS = "id,worker_id,credential_code,verification_state,verified_at,issued_at,expires_at,issuing_authority,credential_designation,professional_license_number,jurisdiction,lifecycle_status,source_evidence_id,created_at";
 const credential = (r: CredentialRow): WorkerCredentialRecord => ({
   id:r.id,workerId: r.worker_id, credentialCode: r.credential_code, verificationState: r.verification_state, verifiedAt: d(r.verified_at),
-  issuedAt: d(r.issued_at), expiresAt: d(r.expires_at), issuingAuthority: r.issuing_authority,jurisdiction:r.jurisdiction,lifecycleStatus:r.lifecycle_status, sourceEvidenceId: r.source_evidence_id,
+  issuedAt: d(r.issued_at), expiresAt: d(r.expires_at), issuingAuthority: r.issuing_authority, credentialDesignation: r.credential_designation,
+  professionalLicenseNumber: r.professional_license_number, jurisdiction:r.jurisdiction,lifecycleStatus:r.lifecycle_status, sourceEvidenceId: r.source_evidence_id,
   createdAt: new Date(r.created_at),
 });
 
@@ -248,12 +250,12 @@ export class PostgresWorkerRepository implements WorkerRepository {
 
   async addCredential(i: AddWorkerCredentialInput): Promise<WorkerCredentialRecord> {
     const q = await this.client.query<CredentialRow>(
-      `insert into worker_credentials(worker_id,credential_code,verification_state,verified_at,issued_at,expires_at,issuing_authority,jurisdiction,raw_identifier,source_evidence_id)
-       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning ${CREDENTIAL_SAFE_COLS}`,
+      `insert into worker_credentials(worker_id,credential_code,verification_state,verified_at,issued_at,expires_at,issuing_authority,credential_designation,professional_license_number,jurisdiction,raw_identifier,source_evidence_id)
+       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) returning ${CREDENTIAL_SAFE_COLS}`,
       [
         i.workerId, i.credentialCode, i.verificationState ?? "UNVERIFIED", i.verifiedAt?.toISOString() ?? null,
-        i.issuedAt?.toISOString() ?? null, i.expiresAt?.toISOString() ?? null, i.issuingAuthority ?? null,i.jurisdiction??null,
-        i.rawIdentifier ?? null, i.sourceEvidenceId ?? null,
+        i.issuedAt?.toISOString() ?? null, i.expiresAt?.toISOString() ?? null, i.issuingAuthority ?? null,
+        i.credentialDesignation ?? null, i.professionalLicenseNumber ?? null, i.jurisdiction??null, i.rawIdentifier ?? null, i.sourceEvidenceId ?? null,
       ],
     );
     return credential(q.rows[0]);

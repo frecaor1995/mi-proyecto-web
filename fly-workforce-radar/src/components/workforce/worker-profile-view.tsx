@@ -12,6 +12,12 @@ import {
   LocationAddForm, WorkHistoryAddForm, ContactRouteAddForm, CompensationAddForm,
 } from "./worker-profile-forms";
 
+const credentialCopy = {
+  "en-US": { designation: "Designation", licenseNumber: "License #", authority: "Issuing authority" },
+  "es-US": { designation: "Designación", licenseNumber: "Licencia #", authority: "Autoridad emisora" },
+} as const;
+const humanCredentialValue = (value: string) => value.toLowerCase().replaceAll("_", " ").replace(/^./, character => character.toUpperCase());
+
 /**
  * WORKFORCE-TALENT-A4 canonical worker profile. Every value rendered here
  * comes from `WorkerProfile` (WorkerService.getWorkerProfile's own read
@@ -109,6 +115,9 @@ export function WorkerProfileView({ locale, profile, taxonomy, permissions, life
                     {credential.verificationState} · {t(locale, "workforce.credentials.issuedAtLabel")}: {credential.issuedAt ? credential.issuedAt.toISOString().slice(0, 10) : unknown}
                     {" · "}{t(locale, "workforce.credentials.expiresAtLabel")}: {credential.expiresAt ? credential.expiresAt.toISOString().slice(0, 10) : unknown}
                   </small>
+                  {credential.credentialDesignation ? <small>{credentialCopy[locale].designation}: {humanCredentialValue(credential.credentialDesignation)}</small> : null}
+                  {credential.professionalLicenseNumber ? <small>{credentialCopy[locale].licenseNumber}: {credential.professionalLicenseNumber}</small> : null}
+                  {credential.issuingAuthority ? <small>{credentialCopy[locale].authority}: {credential.issuingAuthority}{credential.jurisdiction ? ` · ${credential.jurisdiction}` : ""}</small> : null}
                 </div>
                 {permissions.profileWrite && credential.verificationState !== "VERIFIED" ? (
                   <form action={verifyCredentialAction}>
