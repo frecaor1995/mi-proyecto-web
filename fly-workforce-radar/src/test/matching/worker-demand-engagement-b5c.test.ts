@@ -21,6 +21,8 @@ const EXCLUDED = new Set([
   "20260925011609_opportunity_radar_search_automation.sql", "20260925021527_radar_query_kind_schema_compatibility.sql",
   // Depends on the radar search automation migration excluded above.
   "20260928020000_multi_trade_discovery_cycles.sql", "20260929010000_discovery_six_hour_cadence.sql",
+  // Alter discovery_query_executions / discovery_watch_observations, created by the cycle migration excluded above.
+  "20261005225057_discovery_intelligence_1_0.sql", "20261007021300_discovery_human_review_verified_demand_1_3.sql",
 ]);
 const AUTH = "b5c00000-0000-4000-8000-000000000001";
 
