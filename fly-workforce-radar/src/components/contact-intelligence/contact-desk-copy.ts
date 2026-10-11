@@ -18,15 +18,20 @@ const en = {
   actions: "Next actions", noActions: "No next action.", addAction: "Add a next action", action: "Action *", dueDate: "Due date *", saveAction: "Save next action",
   status: { OPEN: "Open", DONE: "Done", CANCELLED: "Cancelled" } as Record<string, string>, markDone: "Mark done", cancel: "Cancel", resolutionNote: "Note (optional)",
   demoTag: "DEMO", due: "due", by: "by", overdue: "overdue",
-  saving: "Saving…", saved: "Saved.", duplicate: "This channel is already recorded for the company.", check: "Check the highlighted fields.", restricted: "Your operator account cannot do this.", unavailable: "The local database is unavailable.", failed: "Could not save:",
+  saving: "Saving…", saved: "Saved.", duplicate: "This channel is already recorded for the company.", check: "Check the highlighted fields.", restricted: "Your operator account cannot do this.", unavailable: "The local database is unavailable.", failed: "Could not save. Nothing was recorded; try again or tell the administrator.",
   errors: {
     invalid: "Invalid", invalidPhone: "Enter a 10-digit US phone", invalidEmail: "Enter a valid email", httpsRequired: "An https source is required", invalidDate: "Invalid date", future: "Cannot be in the future", tooLong: "Too long",
     required: "Required", notCalledOnlyForDemo: "\"Not called\" is only valid for a DEMO record", answerNeedsReachedCall: "An answer about suppliers needs a call where someone was reached",
     demoNotesMustSayDemo: "DEMO notes must say DEMO / PRUEBA / TEST", demoActionMustSayDemo: "A DEMO action must say DEMO / PRUEBA / TEST", notThisCompany: "That channel belongs to another company",
     notFound: "Not found", notOpen: "This action is no longer open",
   } as Record<string, string>,
+  fields: { companyId: "Company", routeType: "Channel type", value: "Phone or email", sourceUrl: "Official source", observedOn: "Seen on", contactRouteId: "Channel used", contactDate: "Call date", callOutcome: "Call result",
+    supplierAnswer: "Supplier answer", notes: "Notes", action: "Action", dueDate: "Due date", ownerOperatorId: "Owner", actionId: "Action", counterpartName: "Who answered", counterpartRole: "Role" } as Record<string, string>,
   pendingTitle: "Company next actions due today or overdue", pendingLede: "From Contact Intelligence. DEMO actions are listed apart and never count as real activity.",
   pendingReal: "Real", pendingDemo: "DEMO / TEST (excluded from real activity)", noPending: "Nothing due.", openCompany: "Open company →",
+  channelCompaniesTitle: "Companies with corporate channels", channelCompaniesLede: "Companies with a published corporate line recorded by hand, even without an automatic buyer investigation. Calls and next actions live in each company's contact desk.",
+  channelCompaniesEmpty: "No company has a corporate channel recorded outside an investigation.", columns: { company: "Company", channels: "Corporate channels", lastCall: "Last real call", openActions: "Open real actions" },
+  noCall: "No call yet", openDesk: "Open contact desk →",
 };
 
 const es: typeof en = {
@@ -46,15 +51,20 @@ const es: typeof en = {
   actions: "Próximas acciones", noActions: "No hay próximas acciones.", addAction: "Agregar una próxima acción", action: "Acción *", dueDate: "Fecha límite *", saveAction: "Guardar próxima acción",
   status: { OPEN: "Abierta", DONE: "Hecha", CANCELLED: "Cancelada" }, markDone: "Marcar como hecha", cancel: "Cancelar", resolutionNote: "Nota (opcional)",
   demoTag: "DEMO", due: "vence", by: "responsable", overdue: "vencida",
-  saving: "Guardando…", saved: "Guardado.", duplicate: "Este canal ya está registrado para la empresa.", check: "Revisa los campos marcados.", restricted: "Tu cuenta de operador no puede hacer esto.", unavailable: "La base de datos local no está disponible.", failed: "No se pudo guardar:",
+  saving: "Guardando…", saved: "Guardado.", duplicate: "Este canal ya está registrado para la empresa.", check: "Revisa los campos marcados.", restricted: "Tu cuenta de operador no puede hacer esto.", unavailable: "La base de datos local no está disponible.", failed: "No se pudo guardar. No se registró nada; inténtalo de nuevo o avisa al administrador.",
   errors: {
     invalid: "Inválido", invalidPhone: "Ingresa un teléfono de EE. UU. de 10 dígitos", invalidEmail: "Ingresa un correo válido", httpsRequired: "Se requiere una fuente https", invalidDate: "Fecha inválida", future: "No puede ser futura", tooLong: "Demasiado largo",
     required: "Obligatorio", notCalledOnlyForDemo: "\"No se llamó\" solo es válido para un registro DEMO", answerNeedsReachedCall: "Una respuesta sobre proveedores requiere una llamada en la que se habló con alguien",
     demoNotesMustSayDemo: "Las notas DEMO deben decir DEMO / PRUEBA / TEST", demoActionMustSayDemo: "Una acción DEMO debe decir DEMO / PRUEBA / TEST", notThisCompany: "Ese canal pertenece a otra empresa",
     notFound: "No encontrado", notOpen: "Esta acción ya no está abierta",
   },
+  fields: { companyId: "Empresa", routeType: "Tipo de canal", value: "Teléfono o correo", sourceUrl: "Fuente oficial", observedOn: "Visto el", contactRouteId: "Canal utilizado", contactDate: "Fecha de la llamada", callOutcome: "Resultado de la llamada",
+    supplierAnswer: "Respuesta sobre proveedores", notes: "Notas", action: "Acción", dueDate: "Fecha límite", ownerOperatorId: "Responsable", actionId: "Acción", counterpartName: "Quién respondió", counterpartRole: "Cargo" },
   pendingTitle: "Próximas acciones de empresas para hoy o vencidas", pendingLede: "Desde Inteligencia de contactos. Las acciones DEMO se listan aparte y nunca cuentan como actividad real.",
   pendingReal: "Reales", pendingDemo: "DEMO / PRUEBA (excluidas de la actividad real)", noPending: "Nada pendiente.", openCompany: "Abrir empresa →",
+  channelCompaniesTitle: "Empresas con canales corporativos", channelCompaniesLede: "Empresas con una línea corporativa publicada y registrada a mano, aunque no tengan investigación automática de compradores. Las llamadas y próximas acciones están en la mesa de contacto de cada empresa.",
+  channelCompaniesEmpty: "Ninguna empresa tiene canales corporativos registrados fuera de una investigación.", columns: { company: "Empresa", channels: "Canales corporativos", lastCall: "Última llamada real", openActions: "Acciones reales abiertas" },
+  noCall: "Sin llamadas aún", openDesk: "Abrir mesa de contacto →",
 };
 
 export const contactDeskCopy = (locale: Locale) => (locale === "es-US" ? es : en);

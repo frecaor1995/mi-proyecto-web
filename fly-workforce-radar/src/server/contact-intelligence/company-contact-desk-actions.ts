@@ -23,7 +23,8 @@ async function run<T>(companyId: string, work: (client: Parameters<Parameters<No
     return { status: "SAVED", errors: {}, result };
   } catch (error) {
     if (error instanceof ContactDeskError) return { status: "INVALID", errors: error.errors };
-    return { status: "FAILED", errors: { form: error instanceof Error ? error.message.slice(0, 200) : "failed" } };
+    console.error("contact desk write failed", error); // technical detail stays in the server log, never in the form
+    return { status: "FAILED", errors: {} };
   }
 }
 

@@ -10,6 +10,7 @@ import { intelligenceCopy } from "../discovery-intelligence/intelligence-copy";
 import { CompanySupplierAnswers } from "../discovery-intelligence/external-supplier-answer-summary";
 import { CompanyStaffingBlock } from "../staffing-intelligence/staffing-intelligence";
 import { CompanyContactDesk } from "../contact-intelligence/contact-desk";
+import { CompanyOpportunityLinks } from "../opportunity-company-link/opportunity-company-link";
 import { todayInChicago } from "../opportunity-discovery/buyer-workspace";
 
 const normalizeName = (value: string) => value.toLowerCase().replace(/\(.*?\)/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\b(inc|llc|co|corp|group)\b/g, " ").replace(/\s+/g, " ").trim();
@@ -38,6 +39,7 @@ export function CompanyCommercialPanel({ locale, companyId, companyName, data, p
       <p className="dr-note">{c.noOutreach}</p>
       {priority ? <p className="dr-card-note"><strong>{locale === "es-US" ? "Receta 2.0 · Prioridad" : "Recipe 2.0 · Priority"} {priority.rank}</strong> — {intelligenceCopy(locale).priorityNotes[priority.key] ?? priority.note}</p> : null}
       <CompanyContactDesk locale={locale} companyId={companyId} today={todayInChicago()} canWrite={permissions.canWrite} />
+      <CompanyOpportunityLinks locale={locale} companyId={companyId} canWrite={permissions.canWrite} />
       <CompanyStaffingBlock locale={locale} companyId={companyId} />
       <CompanySupplierAnswers locale={locale} companyId={companyId} companyName={companyName} canWrite={permissions.canWrite} />
       <dl className="ci-grid"><div><dt>{c.pain}</dt><dd>{c.painLevel[data.pain.level]}<small>{c.painCounts(data.pain.usable, data.pain.withheld)}</small></dd></div></dl>

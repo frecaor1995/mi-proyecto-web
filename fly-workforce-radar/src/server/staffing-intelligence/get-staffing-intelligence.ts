@@ -9,6 +9,7 @@ import {
 import { loadSupplierAnswers } from "../discovery-intelligence/external-supplier-answers";
 import { loadProjectSignals, type ProjectSignalView } from "./project-signals";
 import { supplierAnswerFromCall, type CallSupplierAnswer } from "../../domain/company-contact-desk";
+import { isDemoWorkerSql } from "../../domain/demo-records";
 
 /**
  * Staffing commercial intelligence read model: one row per company, built only from evidence that already exists
@@ -69,7 +70,7 @@ export async function loadStaffingIntelligence(db: SqlClient, now = new Date(), 
     db.query<Record<string, unknown>>(`select company_id,count(*)::int n from contact_people where company_id is not null group by company_id`),
     db.query<Record<string, unknown>>(`select company_id,count(*)::int n from contact_routes where company_id is not null and verification_state='VERIFIED' group by company_id`),
     db.query<{ real: string | number }>(`select count(distinct w.id) real from worker_trade_occupations t join workforce_workers w on w.id=t.worker_id
-        where t.trade_code='ELECTRICAL' and w.lifecycle_status='ACTIVE' and w.display_name not ilike 'DEMO LOCAL%'`),
+        where t.trade_code='ELECTRICAL' and w.lifecycle_status='ACTIVE' and not ${isDemoWorkerSql("w.display_name")}`),
     db.query<{ id: string; name: string }>("select id,coalesce(common_name,legal_name) name from companies where merged_into_company_id is null"),
     loadProjectSignals(db),
     loadSupplierAnswers(db),

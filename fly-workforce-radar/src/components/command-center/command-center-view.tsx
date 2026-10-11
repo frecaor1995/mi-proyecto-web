@@ -8,6 +8,7 @@ import { TrustState, CurrentnessBadge, ScopeBadge } from "../ui/status-primitive
 import { MetricTile } from "./metric-tile";
 import type { CommandCenterSummary } from "../../server/read-models/command-center";
 import type { CommercialActionItem } from "../../server/read-models/commercial-action";
+import { commercialActionExplanation } from "./commercial-action-explanation";
 
 export interface CommandCenterViewProps {
   readonly locale: Locale;
@@ -127,7 +128,7 @@ function CommercialActionsPanel({ locale, actions }: { locale: Locale; actions: 
           {actions.map((action) => (
             <li key={action.opportunityId} className="cc-action-row">
               <strong>{t(locale, `commercialAction.${action.recommendation}` as DictionaryKey)}</strong>
-              <span>{action.whyNow}</span>
+              <span data-rule-explanation={action.whyNow}>{commercialActionExplanation(locale, action)}</span>
             </li>
           ))}
         </ul>

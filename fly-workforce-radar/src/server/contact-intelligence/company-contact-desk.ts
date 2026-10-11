@@ -125,3 +125,19 @@ export async function loadCompanyNextActions(db: SqlClient, filter: { readonly c
   return rows.map((r) => ({ id: String(r.id), companyId: String(r.company_id), companyName: String(r.company_name), action: String(r.action), dueDate: day(r.due_date)!, owner: r.owner == null ? null : String(r.owner),
     status: String(r.status), isDemo: Boolean(r.is_demo), createdAt: new Date(String(r.created_at)).toISOString(), resolutionNote: r.resolution_note == null ? null : String(r.resolution_note) }));
 }
+
+export interface CorporateChannelCompanyView { readonly companyId: string; readonly companyName: string; readonly isDemo: boolean; readonly channels: number; readonly lastCall: string | null; readonly openActions: number }
+
+/** Companies with recorded corporate channels and no automatic buyer investigation (those already appear in the investigations table). */
+export async function loadCorporateChannelCompanies(db: SqlClient): Promise<readonly CorporateChannelCompanyView[]> {
+  const rows = (await db.query<Record<string, unknown>>(
+    `select c.id,coalesce(c.common_name,c.legal_name) name,count(distinct r.id) channels,
+            (select to_char(max(i.contact_date),'YYYY-MM-DD') from contact_interactions i where i.company_id=c.id and not i.is_demo) last_call,
+            (select count(*) from company_next_actions a where a.company_id=c.id and a.status='OPEN' and not a.is_demo) open_actions
+       from companies c join contact_routes r on r.company_id=c.id and r.contact_person_id is null and r.superseded_by_route_id is null
+      where c.merged_into_company_id is null
+        and not exists (select 1 from contact_investigations ci where ci.company_id=c.id and ci.normalized_candidate_url is null)
+      group by c.id order by 2`)).rows;
+  return rows.map((r) => ({ companyId: String(r.id), companyName: String(r.name), isDemo: /\bDEMO LOCAL\b/i.test(String(r.name)), channels: Number(r.channels),
+    lastCall: r.last_call == null ? null : String(r.last_call), openActions: Number(r.open_actions) }));
+}

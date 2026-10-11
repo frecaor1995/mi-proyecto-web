@@ -6,6 +6,7 @@ import { getProductionSqlClient } from "../../server/database/production-sql-cli
 import { getSignal } from "../../server/opportunity-discovery/signals";
 import { loadBuyerInvestigation, type BuyerInvestigationView } from "../../server/contact-intelligence/buyer-investigation";
 import { discoveryCopy } from "../../components/opportunity-discovery/discovery-copy";
+import { CorporateChannelCompanies } from "../../components/contact-intelligence/corporate-channel-companies";
 
 /**
  * Contact Intelligence workspace: every buyer investigation — Radar signals (Entry A) and strategic companies
@@ -69,6 +70,7 @@ export default async function ContactsPage() {
           </table>
         </div>
       )}
+      {client ? <CorporateChannelCompanies locale={locale} /> : null}
     </div>
   );
 }

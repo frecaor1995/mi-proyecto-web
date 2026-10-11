@@ -16,10 +16,10 @@ function Status({ locale, state }: { readonly locale: Locale; readonly state: De
   const t = contactDeskCopy(locale);
   if (state.status === "SAVED") return <p role="status">{t.saved}</p>;
   if (state.status === "DUPLICATE") return <p role="status">{t.duplicate}</p>;
-  if (state.status === "INVALID") return <p role="alert">{t.check} {Object.entries(state.errors).map(([k, v]) => `${k}: ${t.errors[v] ?? v}`).join(" · ")}</p>;
+  if (state.status === "INVALID") return <p role="alert">{t.check} {Object.entries(state.errors).map(([k, v]) => `${t.fields[k] ?? t.fields.value}: ${t.errors[v] ?? t.errors.invalid}`).join(" · ")}</p>;
   if (state.status === "RESTRICTED") return <p role="alert">{t.restricted}</p>;
   if (state.status === "UNAVAILABLE") return <p role="alert">{t.unavailable}</p>;
-  if (state.status === "FAILED") return <p role="alert">{t.failed} {state.errors.form}</p>;
+  if (state.status === "FAILED") return <p role="alert">{t.failed}</p>;
   return null;
 }
 
