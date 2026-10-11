@@ -131,9 +131,11 @@ describe("Phase 3I-B1 human verification domain and persistence", () => {
     const task = (await service.createTask(input())).task;
     const interaction = await service.recordInteraction({ verificationTaskId: task.id, interactionMethod: "PHONE", interactionOutcome: "CONVERSATION_COMPLETED", attemptedAt: at, operatorId: "human:operator", routeSnapshot: {}, reachedHuman: true, responseVerbatim: "Sometimes." });
     const common: CreateHumanResponseAssessmentInput = { interactionId: interaction.id, answerDisposition: "UNKNOWN_DONT_KNOW", authorityLevel: "UNKNOWN", authorityBasis: "Authority not established", scope: { companyScope: "UNKNOWN" }, confidence: .3, assessedBy: "human:reviewer", assessorKind: "HUMAN", assessedAt: at, approvalState: "NEEDS_MORE_EVIDENCE", ruleVersion: HUMAN_VERIFICATION_RULE_VERSION };
-    const first = await service.assessResponse(common); const second = await service.assessResponse({ ...common, answerDisposition: "QUALIFIED_OR_CONDITIONAL", supersedesAssessmentId: first.id });
+    // A reassessment happens after the assessment it supersedes; explicit, distinct assessedAt values keep the
+    // history order (assessed_at, created_at, id) deterministic instead of falling back to the random id.
+    const first = await service.assessResponse(common); const second = await service.assessResponse({ ...common, answerDisposition: "QUALIFIED_OR_CONDITIONAL", supersedesAssessmentId: first.id, assessedAt: new Date(at.getTime() + 60_000) });
     const history = await repository.listAssessments(interaction.id);
-    expect(history).toHaveLength(2); expect(second.supersedesAssessmentId).toBe(first.id); expect(history[0].answerDisposition).toBe("UNKNOWN_DONT_KNOW");
+    expect(history).toHaveLength(2); expect(second.supersedesAssessmentId).toBe(first.id); expect(history[0].answerDisposition).toBe("UNKNOWN_DONT_KNOW"); expect(history[1].answerDisposition).toBe("QUALIFIED_OR_CONDITIONAL");
     await expect(db.query("update human_response_assessments set confidence=.9 where id=$1", [first.id])).rejects.toThrow(/append-only/);
   });
 

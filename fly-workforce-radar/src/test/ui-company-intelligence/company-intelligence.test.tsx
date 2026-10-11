@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CompanyIntelligenceListView } from "../../components/company-intelligence/company-list-view";
 import { CompanyIntelligenceDetailView } from "../../components/company-intelligence/company-detail-view";
 import type { CompanyListResult } from "../../server/company-intelligence/get-company-intelligence";
@@ -15,6 +15,8 @@ import type { EvidenceRecord } from "../../domain/evidence";
 import type { HumanVerificationDeskRecord } from "../../server/read-models/human-verification-desk";
 import Companies from "../../app/companies/page";
 import CompanyDetail from "../../app/companies/[id]/page";
+
+vi.mock("server-only", () => ({}));
 
 const ASOF = new Date("2026-09-05T12:00:00Z");
 const COMPANY_ID = "11111111-1111-4111-8111-111111111111";
