@@ -68,7 +68,10 @@ export interface CandidateSlateDemand {
 export interface CandidateSlate {
   readonly opportunityId: string;
   readonly opportunityTitle: string | null;
+  /** Only a canonical (opportunity_companies) company; never free text. */
   readonly customer: string | null;
+  /** Recorded company text that is NOT a confirmed relationship; only set when there is no canonical customer. */
+  readonly customerContext: string | null;
   readonly project: string | null;
   readonly location: string | null;
   readonly demands: readonly CandidateSlateDemand[];

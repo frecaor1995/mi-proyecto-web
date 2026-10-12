@@ -20,7 +20,7 @@ export interface CandidateSlateWorkerRow {
   readonly demandActionable:boolean;
 }
 export interface CandidateSlateSource {
-  readonly opportunityId:string; readonly opportunityTitle:string|null; readonly customer:string|null;
+  readonly opportunityId:string; readonly opportunityTitle:string|null; readonly customer:string|null; readonly customerContext?:string|null;
   readonly project:string|null; readonly location:string|null; readonly demands:readonly CandidateSlateDemandRow[]; readonly workers:readonly CandidateSlateWorkerRow[];
 }
 
@@ -69,5 +69,5 @@ export function assembleCandidateSlate(source:CandidateSlateSource):CandidateSla
     const candidateCount=workers.filter(w=>w.mobilizationState==="CANDIDATE").length;
     return {...demand,matchingCount:workers.filter(w=>viable(w.matchOutcome)).length,engagedCount:workers.filter(w=>w.engagementId!==null).length,selectedCount:workers.filter(w=>w.selectionState==="SELECTED").length,candidateCount,remainingPositions:demand.requestedHeadcount===null?null:Math.max(0,demand.requestedHeadcount-candidateCount),surplusCandidates:demand.requestedHeadcount===null?0:Math.max(0,candidateCount-demand.requestedHeadcount),workers};
   });
-  return {opportunityId:source.opportunityId,opportunityTitle:source.opportunityTitle,customer:source.customer,project:source.project,location:source.location,demands};
+  return {opportunityId:source.opportunityId,opportunityTitle:source.opportunityTitle,customer:source.customer,customerContext:source.customer?null:(source.customerContext??null),project:source.project,location:source.location,demands};
 }
