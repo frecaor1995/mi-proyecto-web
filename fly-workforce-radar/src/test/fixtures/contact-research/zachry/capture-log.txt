@@ -1,0 +1,21 @@
+official-about: OK 5429 chars
+official-procurement: OK 8312 chars
+brand-jvic-about: OK 7394 chars
+institution-eda-member: OK 1244 chars
+institution-eda-board: OK 5196 chars
+institution-chamber-member: OK 550 chars
+search-ecosystem: FAILED NOT_CONFIGURED
+search-address: FAILED NOT_CONFIGURED
+search-person: FAILED NOT_CONFIGURED
+search-channel: FAILED NOT_CONFIGURED
+search-ecosystem: FAILED NOT_CONFIGURED
+search-address: FAILED NOT_CONFIGURED
+search-person: FAILED NOT_CONFIGURED
+search-channel: FAILED NOT_CONFIGURED
+search-ecosystem: 1 results
+search-address: 10 results
+search-person: 10 results
+search-channel: 0 results
+search-relations: 6 results
+search-relation-followup: 10 results
+search-procurement: 10 results

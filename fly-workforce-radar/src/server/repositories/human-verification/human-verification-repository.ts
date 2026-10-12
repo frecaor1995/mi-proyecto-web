@@ -1,0 +1,26 @@
+import type {
+  CreateHumanInteractionInput, CreateHumanResponseAssessmentInput, CreateHumanVerificationTaskEventInput,
+  CreateHumanVerificationTaskInput, HumanInteraction, HumanResponseAssessment, HumanVerificationTask,
+  HumanVerificationTaskEvent, HumanVerificationTaskStatus,
+} from "../../../domain/human-verification";
+
+export interface PersistHumanVerificationTaskInput extends CreateHumanVerificationTaskInput { deduplicationKey: string }
+
+export interface HumanVerificationRepository {
+  findOpenTaskByDeduplicationKey(key: string): Promise<HumanVerificationTask | null>;
+  createTask(input: PersistHumanVerificationTaskInput): Promise<HumanVerificationTask>;
+  getTask(id: string): Promise<HumanVerificationTask | null>;
+  transitionTask(id: string, status: HumanVerificationTaskStatus, event: Omit<CreateHumanVerificationTaskEventInput, "verificationTaskId">): Promise<HumanVerificationTask>;
+  /** 3I-B3A addition: like transitionTask, but only applies when the task's current status still equals expectedStatus (optimistic concurrency reusing the existing status column, no new column added) -- returns null on a stale/mismatched expectation instead of overwriting newer state. Preserves the existing protect_human_verification_task trigger (closed tasks still cannot be reopened). */
+  transitionTaskIfCurrentStatus(id: string, expectedStatus: HumanVerificationTaskStatus, newStatus: HumanVerificationTaskStatus, event: Omit<CreateHumanVerificationTaskEventInput, "verificationTaskId">): Promise<HumanVerificationTask | null>;
+  createInteraction(input: CreateHumanInteractionInput): Promise<HumanInteraction>;
+  listInteractions(taskId: string): Promise<HumanInteraction[]>;
+  createAssessment(input: CreateHumanResponseAssessmentInput): Promise<HumanResponseAssessment>;
+  listAssessments(interactionId: string): Promise<HumanResponseAssessment[]>;
+  createTaskEvent(input: CreateHumanVerificationTaskEventInput): Promise<HumanVerificationTaskEvent>;
+  listTaskEvents(taskId: string): Promise<HumanVerificationTaskEvent[]>;
+  /** TX-INTEGRITY-04B recovery lookup: interaction(s) correlated to this idempotencyKey for this task, via the interaction's own metadata.idempotencyKey (written in the same INSERT that creates the interaction). Scoped to the task so an unrelated interaction elsewhere can never match. */
+  findInteractionByIdempotencyKey(taskId: string, idempotencyKey: string): Promise<HumanInteraction[]>;
+  /** TX-INTEGRITY-04B recovery lookup: assessment(s) correlated to this idempotencyKey, via the assessment's own idempotency_key column (written in the same INSERT that creates the assessment). */
+  findAssessmentByIdempotencyKey(idempotencyKey: string): Promise<HumanResponseAssessment[]>;
+}

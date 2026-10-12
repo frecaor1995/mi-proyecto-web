@@ -1,0 +1,46 @@
+import{describe,expect,it}from"vitest";
+import type{CandidateCommercialEvidence,CommercialClaimType}from"../../domain/commercial-evidence-acquisition";
+import type{ConversionEvidenceInput}from"../../domain/commercial-conversion";
+import type{TrackedDiscoverySignal}from"../../domain/discovery-promotion";
+import{NO_ACTIONABILITY_EVIDENCE}from"../../domain/opportunity-actionability";
+import{addCandidateCommercialEvidence,commercialEvidenceGaps,planCommercialEvidenceAcquisition,previewCandidateImpact}from"../../server/services/commercial-evidence-acquisition/commercial-evidence-acquisition-service";
+import{DISCOVERY_SOURCE_ORGANIZATION_PROFILES,convertDiscoverySignal,previewConversionDecision,resolveOrganizationProvenance}from"../../server/services/commercial-conversion/commercial-conversion-service";
+
+const at=new Date("2026-08-30T12:00:00Z"),signal:TrackedDiscoverySignal={trackedId:"tracked:s",signalId:"signal:s",externalId:"s",sourceKey:"strike",sourceUrl:"https://fixture.test/job",title:"Journeyman Electrician",organization:null,location:"Houston, TX",recognizedRoles:["JOURNEYMAN_ELECTRICIAN"],roleMatches:[{role:"JOURNEYMAN_ELECTRICIAN",phrase:"Journeyman Electrician"}],tier:"STANDARD",observedAt:at,reasons:["explicit"],ruleVersion:"fixture"};
+const base=(overrides:Partial<ConversionEvidenceInput>={}):ConversionEvidenceInput=>({signal,evidenceIds:["listing:s"],employer:"Strike",companyRole:"PROBABLE_END_EMPLOYER",companyRoleEvidenceIds:["listing:s"],project:null,buyer:null,wage:null,perDiemOrIncentive:null,schedule:null,headcount:null,acceptance:null,contacts:[],actionability:NO_ACTIONABILITY_EVIDENCE("conversion:s"),conflicts:[],...overrides});
+const acceptance=(state:"UNVERIFIED"|"VERIFIED"="VERIFIED")=>({id:"af01:s",category:"STAFFING_VENDOR_ACCEPTED",verificationState:state,accepted:true,observedAt:at,validUntil:new Date("2026-12-31"),evidenceIds:["evidence:af01"]});
+const route=(state:"UNVERIFIED"|"VERIFIED"="VERIFIED",grade:"A"|"B"|"C"|"D"|"E"="B")=>({id:"route:s",organization:"Strike",function:"PROCUREMENT",routeType:"PROFESSIONAL_EMAIL",target:"procurement@fixture.test",gradeCandidate:grade,verificationState:state,observedAt:at,staleAfter:new Date("2026-12-31"),evidenceIds:["evidence:route"]});
+const evidence=(claimType:CommercialClaimType,id=claimType):CandidateCommercialEvidence=>({id:`candidate:${id}`,opportunityId:"conversion:s",signalId:"signal:s",sourceOrganization:"Official Source",sourceUrl:"https://fixture.test/official",sourceType:"OFFICIAL_PROCUREMENT",evidenceTier:"TIER_1_PRIMARY_AUTHORITATIVE",observedAt:at,publicationOrEffectiveDate:null,claimType,candidateClaim:`candidate ${claimType}`,verificationState:"UNVERIFIED",freshUntil:null,conflicts:[],provenance:"public official page",acquisitionTaskId:"task:s",contactGradeCandidate:null});
+const kinds=(x:ConversionEvidenceInput)=>planCommercialEvidenceAcquisition(x).tasks.map(t=>t.taskType);
+
+describe("Phase 3A commercial evidence acquisition truth boundaries",()=>{
+  it("1 missing AF-01 produces acquisition task",()=>expect(kinds(base())).toContain("FIND_EXTERNAL_MANPOWER_POLICY"));
+  it("2 missing contact route produces acquisition task",()=>expect(kinds(base())).toContain("FIND_COMMERCIAL_CONTACT"));
+  it("3 missing temporal status produces acquisition task",()=>expect(kinds(base())).toContain("VERIFY_TEMPORAL_STATUS"));
+  it("4 missing buyer produces buyer research task",()=>expect(kinds(base())).toContain("FIND_BUYER_FUNCTION"));
+  it("5 verified facts suppress redundant acquisition tasks",()=>{const x=base({buyer:"Explicit Buyer",acceptance:acceptance(),contacts:[route()],project:"Explicit Project",schedule:"5x10",headcount:4,wage:"$40",actionability:{...NO_ACTIONABILITY_EVIDENCE("conversion:s"),explicitStatus:"OPEN"}});expect(kinds(x)).not.toEqual(expect.arrayContaining(["FIND_EXTERNAL_MANPOWER_POLICY","FIND_COMMERCIAL_CONTACT","VERIFY_TEMPORAL_STATUS","FIND_BUYER_FUNCTION","FIND_PROJECT_CONTEXT","FIND_HEADCOUNT","FIND_SCHEDULE","FIND_ECONOMICS"]))});
+  it("6 candidate evidence does not suppress verified-evidence gap",()=>expect(commercialEvidenceGaps(base({acceptance:acceptance("UNVERIFIED")}))).toContain("MISSING_AF01"));
+  it("7 first-party employer identity does not satisfy buyer",()=>expect(commercialEvidenceGaps(base({employer:"Strike"}))).toContain("MISSING_BUYER"));
+  it("8 supplier portal does not satisfy AF-01",()=>{const p=addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[evidence("VENDOR_ONBOARDING_AVAILABLE")]);expect(p.gaps).toContain("MISSING_AF01")});
+  it("9 staffing intermediary does not become end client",()=>{const profile={...DISCOVERY_SOURCE_ORGANIZATION_PROFILES.trillium,sourceUrl:"https://fixture.test/trillium",observedAt:at},p=resolveOrganizationProvenance(null,profile);expect(p).toMatchObject({companyRole:"STAFFING_COMPANY",staffingIntermediary:"Trillium Staffing",contractor:null})});
+  it("10 generic corporate contact does not become Grade A",()=>expect(evidence("COMMERCIAL_CONTACT")).toMatchObject({contactGradeCandidate:null,verificationState:"UNVERIFIED"}));
+  it("11 recruiter does not become buyer authority",()=>{const e={...evidence("COMMERCIAL_CONTACT"),sourceType:"STAFFING_POSTING"as const,candidateClaim:"recruiter route"};expect(addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[e]).gaps).toContain("MISSING_BUYER")});
+  it("12 HTTP 200 does not become OPEN",()=>expect(convertDiscoverySignal(base()).temporalState).toBe("UNKNOWN"));
+  it("13 candidate AF-01 remains unverified",()=>expect(addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[evidence("EXTERNAL_MANPOWER_ACCEPTANCE")]).candidateEvidence[0].verificationState).toBe("UNVERIFIED"));
+  it("14 candidate contact remains unverified",()=>expect(addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[evidence("COMMERCIAL_CONTACT")]).candidateEvidence[0].verificationState).toBe("UNVERIFIED"));
+  it("15 evidence provenance is retained",()=>expect(addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[evidence("BUYER_FUNCTION")]).candidateEvidence[0].provenance).toBe("public official page"));
+  it("16 conflicting evidence is retained",()=>{const e={...evidence("BUYER_ORGANIZATION"),conflicts:["official sources disagree"]};expect(addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[e]).candidateEvidence[0].conflicts).toEqual(e.conflicts)});
+  it("17 direct evidence outranks inherited identity",()=>expect(resolveOrganizationProvenance("Direct Subsidiary",{...DISCOVERY_SOURCE_ORGANIZATION_PROFILES.strike,sourceUrl:"https://fixture.test",observedAt:at}).basis).toBe("DIRECT_LISTING"));
+  it("18 planner output is deterministic",()=>expect(planCommercialEvidenceAcquisition(base())).toEqual(planCommercialEvidenceAcquisition(base())));
+  it("19 repeated planning is idempotent",()=>expect(kinds(base())).toEqual(kinds(base())));
+  it("20 same evidence is deduplicated",()=>{const e=evidence("BUYER_FUNCTION"),p=addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[e,e]);expect(p.candidateEvidence).toHaveLength(1)});
+  it("21 verification item is generated from candidate evidence",()=>expect(addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[evidence("BUYER_ORGANIZATION")]).verificationItems[0].kind).toBe("VERIFY_BUYER"));
+  it("22 verification decision is not auto-issued",()=>expect(addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[evidence("BUYER_FUNCTION")]).verificationItems[0].decision).toBeNull());
+  it("23 real decision preview does not persist",()=>expect(previewCandidateImpact(base({acceptance:acceptance("UNVERIFIED")}),evidence("EXTERNAL_MANPOWER_ACCEPTANCE")).persisted).toBe(false));
+  it("24 one candidate fact does not falsely claim HOT unlock",()=>expect(previewCandidateImpact(base({acceptance:acceptance("UNVERIFIED")}),evidence("EXTERNAL_MANPOWER_ACCEPTANCE")).ifVerified.activeHot.every(h=>!h.active)).toBe(true));
+  it("25 complete controlled evidence previews eligible HOT through existing engines",()=>{const x=base({project:"Project",acceptance:acceptance(),contacts:[route()]});const p=previewCandidateImpact(x,{...evidence("TEMPORAL_STATUS"),candidateClaim:"Explicit OPEN"});expect(p.ifVerified.activeHot.some(h=>h.active)).toBe(true);expect(p.persisted).toBe(false)});
+  it("26 no outreach occurs",()=>expect(JSON.stringify(planCommercialEvidenceAcquisition(base()))).not.toMatch(/emailSent|formSubmitted|outreachExecuted/));
+  it("27 no unauthorized source activation",()=>expect(JSON.stringify(planCommercialEvidenceAcquisition(base()))).not.toMatch(/ACTIVATE|APPROVED_FOR_LIVE_CAPTURE/));
+  it("28 unknown remains unknown when search finds nothing",()=>{const p=addCandidateCommercialEvidence(planCommercialEvidenceAcquisition(base()),[]);expect(p.candidateEvidence).toEqual([]);expect(p.gaps).toContain("MISSING_BUYER")});
+  it("uses the existing conversion preview rather than a shadow decision engine",()=>{const x=base({acceptance:acceptance("UNVERIFIED")});expect(previewCandidateImpact(x,evidence("EXTERNAL_MANPOWER_ACCEPTANCE"))).toEqual(previewConversionDecision(x,{verifyAcceptance:true}))});
+});
