@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fly Electric Academy | Aprende el oficio eléctrico en español · Houston TX</title>
+<meta name="description" content="Fly Electric Academy: videos para aprender a leer planos eléctricos, curso presencial de ayudante eléctrico comercial (4 sábados) y guía de materiales. En español, en Houston TX.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://flyelectricsolution.com/academy">
+<meta property="og:title" content="Fly Electric Academy · Aprende el oficio eléctrico en español">
+<meta property="og:description" content="Videos, curso presencial de ayudante eléctrico comercial y guías de materiales. Houston TX.">
+<meta property="og:url" content="https://flyelectricsolution.com/academy">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://flyelectricsolution.com/academy-assets/videos/s1-vie.jpg">
+<meta property="og:site_name" content="Fly Electric Solutions LLC">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a0f1e;
+  --navy-2:#0f1629;
+  --card:#121a2e;
+  --line:rgba(255,255,255,.08);
+  --blue:#00aaff;
+  --yellow:#ffd60a;
+  --green:#22c55e;
+  --white:#ffffff;
+  --muted:rgba(255,255,255,.62);
+  --faint:rgba(255,255,255,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:var(--white);font-family:'Inter',sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+:focus-visible{outline:2px solid var(--yellow);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+@media(max-width:600px){.wrap{padding:0 16px}}
+
+/* ── Top bar ─────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,15,30,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#0077cc);display:grid;place-items:center;flex-shrink:0}
+.logo-icon svg{width:20px;height:20px;color:#fff}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;line-height:1.1}
+.logo-text span{color:var(--blue)}
+.logo-sub{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);font-weight:600;margin-top:2px}
+.top-links{display:flex;align-items:center;gap:20px}
+.top-links a{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none}
+.top-links a:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:100px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;text-decoration:none;transition:transform .15s,box-shadow .2s,background .2s}
+.btn svg{width:16px;height:16px}
+.btn-yellow{background:var(--yellow);color:#0a0f1e;box-shadow:0 0 22px rgba(255,214,10,.25)}
+.btn-yellow:hover{transform:translateY(-1px);box-shadow:0 0 30px rgba(255,214,10,.45)}
+.btn-ghost{border:1px solid rgba(255,255,255,.2);color:#fff}
+.btn-ghost:hover{background:rgba(255,255,255,.06)}
+.btn-sm{padding:8px 14px;font-size:13px}
+@media(max-width:720px){.top-links .hide-sm{display:none}.top-links{gap:12px}}
+
+/* ── Hero ─────────────────────────────── */
+.hero{padding:64px 0 36px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:
+  linear-gradient(rgba(0,170,255,.05) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,rgba(0,170,255,.05) 1px,transparent 1px) 0 0/40px 40px;
+  mask-image:radial-gradient(ellipse at 30% 20%,#000 0%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at 30% 20%,#000 0%,transparent 70%);pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.35fr 1fr;gap:48px;align-items:center}
+@media(max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:28px}.hero{padding:40px 0 24px}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);padding:6px 12px;border:1px solid rgba(255,214,10,.35);border-radius:100px;margin-bottom:18px}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--yellow);box-shadow:0 0 10px var(--yellow)}
+h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(34px,5.4vw,60px);line-height:1.02;letter-spacing:-.025em}
+h1 em{font-style:normal;color:var(--yellow)}
+.hero p.lead{font-size:17px;color:var(--muted);margin:18px 0 26px;max-width:560px}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px}
+
+.progress-card{background:linear-gradient(160deg,var(--card),var(--navy-2));border:1px solid var(--line);border-radius:20px;padding:24px}
+.progress-card h2{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px}
+.progress-card .sub{font-size:13px;color:var(--faint);margin-bottom:18px}
+.prow{margin-bottom:14px}
+.prow:last-of-type{margin-bottom:0}
+.prow-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.prow-top b{font-weight:600}
+.prow-top span{color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--yellow),#ffb703);transition:width .5s ease}
+.progress-card .reset{margin-top:16px;font-size:12px;color:var(--faint);text-decoration:underline}
+.progress-card .note{margin-top:8px;font-size:11px;color:var(--faint)}
+
+/* ── Tabs ─────────────────────────────── */
+.tabs-bar{position:sticky;top:68px;z-index:40;background:rgba(10,15,30,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:10px 0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;color:var(--muted);transition:background .2s,color .2s}
+.tab svg{width:17px;height:17px}
+.tab:hover{color:#fff;background:rgba(255,255,255,.05)}
+.tab[aria-selected="true"]{color:#0a0f1e;background:var(--yellow)}
+.tab .count{font-size:11px;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,.1);font-variant-numeric:tabular-nums}
+.tab[aria-selected="true"] .count{background:rgba(10,15,30,.15)}
+
+.panel{padding:40px 0 72px}
+.panel[hidden]{display:none}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+.panel-head h2{font-family:'Syne',sans-serif;font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.02em}
+.panel-head p{color:var(--muted);font-size:15px;max-width:640px;margin-top:6px}
+.kicker{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+
+/* ── Videos ─────────────────────────────── */
+.player-grid{display:grid;grid-template-columns:minmax(260px,380px) 1fr;gap:28px;align-items:start}
+@media(max-width:820px){.player-grid{grid-template-columns:1fr}}
+.player{position:sticky;top:140px;background:#000;border-radius:20px;overflow:hidden;border:1px solid var(--line);aspect-ratio:9/16;max-height:calc(100vh - 170px);margin:0 auto;width:100%}
+@media(max-width:820px){.player{position:relative;top:0;max-width:340px}}
+.player video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
+.now{margin-top:14px;text-align:center}
+@media(min-width:821px){.now{display:none}}
+.series-title{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.series-title h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700}
+.chip{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:100px;background:rgba(0,170,255,.12);color:var(--blue)}
+.ep-list{display:flex;flex-direction:column;gap:10px}
+.ep{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;padding:10px;border-radius:16px;background:var(--card);border:1px solid var(--line);text-align:left;width:100%;transition:border-color .2s,background .2s}
+.ep:hover{border-color:rgba(255,214,10,.35)}
+.ep.active{border-color:var(--yellow);background:rgba(255,214,10,.06)}
+.ep img{width:64px;height:88px;object-fit:cover;border-radius:10px;background:#000}
+.ep .day{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow)}
+.ep .t{font-weight:600;font-size:15px;margin:2px 0}
+.ep .d{font-size:13px;color:var(--muted)}
+.ep .meta{display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums}
+.check{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.22);display:grid;place-items:center;transition:all .2s}
+.check svg{width:14px;height:14px;opacity:0;color:#0a0f1e}
+.done .check{background:var(--green);border-color:var(--green)}
+.done .check svg{opacity:1}
+.coming{margin-top:16px;padding:16px;border-radius:16px;border:1px dashed rgba(255,255,255,.18);color:var(--muted);font-size:14px;display:flex;gap:12px;align-items:center}
+.coming svg{width:20px;height:20px;color:var(--yellow);flex-shrink:0}
+.ep-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+/* ── Course ─────────────────────────────── */
+.course-facts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:720px){.course-facts{grid-template-columns:repeat(2,1fr)}}
+.fact{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.fact b{display:block;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--yellow);line-height:1.1}
+.fact span{font-size:13px;color:var(--muted)}
+.sabados{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:820px){.sabados{grid-template-columns:1fr}}
+.sab{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;transition:border-color .2s}
+.sab.done{border-color:rgba(34,197,94,.45)}
+.sab-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.sab-num{width:44px;height:44px;border-radius:12px;background:var(--yellow);color:#0a0f1e;font-family:'Syne',sans-serif;font-weight:800;font-size:22px;display:grid;place-items:center;flex-shrink:0}
+.sab-head small{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.sab-head h3{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;line-height:1.2}
+.agenda{list-style:none;border-top:1px solid var(--line);margin-bottom:14px}
+.agenda li{display:grid;grid-template-columns:72px 1fr auto;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:baseline}
+.agenda .tm{color:var(--yellow);font-weight:600;font-variant-numeric:tabular-nums;font-size:13px}
+.agenda .ty{font-size:11px;font-weight:600;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,.07);color:var(--muted);white-space:nowrap}
+.agenda .ty.p{background:rgba(0,170,255,.12);color:var(--blue)}
+.agenda .ty.e{background:rgba(255,214,10,.12);color:var(--yellow)}
+.goal{font-size:14px;color:var(--muted);padding:12px 14px;border-radius:12px;background:rgba(255,214,10,.06);border-left:3px solid var(--yellow);margin-bottom:16px}
+.goal b{color:#fff}
+.toggle{margin-top:auto;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;padding:10px 14px;border-radius:12px;border:1px solid var(--line);align-self:flex-start;transition:background .2s}
+.toggle:hover{background:rgba(255,255,255,.05)}
+.toggle .check{width:22px;height:22px}
+.enroll{margin-top:28px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center;padding:26px;border-radius:20px;background:linear-gradient(135deg,rgba(255,214,10,.12),rgba(0,170,255,.08));border:1px solid rgba(255,214,10,.3)}
+@media(max-width:820px){.enroll{grid-template-columns:1fr}}
+.enroll h3{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px}
+.enroll p{color:var(--muted);font-size:15px}
+.enroll ul{list-style:none;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.enroll li{display:flex;gap:10px;align-items:flex-start}
+.enroll li svg{width:18px;height:18px;color:var(--yellow);flex-shrink:0;margin-top:1px}
+.enroll .btn{margin-top:16px}
+
+/* ── Materials ─────────────────────────────── */
+.mat-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;align-items:start}
+@media(max-width:820px){.mat-grid{grid-template-columns:1fr}}
+.doc{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px}
+.doc-cover{aspect-ratio:4/3;border-radius:14px;background:linear-gradient(150deg,#141d33,#0b1222);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;padding:20px;margin-bottom:18px;position:relative;overflow:hidden}
+.doc-cover::after{content:"PDF";position:absolute;top:16px;right:16px;font-size:11px;font-weight:800;letter-spacing:.1em;padding:4px 8px;border-radius:6px;background:var(--yellow);color:#0a0f1e}
+.doc-cover small{font-size:11px;color:var(--yellow);font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.doc-cover b{font-family:'Syne',sans-serif;font-size:24px;line-height:1.1;margin-top:6px}
+.doc p{color:var(--muted);font-size:14px;margin-bottom:16px}
+.doc .row{display:flex;gap:10px;flex-wrap:wrap}
+.cats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:480px){.cats{grid-template-columns:1fr}}
+.cat{display:flex;gap:12px;align-items:center;padding:14px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+.cat-n{width:32px;height:32px;border-radius:9px;background:rgba(0,170,255,.12);color:var(--blue);font-weight:800;display:grid;place-items:center;flex-shrink:0;font-size:14px}
+.cat b{display:block;font-size:14px;font-weight:600}
+.cat span{font-size:12px;color:var(--faint)}
+
+/* ── Tools ─────────────────────────────── */
+.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:720px){.tools{grid-template-columns:1fr}}
+.tool{display:flex;flex-direction:column;gap:12px;padding:24px;border-radius:20px;background:var(--card);border:1px solid var(--line);text-decoration:none;transition:border-color .2s,transform .2s}
+.tool:hover{border-color:rgba(0,170,255,.5);transform:translateY(-2px)}
+.tool-ic{width:46px;height:46px;border-radius:12px;background:rgba(0,170,255,.12);color:var(--blue);display:grid;place-items:center}
+.tool-ic svg{width:24px;height:24px}
+.tool h3{font-family:'Syne',sans-serif;font-size:19px;font-weight:700}
+.tool p{color:var(--muted);font-size:14px;flex:1}
+.tool .go{font-size:14px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:6px}
+.tool .tag{align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:100px;background:rgba(34,197,94,.12);color:var(--green)}
+.tool .tag.pin{background:rgba(255,214,10,.12);color:var(--yellow)}
+
+/* ── Footer ─────────────────────────────── */
+footer{border-top:1px solid var(--line);padding:28px 0 40px;font-size:13px;color:var(--faint)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{color:var(--muted);text-decoration:none;margin-right:16px}
+footer a:hover{color:#fff}
+
+.wa-float{position:fixed;right:20px;bottom:20px;z-index:60;width:54px;height:54px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 8px 24px rgba(37,211,102,.4)}
+.wa-float svg{width:28px;height:28px;color:#fff}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--green);color:#04130a;font-weight:700;font-size:14px;padding:12px 18px;border-radius:100px;z-index:70;transition:transform .35s ease;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.toast.show{transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="/" class="logo" aria-label="Fly Electric Solutions, inicio">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <div>
+        <div class="logo-text"><span>Fly Electric</span> Solutions</div>
+        <span class="logo-sub">Academy</span>
+      </div>
+    </a>
+    <nav class="top-links" aria-label="Principal">
+      <a href="/" class="hide-sm">Inicio</a>
+      <a href="/estimator" class="hide-sm">Estimado gratis</a>
+      <a class="btn btn-yellow btn-sm" href="#curso" data-tab-link="curso">Inscríbete</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow"><i></i>Fly Electric Academy · Houston TX</div>
+      <h1>Aprende el oficio eléctrico <em>en español</em></h1>
+      <p class="lead">Videos cortos para aprender a leer planos, un curso presencial de ayudante eléctrico comercial y guías de materiales. Avanza a tu ritmo: tu progreso se guarda en este dispositivo.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-yellow" href="#videos" data-tab-link="videos">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Empezar con los videos
+        </a>
+        <a class="btn btn-ghost" href="#curso" data-tab-link="curso">Ver el curso presencial</a>
+      </div>
+    </div>
+    <aside class="progress-card" aria-label="Tu avance">
+      <h2>Tu avance</h2>
+      <div class="sub">Marca cada video, sábado y guía cuando lo termines.</div>
+      <div class="prow"><div class="prow-top"><b>Videos · Leer planos</b><span id="pv-txt">0 / 5</span></div><div class="bar"><i id="pv-bar"></i></div></div>
+      <div class="prow"><div class="prow-top"><b>Curso presencial</b><span id="pc-txt">0 / 4</span></div><div class="bar"><i id="pc-bar"></i></div></div>
+      <div class="prow"><div class="prow-top"><b>Materiales</b><span id="pm-txt">0 / 1</span></div><div class="bar"><i id="pm-bar"></i></div></div>
+      <button class="reset" id="resetBtn" type="button">Reiniciar mi avance</button>
+      <div class="note">Tu avance se guarda solo en este navegador.</div>
+    </aside>
+  </div>
+</section>
+
+<div class="tabs-bar">
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de Academy">
+      <button class="tab" role="tab" id="tab-videos" aria-controls="videos" aria-selected="true" data-tab="videos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>
+        Videos <span class="count" id="c-videos">0/5</span>
+      </button>
+      <button class="tab" role="tab" id="tab-curso" aria-controls="curso" aria-selected="false" data-tab="curso">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>
+        Curso presencial <span class="count" id="c-curso">0/4</span>
+      </button>
+      <button class="tab" role="tab" id="tab-materiales" aria-controls="materiales" aria-selected="false" data-tab="materiales">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+        Materiales
+      </button>
+      <button class="tab" role="tab" id="tab-herramientas" aria-controls="herramientas" aria-selected="false" data-tab="herramientas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M14 10h2M8 14h2M14 14h2M8 18h2M14 18h2"/></svg>
+        Herramientas
+      </button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <!-- ═════ VIDEOS ═════ -->
+  <section class="panel" id="videos" role="tabpanel" aria-labelledby="tab-videos">
+    <div class="wrap">
+      <div class="panel-head">
+        <div>
+          <div class="kicker">Serie en redes · un video por día</div>
+          <h2>Aprende a leer un plano eléctrico</h2>
+          <p>Cinco videos cortos, de lunes a viernes. Míralos en orden: cada uno prepara el siguiente. Al terminar un video se marca solo como visto.</p>
+        </div>
+      </div>
+      <div class="player-grid">
+        <div>
+          <div class="player">
+            <video id="video" controls playsinline preload="metadata" poster="academy-assets/videos/s1-lun.jpg"></video>
+          </div>
+          <div class="now" id="nowMobile"></div>
+        </div>
+        <div>
+          <div class="series-title"><h3>Semana 1 · Leer planos</h3><span class="chip">5 videos</span></div>
+          <div class="ep-list" id="epList"></div>
+          <div class="ep-actions">
+            <button class="btn btn-ghost btn-sm" id="markBtn" type="button">Marcar como visto</button>
+            <button class="btn btn-yellow btn-sm" id="nextBtn" type="button">Siguiente video →</button>
+          </div>
+          <div class="coming">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span><b style="color:#fff">Próximamente: Semana 2.</b> Publicamos un video nuevo cada día en nuestras redes. Escríbenos por WhatsApp si quieres que te avisemos.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ CURSO ═════ -->
+  <section class="panel" id="curso" role="tabpanel" aria-labelledby="tab-curso" hidden>
+    <div class="wrap">
+      <div class="panel-head">
+        <div>
+          <div class="kicker">Curso presencial · Houston TX</div>
+          <h2>Curso de ayudante eléctrico comercial</h2>
+          <p>Poca teoría y mucha práctica. En cuatro sábados pasas de tu primer doblez de tubería EMT a un circuito completo que pasa la prueba.</p>
+        </div>
+      </div>
+      <div class="course-facts">
+        <div class="fact"><b>4</b><span>sábados</span></div>
+        <div class="fact"><b>16 h</b><span>de clase en total</span></div>
+        <div class="fact"><b>~75%</b><span>práctica con herramienta</span></div>
+        <div class="fact"><b>1</b><span>proyecto final y constancia</span></div>
+      </div>
+      <div class="sabados" id="sabados"></div>
+
+      <div class="enroll">
+        <div>
+          <h3>Pregunta por la próxima fecha</h3>
+          <p>Escríbenos por WhatsApp y te damos fecha, lugar, costo y la lista de lo que debes traer.</p>
+          <a class="btn btn-yellow" id="enrollBtn" href="https://wa.me/17133842411" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>
+            Quiero inscribirme
+          </a>
+        </div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>No necesitas experiencia previa.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Todo en español, con el vocabulario de la obra en inglés.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Trae tu equipo de protección: lentes, guantes y botas.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>El último sábado te orientamos para sacar tu licencia de aprendiz en TDLR.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ MATERIALES ═════ -->
+  <section class="panel" id="materiales" role="tabpanel" aria-labelledby="tab-materiales" hidden>
+    <div class="wrap">
+      <div class="panel-head">
+        <div>
+          <div class="kicker">Guías para descargar</div>
+          <h2>Materiales de estudio</h2>
+          <p>Aprende a reconocer cada material de una requisición: cómo se ve, cómo se llama en español y en inglés, y para qué sirve.</p>
+        </div>
+      </div>
+      <div class="mat-grid">
+        <div class="doc" id="docCard">
+          <div class="doc-cover"><small>Guía 1 · 12 páginas</small><b>Materiales eléctricos comerciales</b></div>
+          <p>24 materiales en 7 categorías, con ilustraciones de referencia y una lista de lo que debes verificar antes de pedir.</p>
+          <div class="row">
+            <a class="btn btn-yellow btn-sm" href="academy-assets/pdf/materiales-electricos-comerciales.pdf" target="_blank" rel="noopener" data-doc="materiales">Abrir guía</a>
+            <a class="btn btn-ghost btn-sm" href="academy-assets/pdf/materiales-electricos-comerciales.pdf" download data-doc="materiales">Descargar PDF</a>
+            <button class="toggle" type="button" id="docToggle"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Ya la estudié</button>
+          </div>
+        </div>
+        <div>
+          <div class="series-title"><h3>Lo que vas a conocer</h3><span class="chip">24 materiales</span></div>
+          <div class="cats">
+            <div class="cat"><div class="cat-n">1</div><div><b>Accesorios EMT de 1"</b><span>Coples, conectores y boquillas · 4</span></div></div>
+            <div class="cat"><div class="cat-n">2</div><div><b>Soportes de tubería</b><span>3 materiales</span></div></div>
+            <div class="cat"><div class="cat-n">3</div><div><b>Cajas y registros</b><span>2 materiales</span></div></div>
+            <div class="cat"><div class="cat-n">4</div><div><b>Conectores de malla</b><span>2 materiales</span></div></div>
+            <div class="cat"><div class="cat-n">5</div><div><b>Tierra y unión</b><span>2 materiales</span></div></div>
+            <div class="cat"><div class="cat-n">6</div><div><b>Tornillería y fijación</b><span>9 materiales</span></div></div>
+            <div class="cat"><div class="cat-n">7</div><div><b>Etiquetado</b><span>2 materiales</span></div></div>
+            <div class="cat" style="border-style:dashed"><div class="cat-n" style="background:rgba(255,214,10,.12);color:var(--yellow)">✓</div><div><b>Antes de pedir</b><span>Qué verificar en la requisición</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ HERRAMIENTAS ═════ -->
+  <section class="panel" id="herramientas" role="tabpanel" aria-labelledby="tab-herramientas" hidden>
+    <div class="wrap">
+      <div class="panel-head">
+        <div>
+          <div class="kicker">Herramientas Fly Electric</div>
+          <h2>Calcula tu proyecto</h2>
+          <p>Las herramientas de Fly Electric Solutions, en un solo lugar.</p>
+        </div>
+      </div>
+      <div class="tools">
+        <a class="tool" href="/estimator">
+          <span class="tag">Para clientes · gratis</span>
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+          <h3>Estimador de proyectos</h3>
+          <p>Elige el servicio que necesitas, responde unas preguntas y recibe un rango de precio al instante. Sin compromiso.</p>
+          <span class="go">Abrir estimador →</span>
+        </a>
+        <a class="tool" href="/calculadora">
+          <span class="tag pin">Estimado libre · Cotización con PIN</span>
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M14 10h2M8 14h2M14 14h2M8 18h2M14 18h2"/></svg></div>
+          <h3>Calculadora de estimados</h3>
+          <p>Arma un estimado detallado por partidas y descárgalo en PDF. La cotización oficial y el contrato son para el equipo de Fly Electric.</p>
+          <span class="go">Abrir calculadora →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><a href="/">Inicio</a><a href="/estimator">Estimador</a><a href="tel:+17133842411">(713) 384-2411</a><a href="mailto:info@flyelectricsolution.com">info@flyelectricsolution.com</a></div>
+    <div>© 2026 Fly Electric Solutions LLC · Houston TX</div>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/17133842411?text=Hola%20Fly%20Electric%2C%20vengo%20de%20Academy" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>
+</a>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var BASE = 'academy-assets/';
+  var EPISODES = [
+    {id:'s1-lun', day:'Lunes',     title:'Las hojas empiezan con E',        desc:'Cómo se ordena un juego de planos y qué dice el cuadro de título.', dur:'0:54'},
+    {id:'s1-mar', day:'Martes',    title:'A, a y una flecha',               desc:'Tipo de luminaria, interruptor y circuito: tres datos en cada símbolo.', dur:'1:05'},
+    {id:'s1-mie', day:'Miércoles', title:'El home run y las rayitas',       desc:'A qué panel y circuito va la flecha, y cuántos conductores van en el tubo.', dur:'0:56'},
+    {id:'s1-jue', day:'Jueves',     title:'Las abreviaturas del plano',     desc:'EM, NL, OS, PC, AFF, TYP y UON: lo que completan las notas.', dur:'1:02'},
+    {id:'s1-vie', day:'Viernes',    title:'Gran video: el plano completo',  desc:'Juntamos todo y leemos un plano de iluminación de principio a fin.', dur:'3:03'}
+  ];
+  var SABADOS = [
+    {n:1, title:'Seguridad, herramienta y el primer doblez',
+     goal:'cada alumno saca 5 stub-ups de 90° dentro de ±1/4" de la medida.',
+     agenda:[['30 min','Seguridad: EPP, riesgo eléctrico, LOTO, probar antes de tocar','Teoría'],['30 min','Herramienta, materiales y tubería EMT','Teoría + demo'],['2 h 30 min','Cortar, rimar, conocer la dobladora y sacar stub-ups de 90°','Práctica'],['30 min','Revisión: medir los dobleces y corregir','Práctica']]},
+    {n:2, title:'Back-to-back, kicks y offsets',
+     goal:'offsets parejos, sin torcer (dogleg), que entren a la caja sin forzar.',
+     agenda:[['20 min','Multiplicadores y encogimiento (shrink)','Teoría'],['15 min','Calentamiento: dos stub-ups de 90°','Práctica'],['2 h 55 min','Back-to-back, kick, offsets, box offset e instalación en la pared','Práctica'],['30 min','Revisión y corrección de cada alumno','Práctica']]},
+    {n:3, title:'Saddles, una corrida completa y jalado de cable',
+     goal:'una corrida limpia, nivelada y con el cable jalado.',
+     agenda:[['20 min','Colores de cable, voltajes y calibres','Teoría'],['2 h','Saddles de 3 y 4 puntos y la corrida completa de caja a caja','Práctica'],['1 h 10 min','Jalado de cable por la corrida','Práctica'],['30 min','Revisión de cada corrida','Práctica']]},
+    {n:4, title:'Conexiones y proyecto final',
+     goal:'un circuito completo que pasa la prueba, hecho por cada alumno.',
+     agenda:[['20 min','Leer un plano simple y licencia de aprendiz','Teoría'],['1 h','Empalmes, contactos, apagadores y luminarias','Práctica'],['2 h','Proyecto final: paipa, cable, conexiones y prueba','Práctica'],['40 min','Examen corto, revisión de proyectos y constancias','Evaluación']]}
+  ];
+
+  /* ── progress storage (per browser) ── */
+  var KEY = 'fea_progress_v1';
+  var state = {videos:{}, curso:{}, docs:{}};
+  try { var raw = localStorage.getItem(KEY); if (raw) { var p = JSON.parse(raw); state.videos = p.videos||{}; state.curso = p.curso||{}; state.docs = p.docs||{}; } } catch(e){}
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+
+  var CHECK = '<span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>';
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  var toastEl = document.getElementById('toast'), toastT;
+  function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('show'); }, 2200); }
+
+  /* ── tabs ── */
+  var TABS = ['videos','curso','materiales','herramientas'];
+  function showTab(name, scroll){
+    if (TABS.indexOf(name) < 0) name = 'videos';
+    TABS.forEach(function(t){
+      document.getElementById(t).hidden = (t !== name);
+      document.getElementById('tab-'+t).setAttribute('aria-selected', t === name ? 'true' : 'false');
+    });
+    if (name !== 'videos' && !video.paused) video.pause();
+    if (scroll) {
+      var y = document.querySelector('.tabs-bar').getBoundingClientRect().top + window.scrollY - 68;
+      window.scrollTo({top: y, behavior: 'smooth'});
+    }
+  }
+  document.querySelectorAll('[data-tab]').forEach(function(b){
+    b.addEventListener('click', function(){ var t = b.getAttribute('data-tab'); history.replaceState(null,'','#'+t); showTab(t, false); });
+  });
+  document.querySelectorAll('[data-tab-link]').forEach(function(a){
+    a.addEventListener('click', function(e){ e.preventDefault(); var t = a.getAttribute('data-tab-link'); history.replaceState(null,'','#'+t); showTab(t, true); });
+  });
+  document.querySelector('.tabs').addEventListener('keydown', function(e){
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var cur = TABS.indexOf(document.querySelector('.tab[aria-selected="true"]').getAttribute('data-tab'));
+    var nxt = TABS[(cur + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length];
+    showTab(nxt, false); history.replaceState(null,'','#'+nxt); document.getElementById('tab-'+nxt).focus();
+  });
+
+  /* ── videos ── */
+  var video = document.getElementById('video');
+  var list = document.getElementById('epList');
+  var current = 0;
+  list.innerHTML = EPISODES.map(function(ep, i){
+    return '<button class="ep" type="button" data-i="'+i+'">' +
+      '<img src="'+BASE+'videos/'+ep.id+'.jpg" alt="" loading="lazy">' +
+      '<div><div class="day">'+esc(ep.day)+'</div><div class="t">'+esc(ep.title)+'</div><div class="d">'+esc(ep.desc)+'</div></div>' +
+      '<div class="meta">'+CHECK+'<span>'+ep.dur+'</span></div></button>';
+  }).join('');
+  list.addEventListener('click', function(e){
+    var b = e.target.closest('.ep'); if (!b) return;
+    load(+b.getAttribute('data-i'), true);
+    if (window.innerWidth <= 820) document.querySelector('.player').scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  function load(i, play){
+    current = i; var ep = EPISODES[i];
+    video.src = BASE + 'videos/' + ep.id + '.mp4';
+    video.poster = BASE + 'videos/' + ep.id + '.jpg';
+    if (play) { var pr = video.play(); if (pr && pr.catch) pr.catch(function(){}); }
+    renderVideos();
+  }
+  function setWatched(i, v){ if (v) state.videos[EPISODES[i].id] = 1; else delete state.videos[EPISODES[i].id]; save(); renderVideos(); renderProgress(); }
+  video.addEventListener('ended', function(){
+    if (!state.videos[EPISODES[current].id]) { setWatched(current, true); toast('¡Video completado!'); }
+  });
+  video.addEventListener('timeupdate', function(){
+    if (video.duration && video.currentTime / video.duration > 0.9 && !state.videos[EPISODES[current].id]) setWatched(current, true);
+  });
+  document.getElementById('markBtn').addEventListener('click', function(){
+    var on = !state.videos[EPISODES[current].id]; setWatched(current, on); toast(on ? 'Marcado como visto' : 'Marcado como pendiente');
+  });
+  document.getElementById('nextBtn').addEventListener('click', function(){
+    if (current < EPISODES.length - 1) load(current + 1, true);
+    else { showTab('curso', true); history.replaceState(null,'','#curso'); }
+  });
+  function renderVideos(){
+    list.querySelectorAll('.ep').forEach(function(b, i){
+      b.classList.toggle('active', i === current);
+      b.classList.toggle('done', !!state.videos[EPISODES[i].id]);
+      b.setAttribute('aria-current', i === current ? 'true' : 'false');
+    });
+    var ep = EPISODES[current];
+    document.getElementById('markBtn').textContent = state.videos[ep.id] ? 'Marcar como pendiente' : 'Marcar como visto';
+    document.getElementById('nextBtn').textContent = current < EPISODES.length - 1 ? 'Siguiente video →' : 'Ir al curso presencial →';
+    document.getElementById('nowMobile').innerHTML = '<span class="day" style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow)">'+esc(ep.day)+'</span><div style="font-weight:600">'+esc(ep.title)+'</div>';
+  }
+
+  /* ── course ── */
+  var sab = document.getElementById('sabados');
+  sab.innerHTML = SABADOS.map(function(s){
+    return '<article class="sab" data-n="'+s.n+'">' +
+      '<div class="sab-head"><div class="sab-num">'+s.n+'</div><div><small>Sábado '+s.n+' de 4 · 4 horas</small><h3>'+esc(s.title)+'</h3></div></div>' +
+      '<ul class="agenda">' + s.agenda.map(function(a){
+        var cls = a[2] === 'Práctica' ? 'p' : (a[2] === 'Evaluación' ? 'e' : '');
+        return '<li><span class="tm">'+esc(a[0])+'</span><span>'+esc(a[1])+'</span><span class="ty '+cls+'">'+esc(a[2])+'</span></li>';
+      }).join('') + '</ul>' +
+      '<div class="goal"><b>Meta del día:</b> '+esc(s.goal)+'</div>' +
+      '<button class="toggle" type="button" data-sab="'+s.n+'">'+CHECK+'<span>Completé este sábado</span></button>' +
+      '</article>';
+  }).join('');
+  sab.addEventListener('click', function(e){
+    var b = e.target.closest('[data-sab]'); if (!b) return;
+    var n = b.getAttribute('data-sab'); var on = !state.curso[n];
+    if (on) state.curso[n] = 1; else delete state.curso[n];
+    save(); renderCourse(); renderProgress();
+    if (on) toast('¡Sábado ' + n + ' completado!');
+  });
+  function renderCourse(){
+    sab.querySelectorAll('.sab').forEach(function(a){
+      var n = a.getAttribute('data-n'), on = !!state.curso[n];
+      a.classList.toggle('done', on);
+      var t = a.querySelector('.toggle'); t.classList.toggle('done', on); t.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  document.getElementById('enrollBtn').href = 'https://wa.me/17133842411?text=' + encodeURIComponent('Hola Fly Electric, quiero información del Curso de ayudante eléctrico comercial (fecha, lugar y costo).');
+
+  /* ── materials ── */
+  var docToggle = document.getElementById('docToggle');
+  function setDoc(on){ if (on) state.docs.materiales = 1; else delete state.docs.materiales; save(); renderDocs(); renderProgress(); }
+  docToggle.addEventListener('click', function(){ var on = !state.docs.materiales; setDoc(on); if (on) toast('Guía marcada como estudiada'); });
+  function renderDocs(){ var on = !!state.docs.materiales; docToggle.classList.toggle('done', on); docToggle.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+
+  /* ── overall progress ── */
+  function bar(id, n, total){
+    document.getElementById(id+'-txt').textContent = n + ' / ' + total;
+    document.getElementById(id+'-bar').style.width = Math.round(n / total * 100) + '%';
+  }
+  function renderProgress(){
+    var v = EPISODES.filter(function(ep){ return state.videos[ep.id]; }).length;
+    var c = SABADOS.filter(function(s){ return state.curso[s.n]; }).length;
+    var m = state.docs.materiales ? 1 : 0;
+    bar('pv', v, EPISODES.length); bar('pc', c, SABADOS.length); bar('pm', m, 1);
+    document.getElementById('c-videos').textContent = v + '/' + EPISODES.length;
+    document.getElementById('c-curso').textContent = c + '/' + SABADOS.length;
+  }
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    if (!confirm('¿Borrar tu avance en este navegador?')) return;
+    state = {videos:{}, curso:{}, docs:{}}; save(); renderVideos(); renderCourse(); renderDocs(); renderProgress(); toast('Avance reiniciado');
+  });
+
+  /* start on the first unwatched video */
+  var firstPending = 0;
+  for (var i = 0; i < EPISODES.length; i++) { if (!state.videos[EPISODES[i].id]) { firstPending = i; break; } }
+  load(firstPending, false);
+  renderCourse(); renderDocs(); renderProgress();
+  var h = location.hash.replace('#','');
+  showTab(TABS.indexOf(h) >= 0 ? h : 'videos', false);
+  window.addEventListener('hashchange', function(){ var t = location.hash.replace('#',''); if (TABS.indexOf(t) >= 0) showTab(t, true); });
+})();
+</script>
+</body>
+</html>
