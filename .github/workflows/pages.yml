@@ -39,6 +39,9 @@ jobs:
           cp sitemap.xml _site/ || true
           cp logo-blanco.png _site/ || true
           cp logo-original.jpg _site/ || true
+          cp logo-oficial.png _site/ || true
+          cp favicon.png _site/ || true
+          cp apple-touch-icon.png _site/ || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
