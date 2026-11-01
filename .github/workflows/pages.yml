@@ -32,6 +32,8 @@ jobs:
           cp index.html _site/ || true
           cp calculadora.html _site/ || true
           cp estimator.html _site/ || true
+          cp academy.html _site/ || true
+          cp -r academy-assets _site/ || true
           cp CNAME _site/ || true
           cp robots.txt _site/ || true
           cp sitemap.xml _site/ || true
