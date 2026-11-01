@@ -184,7 +184,7 @@ h1 em{font-style:normal;color:var(--yellow)}
 .cat span{font-size:12px;color:var(--faint)}
 
 /* ── Tools ─────────────────────────────── */
-.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.tools{display:grid;grid-template-columns:minmax(0,560px);gap:16px}
 @media(max-width:720px){.tools{grid-template-columns:1fr}}
 .tool{display:flex;flex-direction:column;gap:12px;padding:24px;border-radius:20px;background:var(--card);border:1px solid var(--line);text-decoration:none;transition:border-color .2s,transform .2s}
 .tool:hover{border-color:rgba(0,170,255,.5);transform:translateY(-2px)}
@@ -223,7 +223,6 @@ footer a:hover{color:#fff}
     </a>
     <nav class="top-links" aria-label="Principal">
       <a href="/" class="hide-sm">Inicio</a>
-      <a href="/estimator" class="hide-sm">Estimado gratis</a>
       <a class="btn btn-yellow btn-sm" href="#curso" data-tab-link="curso">Inscríbete</a>
     </nav>
   </div>
@@ -393,17 +392,10 @@ footer a:hover{color:#fff}
         <div>
           <div class="kicker">Herramientas Fly Electric</div>
           <h2>Calcula tu proyecto</h2>
-          <p>Las herramientas de Fly Electric Solutions, en un solo lugar.</p>
+          <p>Arma un estimado eléctrico detallado y descárgalo en PDF.</p>
         </div>
       </div>
       <div class="tools">
-        <a class="tool" href="/estimator">
-          <span class="tag">Para clientes · gratis</span>
-          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-          <h3>Estimador de proyectos</h3>
-          <p>Elige el servicio que necesitas, responde unas preguntas y recibe un rango de precio al instante. Sin compromiso.</p>
-          <span class="go">Abrir estimador →</span>
-        </a>
         <a class="tool" href="/calculadora">
           <span class="tag pin">Estimado libre · Cotización con PIN</span>
           <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M14 10h2M8 14h2M14 14h2M8 18h2M14 18h2"/></svg></div>
@@ -418,7 +410,7 @@ footer a:hover{color:#fff}
 
 <footer>
   <div class="wrap">
-    <div><a href="/">Inicio</a><a href="/estimator">Estimador</a><a href="tel:+17133842411">(713) 384-2411</a><a href="mailto:info@flyelectricsolution.com">info@flyelectricsolution.com</a></div>
+    <div><a href="/">Inicio</a><a href="tel:+17133842411">(713) 384-2411</a><a href="mailto:info@flyelectricsolution.com">info@flyelectricsolution.com</a></div>
     <div>© 2026 Fly Electric Solutions LLC · Houston TX</div>
   </div>
 </footer>
