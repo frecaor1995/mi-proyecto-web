@@ -1,0 +1,3 @@
+import{EmptyState,PageHeader}from"./foundation";
+import type{Locale}from"../../i18n/locale";import{DEFAULT_LOCALE}from"../../i18n/locale";import{t}from"../../i18n/translate";
+export function CapabilityPage({title,description,icon,backendReady=false,locale=DEFAULT_LOCALE}:{title:string;description:string;icon:string;backendReady?:boolean;locale?:Locale}){return <div className="page-stack"><PageHeader title={title} description={description} marker={backendReady?t(locale,"capability.markerBackendReady"):t(locale,"capability.markerPlanned")} locale={locale}/><EmptyState icon={icon} title={t(locale,"capability.notConnectedYetTemplate",{title})} description={t(locale,"capability.description")} locale={locale}/></div>}

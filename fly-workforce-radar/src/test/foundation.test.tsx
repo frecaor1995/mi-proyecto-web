@@ -1,0 +1,2 @@
+import{renderToStaticMarkup}from"react-dom/server";import{describe,expect,it}from"vitest";import CommandCenter from"../app/command-center/page";
+describe("Radar foundation",()=>{it("identifies the product and its honest foundation state",async()=>{const markup=renderToStaticMarkup(await CommandCenter());expect(markup).toContain("Command Center");expect(markup).toContain("Workforce intelligence");expect(markup).toContain("Connection status unknown");expect(markup).not.toContain("metric-tile-known")})});

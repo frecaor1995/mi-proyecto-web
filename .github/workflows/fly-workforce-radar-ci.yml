@@ -1,0 +1,38 @@
+name: Fly Workforce Radar CI
+
+on:
+  pull_request:
+    paths: ["fly-workforce-radar/**", ".github/workflows/fly-workforce-radar-ci.yml"]
+  push:
+    branches: ["main"]
+    paths: ["fly-workforce-radar/**", ".github/workflows/fly-workforce-radar-ci.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: fly-workforce-radar
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: fly-workforce-radar/.nvmrc
+          cache: npm
+          cache-dependency-path: fly-workforce-radar/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Test
+        run: npm test
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build

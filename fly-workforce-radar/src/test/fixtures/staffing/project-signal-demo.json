@@ -1,0 +1,25 @@
+{
+  "contract": "fly.project-signal",
+  "contractVersion": "1.0.0",
+  "producer": { "system": "demo-local-fixture", "exportedAt": "2026-10-10T12:00:00Z" },
+  "records": [
+    {
+      "sourceSystem": "demo-local-fixture",
+      "sourceRecordId": "DEMO-PS-0001",
+      "observedAt": "2026-10-10T12:00:00Z",
+      "officialSourceUrl": "https://demo-local.invalid/project-signal/DEMO-PS-0001",
+      "dataClass": "DEMO",
+      "company": { "name": "DEMO LOCAL Contractor", "role": "ELECTRICAL_CONTRACTOR", "stage": "AWARDEE" },
+      "project": {
+        "name": "DEMO LOCAL Houston Substation Retrofit",
+        "city": "Houston",
+        "state": "TX",
+        "workType": { "value": "Electrical substation retrofit", "kind": "OFFICIAL" },
+        "trades": ["Electrical"]
+      },
+      "contractStatus": { "value": "Awarded", "kind": "OFFICIAL" },
+      "startDate": { "value": "2026-11-15", "kind": "ESTIMATED", "evidenceRef": "DEMO: schedule stated as 'mid-November' in the fixture notice" },
+      "duration": null
+    }
+  ]
+}
