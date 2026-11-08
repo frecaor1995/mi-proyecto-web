@@ -128,6 +128,14 @@ h1 em{font-style:normal;color:var(--yellow)}
 .check svg{width:14px;height:14px;opacity:0;color:#0a0f1e}
 .done .check{background:var(--green);border-color:var(--green)}
 .done .check svg{opacity:1}
+.series-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.stab{padding:9px 14px;border-radius:100px;border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--muted);background:var(--card)}
+.stab:hover{color:#fff}
+.stab[aria-pressed="true"]{background:var(--yellow);color:#0a0f1e;border-color:var(--yellow)}
+.stab .new{margin-left:6px;font-size:10px;font-weight:800;padding:2px 6px;border-radius:100px;background:#ef4444;color:#fff}
+.ep.locked{opacity:.55;cursor:not-allowed}
+.ep.locked img{filter:grayscale(1) brightness(.5)}
+.ep .lock{font-size:12px;font-weight:700;color:var(--yellow)}
 .coming{margin-top:16px;padding:16px;border-radius:16px;border:1px dashed rgba(255,255,255,.18);color:var(--muted);font-size:14px;display:flex;gap:12px;align-items:center}
 .coming svg{width:20px;height:20px;color:var(--yellow);flex-shrink:0}
 .ep-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
@@ -266,7 +274,7 @@ footer a:hover{color:#fff}
     <aside class="progress-card" aria-label="Tu avance">
       <h2>Tu avance</h2>
       <div class="sub">Marca cada video, sábado y guía cuando lo termines.</div>
-      <div class="prow"><div class="prow-top"><b>Videos · Leer planos</b><span id="pv-txt">0 / 5</span></div><div class="bar"><i id="pv-bar"></i></div></div>
+      <div class="prow"><div class="prow-top"><b>Videos</b><span id="pv-txt">0 / 5</span></div><div class="bar"><i id="pv-bar"></i></div></div>
       <div class="prow"><div class="prow-top"><b>Curso presencial</b><span id="pc-txt">0 / 4</span></div><div class="bar"><i id="pc-bar"></i></div></div>
       <div class="prow"><div class="prow-top"><b>Materiales</b><span id="pm-txt">0 / 1</span></div><div class="bar"><i id="pm-bar"></i></div></div>
       <button class="reset" id="resetBtn" type="button">Reiniciar mi avance</button>
@@ -304,11 +312,12 @@ footer a:hover{color:#fff}
     <div class="wrap">
       <div class="panel-head">
         <div>
-          <div class="kicker">Serie en redes · un video por día</div>
-          <h2>Aprende a leer un plano eléctrico</h2>
-          <p>Cinco videos cortos, de lunes a viernes. Míralos en orden: cada uno prepara el siguiente. Al terminar un video se marca solo como visto.</p>
+          <div class="kicker" id="seriesKicker">Serie en redes · un video por día</div>
+          <h2 id="seriesH2">Aprende a leer un plano eléctrico</h2>
+          <p id="seriesP">Cinco videos cortos, de lunes a viernes.</p>
         </div>
       </div>
+      <div class="series-tabs" id="seriesTabs" role="group" aria-label="Series"></div>
       <div class="player-grid">
         <div>
           <div class="player">
@@ -317,7 +326,7 @@ footer a:hover{color:#fff}
           <div class="now" id="nowMobile"></div>
         </div>
         <div>
-          <div class="series-title"><h3>Semana 1 · Leer planos</h3><span class="chip">5 videos</span></div>
+          <div class="series-title"><h3 id="seriesName">Semana 1 · Leer planos</h3><span class="chip" id="seriesCount">5 videos</span></div>
           <div class="ep-list" id="epList"></div>
           <div class="ep-actions">
             <button class="btn btn-ghost btn-sm" id="markBtn" type="button">Marcar como visto</button>
@@ -325,7 +334,7 @@ footer a:hover{color:#fff}
           </div>
           <div class="coming">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            <span><b style="color:#fff">Próximamente: Semana 2.</b> Publicamos un video nuevo cada día en <a href="https://www.facebook.com/share/1A83iwkTAb/" target="_blank" rel="noopener" style="color:var(--yellow)">Facebook</a>, <a href="https://www.instagram.com/flyelectricsolutions" target="_blank" rel="noopener" style="color:var(--yellow)">Instagram</a> y <a href="https://www.youtube.com/@flyelectricsolutions" target="_blank" rel="noopener" style="color:var(--yellow)">YouTube</a>. Síguenos para no perderte ninguno.</span>
+            <span><b style="color:#fff">Un video nuevo cada día.</b> De lunes a viernes, una clase corta; sábado y domingo, El Circuito Humano. Lo publicamos en <a href="https://www.facebook.com/share/1A83iwkTAb/" target="_blank" rel="noopener" style="color:var(--yellow)">Facebook</a>, <a href="https://www.instagram.com/flyelectricsolutions" target="_blank" rel="noopener" style="color:var(--yellow)">Instagram</a> y <a href="https://www.youtube.com/@flyelectricsolutions" target="_blank" rel="noopener" style="color:var(--yellow)">YouTube</a>. Síguenos para no perderte ninguno.</span>
           </div>
         </div>
       </div>
@@ -359,8 +368,8 @@ footer a:hover{color:#fff}
             <li><b>EMT</b><span>Tu tubería EMT</span></li>
             <li><b>$20</b><span>Para tu licencia de aprendiz electricista (TDLR)</span></li>
           </ul>
-          <a class="btn btn-wa" data-wa-enroll href="https://wa.me/17133842411" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg> Inscríbete por WhatsApp</a>
-          <span class="wa-num">WhatsApp: +1 (713) 384-2411</span>
+          <a class="btn btn-wa" data-wa-enroll href="https://wa.me/18325280360" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg> Inscríbete por WhatsApp</a>
+          <span class="wa-num">WhatsApp: +1 (832) 528-0360</span>
         </div>
       </div>
       <div class="course-facts">
@@ -373,9 +382,9 @@ footer a:hover{color:#fff}
 
       <div class="enroll">
         <div>
-          <h3>Pregunta por la próxima fecha</h3>
-          <p>El curso es gratis. Escríbenos por WhatsApp al +1 (713) 384-2411 y te damos la fecha de inicio, el lugar y la lista de lo que debes traer.</p>
-          <a class="btn btn-yellow" id="enrollBtn" href="https://wa.me/17133842411" target="_blank" rel="noopener">
+          <h3>Próximo curso: inicia el sábado 14 de noviembre</h3>
+          <p>Sábados 14, 21 y 28 de noviembre y 5 de diciembre, de 8:00 AM a 12:00 PM, en Houston. El curso es gratis y los cupos son limitados: <strong>inscripciones hasta el jueves 12 de noviembre</strong>. Escríbenos por WhatsApp al +1 (832) 528-0360 y te damos el lugar y la lista de lo que debes traer.</p>
+          <a class="btn btn-yellow" id="enrollBtn" href="https://wa.me/18325280360" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>
             Quiero inscribirme
           </a>
@@ -467,13 +476,8 @@ footer a:hover{color:#fff}
 <script>
 (function(){
   var BASE = 'academy-assets/';
-  var EPISODES = [
-    {id:'s1-lun', day:'Lunes',     title:'Las hojas empiezan con E',        desc:'Cómo se ordena un juego de planos y qué dice el cuadro de título.', dur:'0:54'},
-    {id:'s1-mar', day:'Martes',    title:'A, a y una flecha',               desc:'Tipo de luminaria, interruptor y circuito: tres datos en cada símbolo.', dur:'1:05'},
-    {id:'s1-mie', day:'Miércoles', title:'El home run y las rayitas',       desc:'A qué panel y circuito va la flecha, y cuántos conductores van en el tubo.', dur:'0:56'},
-    {id:'s1-jue', day:'Jueves',     title:'Las abreviaturas del plano',     desc:'EM, NL, OS, PC, AFF, TYP y UON: lo que completan las notas.', dur:'1:02'},
-    {id:'s1-vie', day:'Viernes',    title:'Gran video: el plano completo',  desc:'Juntamos todo y leemos un plano de iluminación de principio a fin.', dur:'3:03'}
-  ];
+  var SERIES = /*SERIES_DATA*/[{"key": "ch1", "name": "El Circuito Humano · T1", "h2": "El Circuito Humano · Temporada 1", "kicker": "Serie de fin de semana · sábado y domingo", "p": "Una historia por temporada. El sábado, Rafa enfrenta una decisión en la obra: ¿qué harías tú? El domingo ves lo que pasó y la regla detrás. Los episodios se habilitan el día que salen en redes.", "eps": [{"id": "ech-e1-sat", "day": "Sábado 7 nov", "title": "Ep. 1 · El cable sin nombre · ¿Qué harías tú?", "desc": "Rafa enfrenta una decisión en la obra. ¿Tú qué harías?", "dur": "0:47", "rel": "2026-11-07T16:00:00-06:00"}, {"id": "ech-e1-sun", "day": "Domingo 8 nov", "title": "Ep. 1 · El cable sin nombre · Lo que pasó", "desc": "Lo que hizo Rafa, lo que pasó y la regla detrás.", "dur": "1:02", "rel": "2026-11-08T16:00:00-06:00"}, {"id": "ech-e2-sat", "day": "Sábado 14 nov", "title": "Ep. 2 · La pared que se movió · ¿Qué harías tú?", "desc": "Rafa enfrenta una decisión en la obra. ¿Tú qué harías?", "dur": "0:38", "rel": "2026-11-14T16:00:00-06:00"}, {"id": "ech-e2-sun", "day": "Domingo 15 nov", "title": "Ep. 2 · La pared que se movió · Lo que pasó", "desc": "Lo que hizo Rafa, lo que pasó y la regla detrás.", "dur": "0:57", "rel": "2026-11-15T16:00:00-06:00"}, {"id": "ech-e3-sat", "day": "Sábado 21 nov", "title": "Ep. 3 · La caja llena · ¿Qué harías tú?", "desc": "Rafa enfrenta una decisión en la obra. ¿Tú qué harías?", "dur": "0:36", "rel": "2026-11-21T16:00:00-06:00"}, {"id": "ech-e3-sun", "day": "Domingo 22 nov", "title": "Ep. 3 · La caja llena · Lo que pasó", "desc": "Lo que hizo Rafa, lo que pasó y la regla detrás.", "dur": "1:07", "rel": "2026-11-22T16:00:00-06:00"}, {"id": "ech-e4-sat", "day": "Sábado 28 nov", "title": "Ep. 4 · Un favor rápido · ¿Qué harías tú?", "desc": "Rafa enfrenta una decisión en la obra. ¿Tú qué harías?", "dur": "0:33", "rel": "2026-11-28T16:00:00-06:00"}, {"id": "ech-e4-sun", "day": "Domingo 29 nov", "title": "Ep. 4 · Un favor rápido · Lo que pasó", "desc": "Lo que hizo Rafa, lo que pasó y la regla detrás.", "dur": "0:59", "rel": "2026-11-29T16:00:00-06:00"}, {"id": "ech-e5-sat", "day": "Sábado 5 dic", "title": "Ep. 5 · El neutro compartido · ¿Qué harías tú?", "desc": "Rafa enfrenta una decisión en la obra. ¿Tú qué harías?", "dur": "0:39", "rel": "2026-12-05T16:00:00-06:00"}, {"id": "ech-e5-sun", "day": "Domingo 6 dic", "title": "Ep. 5 · El neutro compartido · Lo que pasó", "desc": "Lo que hizo Rafa, lo que pasó y la regla detrás.", "dur": "1:06", "rel": "2026-12-06T16:00:00-06:00"}, {"id": "ech-e6-sat", "day": "Sábado 12 dic", "title": "Ep. 6 · Día de inspección · ¿Qué harías tú?", "desc": "Rafa enfrenta una decisión en la obra. ¿Tú qué harías?", "dur": "0:40", "rel": "2026-12-12T16:00:00-06:00"}, {"id": "ech-e6-sun", "day": "Domingo 13 dic", "title": "Ep. 6 · Día de inspección · Lo que pasó", "desc": "Lo que hizo Rafa, lo que pasó y la regla detrás.", "dur": "1:08", "rel": "2026-12-13T16:00:00-06:00"}]}, {"key": "s3", "name": "Semana 3 · Planos de iluminación", "h2": "Planos de iluminación", "kicker": "Clases cortas · de lunes a viernes", "p": "Panel schedule, fixture schedule, LED drivers y dimmers 0-10V. El viernes, un caso práctico que lo une todo.", "eps": [{"id": "s3-11", "day": "Lunes", "title": "Panel schedule: ¿coincide con el plano?", "desc": "Cómo encontrar la diferencia entre el plano y el panel antes de jalar cable.", "dur": "0:53", "rel": "2026-11-16T16:00:00-06:00"}, {"id": "s3-14", "day": "Martes", "title": "Fixture schedule: ¿qué luminaria va aquí?", "desc": "El tipo B del plano, el fixture schedule y las marcas aprobadas de la Division 26.", "dur": "0:53", "rel": "2026-11-17T16:00:00-06:00"}, {"id": "s3-16", "day": "Miércoles", "title": "La etiqueta del LED driver", "desc": "Entrada, salida y atenuación: lo que debes leer antes de conectar.", "dur": "0:57", "rel": "2026-11-18T16:00:00-06:00"}, {"id": "s3-18", "day": "Jueves", "title": "Dimmer 0-10V: ¿por qué no baja la luz?", "desc": "Alimentación y señal: dos partes separadas, y las fallas más comunes.", "dur": "0:59", "rel": "2026-11-19T16:00:00-06:00"}, {"id": "s3-vie", "day": "Viernes", "title": "Gran video: la oficina 104", "desc": "Instalar luminarias de principio a fin, en 5 pasos.", "dur": "2:09", "rel": "2026-11-20T16:00:00-06:00"}]}, {"key": "s2", "name": "Semana 2 · Grounding y bonding", "h2": "Grounding y bonding", "kicker": "Clases cortas · de lunes a viernes", "p": "Lo que de verdad hace disparar el breaker: la tierra de equipos, el puente de unión principal y la varilla de tierra. El viernes seguimos una falla de principio a fin.", "eps": [{"id": "s2-06", "day": "Lunes", "title": "Grounding vs bonding: ¿la varilla dispara el breaker?", "desc": "El mito más común, la diferencia entre grounding y bonding, y cómo viaja una falla.", "dur": "0:49", "rel": "2026-11-09T16:00:00-06:00"}, {"id": "s2-egc", "day": "Martes", "title": "La tierra de equipos (EGC)", "desc": "El cable verde, el EMT como camino de falla y el cople flojo.", "dur": "0:49", "rel": "2026-11-10T16:00:00-06:00"}, {"id": "s2-mbj", "day": "Miércoles", "title": "Neutro y tierra se unen una sola vez", "desc": "El puente de unión principal en el servicio y el subpanel con barras separadas.", "dur": "0:49", "rel": "2026-11-11T16:00:00-06:00"}, {"id": "s2-rod", "day": "Jueves", "title": "La varilla de tierra: lo que sí hace y lo que no", "desc": "8 pies, 25 ohmios y la segunda varilla a 6 pies.", "dur": "0:40", "rel": "2026-11-12T16:00:00-06:00"}, {"id": "s2-vie", "day": "Viernes", "title": "Gran video: sigue la falla", "desc": "Con tierra de equipos, sin ella, y por qué la varilla no dispara el breaker.", "dur": "1:43", "rel": "2026-11-13T16:00:00-06:00"}]}, {"key": "s1", "name": "Semana 1 · Leer planos", "h2": "Aprende a leer un plano eléctrico", "kicker": "Clases cortas · de lunes a viernes", "p": "Cinco videos cortos, de lunes a viernes. Míralos en orden: cada uno prepara el siguiente.", "eps": [{"id": "s1-lun", "day": "Lunes", "title": "Las hojas empiezan con E", "desc": "Cómo se ordena un juego de planos y qué dice el cuadro de título.", "dur": "0:54"}, {"id": "s1-mar", "day": "Martes", "title": "A, a y una flecha", "desc": "Tipo de luminaria, interruptor y circuito: tres datos en cada símbolo.", "dur": "1:05"}, {"id": "s1-mie", "day": "Miércoles", "title": "El home run y las rayitas", "desc": "A qué panel y circuito va la flecha, y cuántos conductores van en el tubo.", "dur": "0:56"}, {"id": "s1-jue", "day": "Jueves", "title": "Las abreviaturas del plano", "desc": "EM, NL, OS, PC, AFF, TYP y UON: lo que completan las notas.", "dur": "1:02"}, {"id": "s1-vie", "day": "Viernes", "title": "Gran video: el plano completo", "desc": "Juntamos todo y leemos un plano de iluminación de principio a fin.", "dur": "3:03"}]}];
+  var EPISODES = [];
   var SABADOS = [
     {n:1, title:'Seguridad, herramienta y el primer doblez',
      goal:'cada alumno saca 5 stub-ups de 90° dentro de ±1/4" de la medida.',
@@ -528,18 +532,47 @@ footer a:hover{color:#fff}
     showTab(nxt, false); history.replaceState(null,'','#'+nxt); document.getElementById('tab-'+nxt).focus();
   });
 
-  /* ── videos ── */
+  /* ── videos (series, episodes unlock on their release date) ── */
   var video = document.getElementById('video');
   var list = document.getElementById('epList');
-  var current = 0;
-  list.innerHTML = EPISODES.map(function(ep, i){
-    return '<button class="ep" type="button" data-i="'+i+'">' +
-      '<img src="'+BASE+'videos/'+ep.id+'.jpg" alt="" loading="lazy">' +
-      '<div><div class="day">'+esc(ep.day)+'</div><div class="t">'+esc(ep.title)+'</div><div class="d">'+esc(ep.desc)+'</div></div>' +
-      '<div class="meta">'+CHECK+'<span>'+ep.dur+'</span></div></button>';
-  }).join('');
+  var current = 0, seriesIdx = 0;
+  var NOW = Date.now();
+  function isOpen(ep){ return !ep.rel || Date.parse(ep.rel) <= NOW; }
+  var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  function relLabel(ep){ var d = new Date(Date.parse(ep.rel)); var opt = {timeZone:'America/Chicago'};
+    var day = +d.toLocaleString('en-US', Object.assign({day:'numeric'}, opt)), mon = +d.toLocaleString('en-US', Object.assign({month:'numeric'}, opt));
+    return 'Disponible el ' + day + ' ' + MESES[mon-1] + ' · 4:00 PM'; }
+  SERIES = SERIES.filter(function(sr){ return sr.eps.length; });
+  var ALL = []; SERIES.forEach(function(sr){ ALL = ALL.concat(sr.eps); });
+  var tabsEl = document.getElementById('seriesTabs');
+  tabsEl.innerHTML = SERIES.map(function(sr, k){
+    var fresh = sr.eps.some(function(ep){ return ep.rel && isOpen(ep) && NOW - Date.parse(ep.rel) < 2*864e5; });
+    return '<button class="stab" type="button" data-s="'+k+'">'+esc(sr.name)+(fresh?'<span class="new">NUEVO</span>':'')+'</button>'; }).join('');
+  tabsEl.addEventListener('click', function(e){ var b = e.target.closest('[data-s]'); if (b) selectSeries(+b.getAttribute('data-s'), true); });
+  function selectSeries(k, play){
+    seriesIdx = k; var sr = SERIES[k]; EPISODES = sr.eps;
+    tabsEl.querySelectorAll('.stab').forEach(function(b, i){ b.setAttribute('aria-pressed', i === k ? 'true' : 'false'); });
+    document.getElementById('seriesKicker').textContent = sr.kicker;
+    document.getElementById('seriesH2').textContent = sr.h2;
+    document.getElementById('seriesP').textContent = sr.p;
+    document.getElementById('seriesName').textContent = sr.name;
+    var open = EPISODES.filter(isOpen).length;
+    document.getElementById('seriesCount').textContent = open + (open === EPISODES.length ? '' : ' de ' + EPISODES.length) + ' videos';
+    list.innerHTML = EPISODES.map(function(ep, i){
+      var lk = !isOpen(ep);
+      return '<button class="ep'+(lk?' locked':'')+'" type="button" data-i="'+i+'"'+(lk?' aria-disabled="true"':'')+'>' +
+        '<img src="'+BASE+'videos/'+ep.id+'.jpg" alt="" loading="lazy">' +
+        '<div><div class="day">'+esc(ep.day)+'</div><div class="t">'+esc(ep.title)+'</div><div class="d">'+(lk?'<span class="lock">🔒 '+relLabel(ep)+'</span>':esc(ep.desc))+'</div></div>' +
+        '<div class="meta">'+CHECK+'<span>'+ep.dur+'</span></div></button>';
+    }).join('');
+    var first = 0;
+    for (var i = 0; i < EPISODES.length; i++) { if (isOpen(EPISODES[i]) && !state.videos[EPISODES[i].id]) { first = i; break; } }
+    if (!isOpen(EPISODES[first])) first = 0;
+    load(first, false);
+  }
   list.addEventListener('click', function(e){
     var b = e.target.closest('.ep'); if (!b) return;
+    if (b.classList.contains('locked')) { toast('Este episodio se habilita el día que sale en redes'); return; }
     load(+b.getAttribute('data-i'), true);
     if (window.innerWidth <= 820) document.querySelector('.player').scrollIntoView({behavior:'smooth', block:'center'});
   });
@@ -561,7 +594,7 @@ footer a:hover{color:#fff}
     var on = !state.videos[EPISODES[current].id]; setWatched(current, on); toast(on ? 'Marcado como visto' : 'Marcado como pendiente');
   });
   document.getElementById('nextBtn').addEventListener('click', function(){
-    if (current < EPISODES.length - 1) load(current + 1, true);
+    if (current < EPISODES.length - 1 && isOpen(EPISODES[current + 1])) load(current + 1, true);
     else { showTab('curso', true); history.replaceState(null,'','#curso'); }
   });
   function renderVideos(){
@@ -572,7 +605,7 @@ footer a:hover{color:#fff}
     });
     var ep = EPISODES[current];
     document.getElementById('markBtn').textContent = state.videos[ep.id] ? 'Marcar como pendiente' : 'Marcar como visto';
-    document.getElementById('nextBtn').textContent = current < EPISODES.length - 1 ? 'Siguiente video →' : 'Ir al curso presencial →';
+    document.getElementById('nextBtn').textContent = (current < EPISODES.length - 1 && isOpen(EPISODES[current + 1])) ? 'Siguiente video →' : 'Ir al curso presencial →';
     document.getElementById('nowMobile').innerHTML = '<span class="day" style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow)">'+esc(ep.day)+'</span><div style="font-weight:600">'+esc(ep.title)+'</div>';
   }
 
@@ -603,7 +636,7 @@ footer a:hover{color:#fff}
       var t = a.querySelector('.toggle'); t.classList.toggle('done', on); t.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
   }
-  var waEnroll = 'https://wa.me/17133842411?text=' + encodeURIComponent('Hola Fly Electric, quiero inscribirme en el curso gratis de electricidad básica comercial (fecha de inicio y lugar).');
+  var waEnroll = 'https://wa.me/18325280360?text=' + encodeURIComponent('Hola Fly Electric, quiero inscribirme en el curso gratis de electricidad básica comercial que inicia el sábado 14 de noviembre.');
   document.getElementById('enrollBtn').href = waEnroll;
   document.querySelectorAll('[data-wa-enroll]').forEach(function(a){ a.href = waEnroll; });
 
@@ -619,11 +652,12 @@ footer a:hover{color:#fff}
     document.getElementById(id+'-bar').style.width = Math.round(n / total * 100) + '%';
   }
   function renderProgress(){
-    var v = EPISODES.filter(function(ep){ return state.videos[ep.id]; }).length;
+    var OPEN = ALL.filter(isOpen);
+    var v = OPEN.filter(function(ep){ return state.videos[ep.id]; }).length;
     var c = SABADOS.filter(function(s){ return state.curso[s.n]; }).length;
     var m = state.docs.materiales ? 1 : 0;
-    bar('pv', v, EPISODES.length); bar('pc', c, SABADOS.length); bar('pm', m, 1);
-    document.getElementById('c-videos').textContent = v + '/' + EPISODES.length;
+    bar('pv', v, OPEN.length); bar('pc', c, SABADOS.length); bar('pm', m, 1);
+    document.getElementById('c-videos').textContent = v + '/' + OPEN.length;
     document.getElementById('c-curso').textContent = c + '/' + SABADOS.length;
   }
   document.getElementById('resetBtn').addEventListener('click', function(){
@@ -631,10 +665,10 @@ footer a:hover{color:#fff}
     state = {videos:{}, curso:{}, docs:{}}; save(); renderVideos(); renderCourse(); renderDocs(); renderProgress(); toast('Avance reiniciado');
   });
 
-  /* start on the first unwatched video */
-  var firstPending = 0;
-  for (var i = 0; i < EPISODES.length; i++) { if (!state.videos[EPISODES[i].id]) { firstPending = i; break; } }
-  load(firstPending, false);
+  /* start on the series with the newest released episode */
+  var bestK = SERIES.length - 1, bestT = -1;
+  SERIES.forEach(function(sr, k){ sr.eps.forEach(function(ep){ if (ep.rel && isOpen(ep) && Date.parse(ep.rel) > bestT) { bestT = Date.parse(ep.rel); bestK = k; } }); });
+  selectSeries(bestK, false);
   renderCourse(); renderDocs(); renderProgress();
   var h = location.hash.replace('#','');
   showTab(TABS.indexOf(h) >= 0 ? h : 'videos', false);
