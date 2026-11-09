@@ -353,7 +353,8 @@ footer a:hover{color:#fff}
       </div>
       <div class="promo">
         <div class="promo-video">
-          <video id="promoVideo" controls playsinline preload="metadata" poster="academy-assets/videos/curso-gratis.jpg" src="academy-assets/videos/curso-gratis.mp4"></video>
+          <video id="promoVideo" controls playsinline preload="metadata" poster="academy-assets/videos/curso-gratis.jpg" src="academy-assets/videos/curso-gratis.mp4" data-promo-src="academy-assets/videos/curso-anuncio-nov.mp4" data-promo-poster="academy-assets/videos/curso-anuncio-nov.jpg" data-promo-until="2026-11-13T00:00:00-06:00"></video>
+          <script>(function(){var v=document.getElementById('promoVideo');var u=Date.parse(v.getAttribute('data-promo-until'));if(Date.now()<u){v.poster=v.getAttribute('data-promo-poster');v.src=v.getAttribute('data-promo-src');}})();</script>
         </div>
         <div>
           <span class="free">GRATIS</span>
