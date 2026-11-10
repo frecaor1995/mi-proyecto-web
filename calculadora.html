@@ -318,12 +318,12 @@ footer a{color:var(--gold);text-decoration:none;}
   <div class="legal" id="legal-txt">
     &#9888;&#65039; This estimate is for reference only. Final pricing may vary based on on-site conditions, materials needed, and permit requirements.
     Sales Tax (8.25%) applies to materials only per Texas law. Fly Electric Solutions will confirm final pricing after inspection.
-    Fly Electric Solutions LLC &middot; Insured & Professional &middot; Fully Insured.
+    Fly Electric Solutions LLC &middot; TDLR Electrical Contractor TECL 42011 &middot; Fully Insured.
   </div>
 </div>
 
 <footer>
-  <div class="fname">Fly Electric Solutions LLC &middot; Insured &amp; Professional &middot; Houston TX</div>
+  <div class="fname">Fly Electric Solutions LLC &middot; TDLR Electrical Contractor TECL 42011 &middot; Fully Insured &middot; Houston TX</div>
   <div><a href="tel:+17133842411">(713) 384-2411</a> &middot; <a href="mailto:info@flyelectricsolution.com">info@flyelectricsolution.com</a> &middot; <a href="https://flyelectricsolution.com">flyelectricsolution.com</a></div>
 </footer>
 
@@ -857,7 +857,7 @@ function makeContractPDF(){
   doc.text(lang==='es'?'CONTRATO DE SERVICIO':'SERVICE CONTRACT',14,15);
   doc.setFontSize(9);doc.setTextColor(200,200,200);
   doc.setFont('helvetica','normal');
-  doc.text('Fly Electric Solutions LLC',14,23);
+  doc.text('Fly Electric Solutions LLC  ·  TECL 42011  ·  (713) 384-2411',14,23);
   doc.setFont('helvetica','bold');doc.setTextColor(255,215,0);doc.setFontSize(10);
   doc.text((lang==='es'?'Folio: ':'Quote #: ')+qn,W-14,14,{align:'right'});
   doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(200,200,200);
@@ -928,6 +928,10 @@ function makeContractPDF(){
   doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);
   doc.text(name,14,ty);
   doc.text('Fly Electric Solutions LLC',W/2+4,ty);
+  ty+=10;
+  doc.setFontSize(7);doc.setTextColor(120,120,120);
+  doc.text('Fly Electric Solutions LLC  ·  TDLR Electrical Contractor TECL 42011',14,ty);
+  doc.text('Regulated by The Texas Department of Licensing and Regulation, P.O. Box 12157, Austin, Texas, 78711, 1-800-803-9202, 512-463-6599; website: www.tdlr.texas.gov/complaints',14,ty+4,{maxWidth:W-28});
 
   doc.save('FlyElectric_Contrato_'+qn+'.pdf');
 }
@@ -1011,7 +1015,7 @@ function makePDF(){
   doc.setFontSize(8);
   doc.setFont('helvetica','normal');
   doc.setTextColor(170,170,170);
-  doc.text(' Insured & Professional · Fully Insured · Houston TX',14,33);
+  doc.text(' TDLR Electrical Contractor TECL 42011 · Fully Insured · Houston TX',14,33);
   doc.text('(713) 384-2411  ·  flyelectricsolution.com',14,38.5);
 
   // Estimate info (right)
@@ -1143,6 +1147,8 @@ function makePDF(){
   doc.setFontSize(7);
   doc.setTextColor(150,150,150);
   doc.text(MT.legalPdf,14,fy+5,{maxWidth:W-28});
+  doc.setFontSize(6.5);
+  doc.text('Regulated by The Texas Department of Licensing and Regulation, P.O. Box 12157, Austin, Texas, 78711, 1-800-803-9202, 512-463-6599; website: www.tdlr.texas.gov/complaints',14,fy+11,{maxWidth:W-28});
 
   doc.save('FlyElectric_Estimado_'+qn+'.pdf');
   // Increment counter after successful save
