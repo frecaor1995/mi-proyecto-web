@@ -1,0 +1,21 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { PGlite } from "@electric-sql/pglite";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { SqlClient } from "../../server/repositories/evidence/postgres-evidence-repository";
+import { PostgresOpportunityRepository } from "../../server/repositories/opportunity/postgres-opportunity-repository";
+import { assembleOpportunityIntelligenceDetail } from "../../server/read-models/opportunity-detail";
+const AS_OF=new Date("2026-09-05T12:00:00Z"),HASH="d".repeat(64);
+describe("UI-5 persisted opportunity detail",()=>{let db:PGlite,repo:PostgresOpportunityRepository;beforeAll(async()=>{db=new PGlite();for(const migration of ["20260817010000_canonical_model.sql","20260817020000_evidence_provenance.sql","20260817030000_source_registry_compliance.sql","20260817040000_controlled_ingestion.sql","20260817050000_claim_assertions.sql","20260817060000_company_resolution.sql","20260817070000_manpower_acceptance.sql","20260817080000_contacts_routes.sql","20260817090000_opportunity_graph.sql","20260817100000_human_verification.sql"])await db.exec(await readFile(resolve(process.cwd(),"supabase/migrations",migration),"utf8"));repo=new PostgresOpportunityRepository(db as unknown as SqlClient)});afterAll(async()=>db.close());
+  it("loads one stable UUID with persisted company, project, demand, and provenance",async()=>{
+    const source=(await db.query<{id:string}>("insert into sources(name)values('Detail source')returning id")).rows[0];
+    const evidence=(await db.query<{id:string}>("insert into raw_evidence(source_id,source_url,captured_at,capture_method,content_hash)values($1,'https://example.com/detail',$2,'HTTP_FETCH',$3)returning id",[source.id,AS_OF.toISOString(),HASH])).rows[0];
+    const company=(await db.query<{id:string}>("insert into companies(common_name)values('Persisted Power')returning id")).rows[0];
+    const project=(await db.query<{id:string}>("insert into projects(name,location_text)values('Persisted Project','Dallas, TX')returning id")).rows[0];
+    const demand=(await db.query<{id:string}>("insert into demand_signals(title,role_type,headcount_estimate,source_id,raw_evidence_id,source_identity_key,last_seen_at)values('Journeyman','ELECTRICIAN',12,$1,$2,'detail-demand',$3)returning id",[source.id,evidence.id,AS_OF.toISOString()])).rows[0];
+    const opportunity=(await db.query<{id:string}>("insert into opportunities(title,project_id,lifecycle,opportunity_identity_key,first_seen_at,last_seen_at)values('Persisted opportunity',$1,'ACTIVE','stable-detail',$2,$2)returning id",[project.id,AS_OF.toISOString()])).rows[0];
+    await db.query("insert into opportunity_companies(opportunity_id,company_id,link_reason,evidence_id)values($1,$2,'COMMERCIAL_CONTEXT',$3)",[opportunity.id,company.id,evidence.id]);await db.query("insert into opportunity_demand_signals(opportunity_id,demand_signal_id)values($1,$2)",[opportunity.id,demand.id]);await db.query("insert into opportunity_evidence(opportunity_id,evidence_id,link_reason)values($1,$2,'DIRECT_GRAPH_PROVENANCE')",[opportunity.id,evidence.id]);
+    const graph=await repo.loadGraph(opportunity.id,AS_OF),view=assembleOpportunityIntelligenceDetail({...graph,gaps:[],conflicts:[]},AS_OF);expect(view.opportunityId).toBe(opportunity.id);expect(view.company).toBe("Persisted Power");expect(view.project).toBe("Persisted Project");expect(view.demand[0].headcount).toEqual({state:"KNOWN",value:12});expect(view.evidence[0].sourceUrl).toBe("https://example.com/detail");expect(view.commercialRoute.routes).toEqual([]);
+  });
+  it("returns the canonical not-found signal for an absent stable UUID",async()=>{await expect(repo.loadGraph("22222222-2222-4222-8222-222222222222",AS_OF)).rejects.toThrow("Opportunity not found")});
+});

@@ -1,0 +1,5 @@
+/* Three compact metrics (workers, candidates, company next actions); overrides the two-column row it extends. */
+.metrics3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.demoLine{display:block;margin-top:6px;color:var(--warning)}
+@media(max-width:900px){.metrics3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.metrics3{grid-template-columns:1fr}}
