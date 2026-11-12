@@ -233,6 +233,15 @@ body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{
 .nav-academy svg{flex-shrink:0}
 @media(max-width:1000px){.nav-link{display:none}}
 @media(max-width:420px){.nav-academy{padding:8px 10px}.nav-academy span{display:none}.nav-cta{gap:8px}#navbar .logo-text{white-space:nowrap;font-size:13px}#navbar .logo-sub{white-space:nowrap;font-size:9px}}
+.nav-est{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:100px;border:1px solid rgba(0,170,255,.6);color:var(--blue);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:background .2s,box-shadow .2s}
+.nav-est:hover{background:rgba(0,170,255,.1);box-shadow:0 0 18px rgba(0,170,255,.3)}
+.nav-est svg{flex-shrink:0}
+@media(max-width:420px){.nav-est{padding:8px 10px}.nav-est span{display:none}}
+.hero-est{display:inline-flex;align-items:center;gap:10px;margin-top:18px;padding:10px 18px;border-radius:12px;background:rgba(0,170,255,.1);border:1px solid rgba(0,170,255,.35);color:#fff;font-size:14px;font-weight:600;text-decoration:none;transition:background .2s}
+.hero-est:hover{background:rgba(0,170,255,.2)}
+.hero-est b{color:var(--blue)}
+.btn-est{display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border-radius:100px;background:rgba(0,170,255,.12);border:1px solid rgba(0,170,255,.6);color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;text-decoration:none;transition:background .2s,box-shadow .2s}
+.btn-est:hover{background:rgba(0,170,255,.22);box-shadow:0 0 24px rgba(0,170,255,.3)}
 /* Academy button in hero */
 .btn-academy{display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border-radius:100px;border:1px solid rgba(255,230,0,.5);color:var(--yellow);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;text-decoration:none;transition:background .2s,box-shadow .2s}
 .btn-academy:hover{background:rgba(255,230,0,.08);box-shadow:0 0 24px rgba(255,230,0,.25)}
@@ -1061,7 +1070,10 @@ body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{
     </div>
   </a>
   <div class="nav-cta">
-    <a href="/academy#herramientas" class="nav-link" data-i18n="nav-tools">Tools</a>
+    <a href="/calculadora" class="nav-est" aria-label="Price Estimator">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8" y2="11"/><line x1="12" y1="11" x2="12" y2="11"/><line x1="16" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="18"/></svg>
+      <span data-i18n="nav-tools">Price Estimator</span>
+    </a>
     <a href="/academy" class="nav-academy" aria-label="Fly Electric Academy">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>
       <span>Academy</span>
@@ -1173,6 +1185,7 @@ body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{
           <span data-i18n="hero-cta3">Fly Electric Academy</span>
         </a>
       </div>
+      <a href="/calculadora" class="hero-est"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span data-i18n-html="hero-est">Want a price now? <b>Get an instant estimate →</b></span></a>
       <div class="hero-badges">
         <div class="hero-badge">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -1464,9 +1477,7 @@ body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{
             <div class="perk"><div class="perk-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span data-i18n="s4-perk4">Response within 2 business hours</span></div>
           </div>
           <div style="margin-top:28px">
-            <a href="calculadora.html" style="font-size:13px;color:rgba(0,170,255,.8);text-decoration:none;border-bottom:1px solid rgba(0,170,255,.3);padding-bottom:2px;transition:color .3s;" onmouseover="this.style.color='#00aaff'" onmouseout="this.style.color='rgba(0,170,255,0.8)'">
-              <span data-i18n="s4-link">Use our detailed pricing estimator →</span>
-            </a>
+            <a href="/calculadora" class="btn-est"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="16" y2="15"/></svg><span data-i18n="s4-link">Open the instant price estimator →</span></a>
           </div>
         </div>
         <div class="quote-form-wrap">
@@ -1941,7 +1952,8 @@ let currentLang = 'en';
 const LANG = {
   en: {
     'nav-estimate': 'Free Estimate',
-    'nav-tools': 'Tools',
+    'nav-tools': 'Price Estimator',
+    'hero-est': 'Want a price now? <b>Get an instant estimate →</b>',
     'hero-cta3': 'Fly Electric Academy',
     'hero-tag-text': 'Licensed & Insured · Houston, Texas',
     'hero-h1': 'Power Your<br><strong>World</strong> with<br><em>Confidence</em>',
@@ -1976,7 +1988,7 @@ const LANG = {
     's4-perk2': 'Fully insured work',
     's4-perk3': 'Bilingual service — English & Spanish',
     's4-perk4': 'Response within 2 business hours',
-    's4-link': 'Use our detailed pricing estimator →',
+    's4-link': 'Open the instant price estimator →',
     's4-form-title': 'Request a Quote',
     's4-form-sub': 'We respond within 2 business hours · Respondemos en 2 horas',
     's4-lbl-name': 'Full Name / Nombre', 's4-ph-name': 'Your name',
@@ -2031,7 +2043,8 @@ const LANG = {
   },
   es: {
     'nav-estimate': 'Estimado Gratis',
-    'nav-tools': 'Herramientas',
+    'nav-tools': 'Estimador de precios',
+    'hero-est': '¿Quieres un precio ya? <b>Calcula tu estimado al instante →</b>',
     'hero-cta3': 'Fly Electric Academy',
     'hero-tag-text': 'Licenciados y Asegurados · Houston, Texas',
     'hero-h1': 'Impulsa Tu<br><strong>Mundo</strong> con<br><em>Seguridad</em>',
@@ -2066,7 +2079,7 @@ const LANG = {
     's4-perk2': 'Trabajo totalmente asegurado',
     's4-perk3': 'Servicio bilingüe — español e inglés',
     's4-perk4': 'Respuesta en 2 horas hábiles',
-    's4-link': 'Usa nuestro estimador de precios detallado →',
+    's4-link': 'Abre el estimador de precios al instante →',
     's4-form-title': 'Solicitar Cotización',
     's4-form-sub': 'Respondemos en 2 horas hábiles · We respond within 2 business hours',
     's4-lbl-name': 'Nombre Completo / Full Name', 's4-ph-name': 'Tu nombre',
