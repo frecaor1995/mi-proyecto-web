@@ -1,0 +1,10 @@
+/* Command Center recommendations: opportunity identity and the DEMO block kept apart from real work. */
+.opportunity{color:var(--text);font-weight:700;text-decoration:none;overflow-wrap:anywhere}
+.opportunity:hover{color:var(--accent)}
+.company{color:var(--text-2);font-size:12px}
+.company a{color:var(--accent)}
+.unconfirmed{color:var(--text-3);font-size:12px}
+.demoBlock{margin-top:14px;padding-top:10px;border-top:1px dashed var(--border)}
+.demoBlock>summary{cursor:pointer;color:var(--warning);font-weight:700}
+.demoRow{opacity:.8}
+.demoNote{margin:10px 0 0;color:var(--warning);font-size:13px}

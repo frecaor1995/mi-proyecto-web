@@ -1,0 +1,1 @@
+import type{CommercialActionResult,CommercialActionSnapshot}from"../../../domain/commercial-action";export interface CommercialActionRepository{save(result:CommercialActionResult):Promise<CommercialActionSnapshot>;list(opportunityId:string,asOf?:Date):Promise<CommercialActionSnapshot[]>}

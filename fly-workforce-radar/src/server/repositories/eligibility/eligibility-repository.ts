@@ -1,0 +1,1 @@
+import type{EligibilityResult,EligibilitySnapshot}from"../../../domain/eligibility";export interface EligibilityRepository{activeEvidenceIds(ids:string[],asOf:Date):Promise<string[]>;save(result:EligibilityResult):Promise<EligibilitySnapshot>;list(opportunityId:string,asOf?:Date):Promise<EligibilitySnapshot[]>}

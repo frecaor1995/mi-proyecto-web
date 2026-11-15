@@ -1,0 +1,20 @@
+import { describe,expect,it } from "vitest";
+import type { EnrichmentInput,ExistingPerson } from "../../domain/contact-enrichment";
+import { parseCsv,previewEnrichment,rowsFromCsv } from "../../domain/contact-enrichment";
+const john:ExistingPerson={key:"john-key",canonicalPersonId:null,name:"Riley Fixturo",title:"Operations Manager",emails:[],observationCount:2};
+const grady:ExistingPerson={key:"grady-key",canonicalPersonId:"person-grady",name:"Avery Mockridge",title:"Senior Vice President",emails:["old@example.test"],observationCount:1};
+const input=(o:Partial<EnrichmentInput>={}):EnrichmentInput=>({fullName:"Avery Mockridge",email:"grady@example.test",phone:"",title:"Senior Vice President",location:"",provider:"HUNTER",sourceReference:"manual:test",observedAt:"2026-10-03T12:00:00Z",providerScore:85,technicalVerification:"VALID",acquisitionMethod:"UNKNOWN",acceptAll:"UNKNOWN",notes:"",selectedPersonKey:null,raw:{score:"85"},...o});
+describe("Contact Intelligence enrichment",()=>{
+ it("existing person plus new email stays reviewable until explicitly selected",()=>expect(previewEnrichment(input(),[grady]).classification).toBe("POSSIBLE_DUPLICATE"));
+ it("explicit existing-person selection produces MATCH EXISTING",()=>expect(previewEnrichment(input({selectedPersonKey:grady.key}),[grady]).classification).toBe("MATCH_EXISTING"));
+ it("Riley Fixturo multiple observations remain one resolution target",()=>{const p=previewEnrichment(input({fullName:"Riley Fixturo"}),[john]);expect(p.classification).toBe("POSSIBLE_DUPLICATE");expect(p.matches).toEqual([john]);expect(p.matches[0].observationCount).toBe(2)});
+ it("name-only ambiguous matches require review",()=>expect(previewEnrichment(input({fullName:"Alex Smith"}),[{...john,key:"a",name:"Alex Smith"},{...john,key:"b",name:"Alex Smith"}]).classification).toBe("POSSIBLE_DUPLICATE"));
+ it("title differences never create a deterministic identity match",()=>expect(previewEnrichment(input({title:"President"}),[grady]).classification).toBe("POSSIBLE_DUPLICATE"));
+ it.each(["VALID","ACCEPT_ALL"] as const)("%s email remains separate from authority",technicalVerification=>{const p=previewEnrichment(input({technicalVerification,selectedPersonKey:grady.key}),[grady]);expect(p.input).not.toHaveProperty("commercialAuthority");expect(p.classification).toBe("MATCH_EXISTING")});
+ it("provider score remains raw provider data",()=>expect(previewEnrichment(input(),[]).input.providerScore).toBe(85));
+ it("new imported people classify NEW PERSON and carry no verification promotion",()=>{const p=previewEnrichment(input({fullName:"New Person"}),[]);expect(p.classification).toBe("NEW_PERSON");expect(p.input.technicalVerification).toBe("VALID")});
+ it("manual and CSV inputs use the same preview function",()=>{const [row]=rowsFromCsv("full_name,email\nAvery Mockridge,grady@example.test",{fullName:"full_name",email:"email"},{provider:"HUNTER"});expect(previewEnrichment(row,[grady]).classification).toBe(previewEnrichment(input({provider:"HUNTER",providerScore:null,technicalVerification:"NOT_VERIFIED",acquisitionMethod:"IMPORTED",observedAt:row.observedAt,raw:row.raw}),[grady]).classification)});
+ it("CSV parsing preserves quoted commas and unknown raw fields",()=>{const [row]=rowsFromCsv('name,email,note\n"Doe, Jane",jane@example.test,"raw, value"',{fullName:"name",email:"email"});expect(row.fullName).toBe("Doe, Jane");expect(row.raw.note).toBe("raw, value")});
+ it("invalid rows cannot reach canonical confirmation",()=>expect(previewEnrichment(input({email:"",phone:""}),[grady]).classification).toBe("INVALID_ROW"));
+ it("parser supports CRLF files",()=>expect(parseCsv("a,b\r\n1,2\r\n")).toEqual([["a","b"],["1","2"]]));
+});

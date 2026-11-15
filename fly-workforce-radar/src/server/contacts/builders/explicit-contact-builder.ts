@@ -1,0 +1,13 @@
+import type {ContactExtractionResult,ContactFunction,ContactLanguageStatus,ContactRouteType} from "../../../domain/contact";
+function contactFunction(title:string):ContactFunction{const t=title.toLowerCase();if(t.includes("craft recruiter"))return"CRAFT_RECRUITER";if(t.includes("recruit"))return"RECRUITER";if(t.includes("talent acquisition"))return"TALENT_ACQUISITION";if(t.includes("workforce"))return"WORKFORCE";if(t.includes("procurement"))return"PROCUREMENT";if(t.includes("subcontract"))return"SUBCONTRACTS";if(t.includes("supplier"))return"SUPPLIER_MANAGEMENT";if(t.includes("project"))return"PROJECT_MANAGEMENT";if(t.includes("construction"))return"CONSTRUCTION_MANAGEMENT";if(t.includes("operations"))return"OPERATIONS";if(/\bhr\b|human resources/.test(t))return"HR";return"OTHER";}
+function language(text:string):ContactLanguageStatus{if(/\b(bilingual|english and spanish|spanish and english)\b/i.test(text))return"BILINGUAL_CONFIRMED";if(/\bspanish[- ]speaking\b/i.test(text))return"SPANISH_CONFIRMED";return"UNKNOWN";}
+export function buildExplicitContactCandidates(input:{companyId:string;evidenceId:string;text:string;observedAt:Date}):ContactExtractionResult{
+ const people:ContactExtractionResult["people"]=[];const routes:ContactExtractionResult["routes"]=[];
+ const named=input.text.match(/(?:^|\n)\s*(\p{Lu}[\p{L}'.-]+(?:\s+\p{Lu}[\p{L}'.-]+){1,3})\s*(?:—|–|-)\s*([^\n]+)/u);
+ if(named){const status=language(input.text);people.push({companyId:input.companyId,fullName:named[1].trim(),title:named[2].trim(),contactFunction:contactFunction(named[2]),evidenceId:input.evidenceId,observedAt:input.observedAt,languageStatus:status,languageEvidenceId:status==="UNKNOWN"?null:input.evidenceId,metadata:{builder:"explicit-contact@1.0.0"}});}
+ const emails=[...input.text.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)].map(m=>m[0]);
+ for(const email of emails){const lower=email.toLowerCase();let type:ContactRouteType=named?"PROFESSIONAL_EMAIL":"CORPORATE_EMAIL";if(lower.startsWith("careers@")||lower.startsWith("recruiting@"))type="RECRUITER_EMAIL";else if(lower.startsWith("procurement@")||lower.startsWith("vendors@"))type="PROCUREMENT_EMAIL";routes.push({companyId:input.companyId,routeType:type,target:email,evidenceId:input.evidenceId,observedAt:input.observedAt,metadata:{builder:"explicit-contact@1.0.0",personIndex:named?0:null}});}
+ const phones=[...input.text.matchAll(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/g)].map(m=>m[0]);
+ for(const phone of phones)routes.push({companyId:input.companyId,routeType:named?"PROFESSIONAL_PHONE":"CORPORATE_PHONE",target:phone,evidenceId:input.evidenceId,observedAt:input.observedAt,metadata:{builder:"explicit-contact@1.0.0",personIndex:named?0:null}});
+ return{people,routes};
+}
