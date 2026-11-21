@@ -1,0 +1,12 @@
+.desk{display:grid;gap:10px;margin:14px 0;padding-top:12px;border-top:1px solid var(--border)}
+.desk h3,.desk h4,.pending h2,.pending h3{margin:6px 0 0;color:var(--heading)}
+.pending{display:grid;gap:10px;margin:16px 0;padding:18px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(145deg,var(--surface-2),var(--surface))}
+.muted{color:var(--text-3);font-size:12px;line-height:1.5}
+.list{display:grid;gap:8px;margin:0;padding:0;list-style:none}.list>li{display:grid;gap:4px;padding:10px 12px;border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;overflow-wrap:anywhere}
+.list>li b{color:var(--heading)}.list small{color:var(--text-2);font-size:11px}.list a{color:var(--accent)}.list p{margin:4px 0 0;color:var(--text-2);font-size:12px}
+.demoItem{border-left-color:var(--warning)!important;background:rgba(226,189,114,.04)}.demo{color:var(--warning);font-size:10px;font-weight:850;letter-spacing:.06em}
+.box{padding:10px 12px;border:1px solid var(--border);border-radius:10px}.box summary{color:var(--accent);cursor:pointer;font-weight:800}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.form label{display:grid;gap:4px;color:var(--text-2);font-size:12px}.form input,.form select,.form textarea{width:100%}
+.form .wide,.form .check,.form p,.form button,.form [role]{grid-column:1/-1}.check{display:flex!important;align-items:center;gap:8px}.check input{width:auto!important}
+.inline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}.inline input{flex:1 1 160px}
+@media(max-width:620px){.form{grid-template-columns:1fr}}
